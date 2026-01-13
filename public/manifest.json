@@ -1,0 +1,38 @@
+{
+  "name": "Ball Knowledge",
+  "short_name": "BallKnow",
+  "description": "Pure sports data, no noise",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f0a",
+  "theme_color": "#4a5d3a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sports", "news"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "LaLiga",
+      "url": "/?league=laliga",
+      "description": "View LaLiga standings"
+    },
+    {
+      "name": "Premier League",
+      "url": "/?league=premier",
+      "description": "View Premier League standings"
+    }
+  ]
+}

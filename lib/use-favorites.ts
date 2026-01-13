@@ -1,0 +1,34 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
+export function useFavorites() {
+  const [favorites, setFavorites] = useState<number[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('favorites');
+    if (saved) {
+      setFavorites(JSON.parse(saved));
+    }
+    setLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (loaded) {
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+    }
+  }, [favorites, loaded]);
+
+  const toggleFavorite = (teamId: number) => {
+    setFavorites((prev) =>
+      prev.includes(teamId)
+        ? prev.filter((id) => id !== teamId)
+        : [...prev, teamId]
+    );
+  };
+
+  const isFavorite = (teamId: number) => favorites.includes(teamId);
+
+  return { favorites, toggleFavorite, isFavorite, loaded };
+}
