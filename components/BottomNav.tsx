@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Calendar, Star, Settings } from 'lucide-react';
+import { Home, Calendar, Trophy, Star, Settings } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 const navItems = [
   { id: 'home', href: '/', icon: Home, label: 'Home' },
   { id: 'calendar', href: '/calendar', icon: Calendar, label: 'Calendar' },
+  { id: 'standings', href: '/standings', icon: Trophy, label: 'Standings' },
   { id: 'favorites', href: '/favorites', icon: Star, label: 'Favorites' },
   { id: 'settings', href: '/settings', icon: Settings, label: 'Settings' },
 ];
@@ -32,14 +33,14 @@ export function BottomNav() {
             <Link
               key={item.id}
               href={item.href}
-              className="flex flex-col items-center gap-1 px-4 py-2"
+              className="flex flex-col items-center gap-1 px-3 py-2"
             >
               <item.icon
-                size={22}
+                size={24}
                 color={isActive ? theme.accent : theme.textSecondary}
               />
               <span
-                className="text-[9px] tracking-wide"
+                className="text-xs tracking-wide font-medium"
                 style={{ color: isActive ? theme.accent : theme.textSecondary }}
               >
                 {item.label}

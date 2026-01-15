@@ -8,6 +8,7 @@ interface Standing {
   position: number;
   teamId: number;
   team: string;
+  logo?: string;
   played: number;
   won: number;
   drawn: number;
@@ -73,7 +74,10 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
             </span>
 
             <span className="flex items-center gap-2 text-[13px] font-medium">
-              {team.team}
+              {team.logo && (
+                <img src={team.logo} alt={team.team} className="h-5 w-5 object-contain" />
+              )}
+              <span className="truncate">{team.team}</span>
               {isFavorite(team.teamId) && (
                 <Star size={10} fill={theme.gold} color={theme.gold} />
               )}

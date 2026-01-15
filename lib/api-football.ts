@@ -18,6 +18,8 @@ async function fetchApi<T>(endpoint: string, params: Record<string, string> = {}
     url.searchParams.append(key, value);
   });
 
+  console.log(`[API-Football] Fetching: ${url.toString()}`);
+
   const response = await fetch(url.toString(), {
     headers: {
       'x-apisports-key': API_KEY,
@@ -26,12 +28,16 @@ async function fetchApi<T>(endpoint: string, params: Record<string, string> = {}
   });
 
   if (!response.ok) {
+    console.error(`[API-Football] HTTP Error: ${response.status}`);
     throw new Error(`API Error: ${response.status}`);
   }
 
   const data: ApiResponse<T> = await response.json();
-  
-  if (data.errors && data.errors.length > 0) {
+
+  console.log(`[API-Football] Results: ${data.results}, Errors: ${JSON.stringify(data.errors)}`);
+
+  if (data.errors && Object.keys(data.errors).length > 0) {
+    console.error(`[API-Football] API Errors: ${JSON.stringify(data.errors)}`);
     throw new Error(`API Error: ${JSON.stringify(data.errors)}`);
   }
 
@@ -47,7 +53,7 @@ export const LEAGUE_IDS = {
   ligue1: 61,
 } as const;
 
-// Current season
+// Current season (free plan supports 2022-2024)
 export const CURRENT_SEASON = 2024;
 
 // Types from API-Football
@@ -130,15 +136,13 @@ export interface ApiLineup {
 
 // API Functions
 
-export async function getFixtures(leagueId: number, date?: string) {
+export async function getFixtures(leagueId: number) {
+  // Note: Free API plan doesn't allow date filtering, so we fetch all fixtures
+  // and filter on the server side
   const params: Record<string, string> = {
     league: leagueId.toString(),
     season: CURRENT_SEASON.toString(),
   };
-  
-  if (date) {
-    params.date = date;
-  }
 
   return fetchApi<ApiFixture[]>('/fixtures', params);
 }
@@ -201,4 +205,11 @@ export async function getTeam(teamId: number) {
     id: teamId.toString(),
   });
   return data[0]?.team;
+}
+
+export async function getFixtureById(fixtureId: number) {
+  const fixtures = await fetchApi<ApiFixture[]>('/fixtures', {
+    id: fixtureId.toString(),
+  });
+  return fixtures[0] || null;
 }

@@ -5,15 +5,15 @@
 @tailwind utilities;
 
 :root {
-  --bg: #f5f2eb;
-  --bg-secondary: #ebe7dc;
-  --bg-tertiary: #e0dbd0;
-  --text: #1a2018;
-  --text-secondary: #5c6858;
+  --bg: #f5f2e8;
+  --bg-secondary: #faf8f3;
+  --bg-tertiary: #ebe7db;
+  --text: #1a1c18;
+  --text-secondary: #4a5240;
   --accent: #4a5d3a;
-  --gold: #c4a35a;
-  --sepia: #8b7355;
-  --border: #d0c9b8;
+  --gold: #8a6d25;
+  --sepia: #5b4530;
+  --border: #d8d2c2;
 }
 
 .dark {
@@ -41,8 +41,13 @@ body {
   overscroll-behavior: none;
 }
 
+html {
+  font-size: 16px; /* Base font size */
+}
+
 body {
   font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
   background-color: var(--bg);
   color: var(--text);
   transition: background-color 0.3s ease, color 0.3s ease;

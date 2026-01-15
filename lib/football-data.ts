@@ -1,0 +1,272 @@
+// Football-Data.org API client
+// Docs: https://www.football-data.org/documentation/api
+
+const API_BASE = 'https://api.football-data.org/v4';
+const API_KEY = process.env.FOOTBALL_DATA_KEY!;
+
+// Simple in-memory cache for API responses
+const cache = new Map<string, { data: unknown; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
+// Rate limit tracking
+let lastRequestTime = 0;
+const MIN_REQUEST_INTERVAL = 6500; // 6.5 seconds between requests (safe for 10/min limit)
+
+// Competition codes for top 5 European leagues
+export const COMPETITION_CODES = {
+  premier: 'PL',
+  laliga: 'PD',
+  seriea: 'SA',
+  bundesliga: 'BL1',
+  ligue1: 'FL1',
+} as const;
+
+export type LeagueId = keyof typeof COMPETITION_CODES;
+
+// Types from Football-Data.org API
+export interface Team {
+  id: number;
+  name: string;
+  shortName: string;
+  tla: string;
+  crest: string;
+}
+
+export interface Score {
+  home: number | null;
+  away: number | null;
+}
+
+export interface Match {
+  id: number;
+  utcDate: string;
+  status: 'SCHEDULED' | 'TIMED' | 'IN_PLAY' | 'PAUSED' | 'FINISHED' | 'SUSPENDED' | 'POSTPONED' | 'CANCELLED' | 'AWARDED';
+  minute: number | null;
+  matchday: number;
+  stage: string;
+  venue: string | null;
+  homeTeam: Team;
+  awayTeam: Team;
+  score: {
+    winner: 'HOME_TEAM' | 'AWAY_TEAM' | 'DRAW' | null;
+    duration: string;
+    fullTime: Score;
+    halfTime: Score;
+  };
+  competition: {
+    id: number;
+    name: string;
+    code: string;
+    emblem: string;
+  };
+}
+
+export interface Standing {
+  position: number;
+  team: Team;
+  playedGames: number;
+  form: string | null;
+  won: number;
+  draw: number;
+  lost: number;
+  points: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+}
+
+export interface StandingsResponse {
+  competition: { id: number; name: string; code: string };
+  season: { id: number; startDate: string; endDate: string; currentMatchday: number };
+  standings: Array<{
+    stage: string;
+    type: string;
+    table: Standing[];
+  }>;
+}
+
+export interface MatchesResponse {
+  matches: Match[];
+  resultSet: {
+    count: number;
+    first: string;
+    last: string;
+    played: number;
+  };
+}
+
+export interface MatchResponse {
+  id: number;
+  utcDate: string;
+  status: string;
+  minute: number | null;
+  venue: string | null;
+  matchday: number;
+  homeTeam: Team;
+  awayTeam: Team;
+  score: {
+    winner: string | null;
+    duration: string;
+    fullTime: Score;
+    halfTime: Score;
+  };
+  competition: {
+    id: number;
+    name: string;
+    code: string;
+  };
+  head2head?: {
+    numberOfMatches: number;
+    totalGoals: number;
+    homeTeam: { wins: number; draws: number; losses: number };
+    awayTeam: { wins: number; draws: number; losses: number };
+  };
+}
+
+async function fetchApi<T>(endpoint: string, retries = 2): Promise<T> {
+  const url = `${API_BASE}${endpoint}`;
+  const cacheKey = endpoint;
+
+  // Check cache first
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log(`[Football-Data] Cache hit: ${endpoint}`);
+    return cached.data as T;
+  }
+
+  // Rate limiting - wait if needed
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+    const waitTime = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+    console.log(`[Football-Data] Rate limiting, waiting ${waitTime}ms`);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+  }
+  lastRequestTime = Date.now();
+
+  console.log(`[Football-Data] Fetching: ${url}`);
+
+  const response = await fetch(url, {
+    headers: {
+      'X-Auth-Token': API_KEY,
+    },
+    next: { revalidate: 300 }, // Cache for 5 minutes
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[Football-Data] HTTP Error: ${response.status} - ${errorText}`);
+
+    // Handle rate limiting with retry
+    if (response.status === 429 && retries > 0) {
+      // Parse wait time from response if available
+      let waitTime = 60000; // Default 60 seconds
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.message && errorJson.message.includes('Wait')) {
+          const match = errorJson.message.match(/Wait (\d+) seconds/);
+          if (match) {
+            waitTime = (parseInt(match[1]) + 1) * 1000;
+          }
+        }
+      } catch {}
+
+      console.log(`[Football-Data] Rate limited, retrying in ${waitTime}ms...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return fetchApi<T>(endpoint, retries - 1);
+    }
+
+    throw new Error(`API Error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  console.log(`[Football-Data] Success`);
+
+  // Store in cache
+  cache.set(cacheKey, { data, timestamp: Date.now() });
+
+  return data;
+}
+
+// Get all matches for a competition (optionally filtered by date range)
+export async function getMatches(
+  competitionCode: string,
+  dateFrom?: string,
+  dateTo?: string
+): Promise<Match[]> {
+  let endpoint = `/competitions/${competitionCode}/matches`;
+  const params: string[] = [];
+
+  if (dateFrom) params.push(`dateFrom=${dateFrom}`);
+  if (dateTo) params.push(`dateTo=${dateTo}`);
+
+  if (params.length > 0) {
+    endpoint += `?${params.join('&')}`;
+  }
+
+  const data = await fetchApi<MatchesResponse>(endpoint);
+  return data.matches;
+}
+
+// Get matches for today
+export async function getTodayMatches(competitionCode?: string): Promise<Match[]> {
+  const today = new Date().toISOString().split('T')[0];
+
+  if (competitionCode) {
+    return getMatches(competitionCode, today, today);
+  }
+
+  // Get matches from all competitions
+  const endpoint = `/matches?date=${today}`;
+  const data = await fetchApi<MatchesResponse>(endpoint);
+  return data.matches;
+}
+
+// Get live matches
+export async function getLiveMatches(): Promise<Match[]> {
+  const data = await fetchApi<MatchesResponse>('/matches?status=LIVE');
+  return data.matches;
+}
+
+// Get standings for a competition
+export async function getStandings(competitionCode: string): Promise<Standing[]> {
+  const data = await fetchApi<StandingsResponse>(`/competitions/${competitionCode}/standings`);
+
+  // Get the TOTAL standings (not home/away splits)
+  const totalStandings = data.standings.find(s => s.type === 'TOTAL');
+  return totalStandings?.table || [];
+}
+
+// Get a single match with details
+export async function getMatch(matchId: number): Promise<MatchResponse> {
+  return fetchApi<MatchResponse>(`/matches/${matchId}`);
+}
+
+// Get head-to-head for a match
+export async function getHeadToHead(matchId: number, limit: number = 10): Promise<Match[]> {
+  const data = await fetchApi<{ aggregates: object; matches: Match[] }>(
+    `/matches/${matchId}/head2head?limit=${limit}`
+  );
+  return data.matches;
+}
+
+// Map status codes to display format
+export function mapStatus(status: string, minute: number | null): { status: string; time: string } {
+  switch (status) {
+    case 'FINISHED':
+      return { status: 'FT', time: 'FT' };
+    case 'IN_PLAY':
+      return { status: 'LIVE', time: minute ? `${minute}'` : 'LIVE' };
+    case 'PAUSED':
+      return { status: 'HT', time: 'HT' };
+    case 'SCHEDULED':
+    case 'TIMED':
+      return { status: 'NS', time: 'NS' };
+    case 'POSTPONED':
+      return { status: 'PST', time: 'PST' };
+    case 'CANCELLED':
+      return { status: 'CAN', time: 'CAN' };
+    default:
+      return { status: status, time: status };
+  }
+}

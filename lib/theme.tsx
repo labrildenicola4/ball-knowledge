@@ -41,19 +41,19 @@ const darkTheme: Theme = {
 };
 
 const lightTheme: Theme = {
-  bg: '#f5f2eb',
-  bgSecondary: '#ebe7dc',
-  bgTertiary: '#e0dbd0',
-  text: '#1a2018',
-  textSecondary: '#5c6858',
-  accent: '#4a5d3a',
-  gold: '#c4a35a',
-  sepia: '#8b7355',
-  border: '#d0c9b8',
+  bg: '#f5f2e8',             // Warm cream background
+  bgSecondary: '#faf8f3',    // Slightly lighter cream (not pure white)
+  bgTertiary: '#ebe7db',     // Warm beige
+  text: '#1a1c18',           // Very dark text for contrast
+  textSecondary: '#4a5240',  // Dark olive secondary text
+  accent: '#4a5d3a',         // Forest green accent
+  gold: '#8a6d25',           // Darker gold for light mode
+  sepia: '#5b4530',          // Darker sepia
+  border: '#d8d2c2',         // Warm border
   pitch: '#3d5c3d',
   pitchLines: '#4a6c4a',
-  red: '#c45a5a',
-  green: '#5a8c5a',
+  red: '#a83030',            // Darker red for contrast
+  green: '#3d7a3d',          // Darker green
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);

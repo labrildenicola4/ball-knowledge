@@ -1,0 +1,176 @@
+'use client';
+
+import { Moon, Sun, Trash2, Info, ExternalLink } from 'lucide-react';
+import { Header } from '@/components/Header';
+import { BottomNav } from '@/components/BottomNav';
+import { useTheme } from '@/lib/theme';
+import { useFavorites } from '@/lib/use-favorites';
+
+export default function SettingsPage() {
+  const { theme, darkMode, toggleDarkMode } = useTheme();
+  const { favorites, clearFavorites } = useFavorites();
+
+  const SettingRow = ({
+    icon: Icon,
+    label,
+    description,
+    action,
+  }: {
+    icon: React.ElementType;
+    label: string;
+    description?: string;
+    action: React.ReactNode;
+  }) => (
+    <div
+      className="flex items-center gap-4 rounded-xl p-4"
+      style={{
+        backgroundColor: theme.bgSecondary,
+        border: `1px solid ${theme.border}`,
+      }}
+    >
+      <div
+        className="flex h-10 w-10 items-center justify-center rounded-lg"
+        style={{ backgroundColor: theme.bgTertiary }}
+      >
+        <Icon size={20} color={theme.accent} />
+      </div>
+      <div className="flex-1">
+        <p className="text-[13px] font-medium">{label}</p>
+        {description && (
+          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+            {description}
+          </p>
+        )}
+      </div>
+      {action}
+    </div>
+  );
+
+  const Toggle = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => (
+    <button
+      onClick={onToggle}
+      className="relative h-7 w-12 rounded-full transition-colors"
+      style={{ backgroundColor: enabled ? theme.accent : theme.bgTertiary }}
+    >
+      <div
+        className="absolute top-1 h-5 w-5 rounded-full bg-white transition-transform"
+        style={{ left: enabled ? '26px' : '4px' }}
+      />
+    </button>
+  );
+
+  return (
+    <div
+      className="flex min-h-screen flex-col transition-theme"
+      style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
+    >
+      <Header />
+
+      <main className="flex-1 overflow-y-auto px-4 py-4">
+        {/* Appearance Section */}
+        <h2
+          className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+          style={{ color: theme.textSecondary }}
+        >
+          Appearance
+        </h2>
+        <div className="mb-6 flex flex-col gap-3">
+          <SettingRow
+            icon={darkMode ? Moon : Sun}
+            label="Dark Mode"
+            description={darkMode ? 'Currently using dark theme' : 'Currently using light theme'}
+            action={<Toggle enabled={darkMode} onToggle={toggleDarkMode} />}
+          />
+        </div>
+
+        {/* Data Section */}
+        <h2
+          className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+          style={{ color: theme.textSecondary }}
+        >
+          Data
+        </h2>
+        <div className="mb-6 flex flex-col gap-3">
+          <SettingRow
+            icon={Trash2}
+            label="Clear Favorites"
+            description={`${favorites.length} team${favorites.length !== 1 ? 's' : ''} saved`}
+            action={
+              <button
+                onClick={() => {
+                  if (favorites.length > 0 && confirm('Clear all favorite teams?')) {
+                    clearFavorites();
+                  }
+                }}
+                className="rounded-lg px-4 py-2 text-[11px] font-medium"
+                style={{
+                  backgroundColor: favorites.length > 0 ? theme.red : theme.bgTertiary,
+                  color: favorites.length > 0 ? '#fff' : theme.textSecondary,
+                  opacity: favorites.length > 0 ? 1 : 0.5,
+                }}
+                disabled={favorites.length === 0}
+              >
+                Clear
+              </button>
+            }
+          />
+        </div>
+
+        {/* About Section */}
+        <h2
+          className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+          style={{ color: theme.textSecondary }}
+        >
+          About
+        </h2>
+        <div className="flex flex-col gap-3">
+          <SettingRow
+            icon={Info}
+            label="Ball Knowledge"
+            description="Version 1.0.0"
+            action={
+              <span className="text-[11px]" style={{ color: theme.textSecondary }}>
+                v1.0.0
+              </span>
+            }
+          />
+          <a
+            href="https://www.api-football.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-4 rounded-xl p-4"
+            style={{
+              backgroundColor: theme.bgSecondary,
+              border: `1px solid ${theme.border}`,
+            }}
+          >
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-lg"
+              style={{ backgroundColor: theme.bgTertiary }}
+            >
+              <ExternalLink size={20} color={theme.accent} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[13px] font-medium">Data Provider</p>
+              <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                Powered by API-Football
+              </p>
+            </div>
+          </a>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 text-center">
+          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+            Football data provided by API-Football
+          </p>
+          <p className="mt-1 text-[10px]" style={{ color: theme.textSecondary }}>
+            Premier League, LaLiga, Serie A, Bundesliga, Ligue 1
+          </p>
+        </div>
+      </main>
+
+      <BottomNav />
+    </div>
+  );
+}

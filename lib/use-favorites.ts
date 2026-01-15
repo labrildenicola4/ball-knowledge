@@ -28,7 +28,21 @@ export function useFavorites() {
     );
   };
 
+  const addFavorite = (teamId: number) => {
+    setFavorites((prev) =>
+      prev.includes(teamId) ? prev : [...prev, teamId]
+    );
+  };
+
+  const removeFavorite = (teamId: number) => {
+    setFavorites((prev) => prev.filter((id) => id !== teamId));
+  };
+
+  const clearFavorites = () => {
+    setFavorites([]);
+  };
+
   const isFavorite = (teamId: number) => favorites.includes(teamId);
 
-  return { favorites, toggleFavorite, isFavorite, loaded };
+  return { favorites, toggleFavorite, addFavorite, removeFavorite, clearFavorites, isFavorite, loaded };
 }

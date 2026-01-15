@@ -21,7 +21,7 @@ interface MatchCardProps {
 export function MatchCard({ match }: MatchCardProps) {
   const { theme } = useTheme();
   const isFinished = match.status === 'FT';
-  const isLive = ['1H', '2H', 'HT', 'ET', 'P'].includes(match.status);
+  const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(match.status);
 
   return (
     <Link href={`/match/${match.id}`}>
@@ -35,15 +35,15 @@ export function MatchCard({ match }: MatchCardProps) {
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
           <span
-            className="text-[10px] uppercase tracking-wider"
+            className="text-xs uppercase tracking-wider font-medium"
             style={{ color: theme.textSecondary }}
           >
             {match.league}
           </span>
           <span
-            className="font-mono rounded-lg px-3 py-1 text-[11px]"
+            className="font-mono rounded-lg px-3 py-1 text-sm"
             style={{
-              backgroundColor: isLive ? theme.accent : theme.bgTertiary,
+              backgroundColor: isLive ? theme.red : theme.bgTertiary,
               color: isLive ? '#fff' : theme.textSecondary,
             }}
           >
@@ -53,23 +53,31 @@ export function MatchCard({ match }: MatchCardProps) {
 
         {/* Teams & Score */}
         <div className="flex items-center justify-between">
-          <div className="flex flex-1 items-center gap-2">
-            <span className="text-xl">{match.homeLogo}</span>
-            <span className="text-sm font-medium">{match.home}</span>
+          <div className="flex flex-1 items-center gap-3">
+            {match.homeLogo.startsWith('http') ? (
+              <img src={match.homeLogo} alt={match.home} className="h-8 w-8 object-contain" />
+            ) : (
+              <span className="text-2xl">{match.homeLogo}</span>
+            )}
+            <span className="text-base font-medium" style={{ color: theme.text }}>{match.home}</span>
           </div>
 
           <div
-            className="font-mono rounded-md px-4 py-2 text-base font-semibold"
-            style={{ backgroundColor: theme.bgTertiary }}
+            className="font-mono rounded-lg px-5 py-2 text-lg font-semibold"
+            style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
           >
             {match.homeScore !== null
               ? `${match.homeScore} - ${match.awayScore}`
               : 'vs'}
           </div>
 
-          <div className="flex flex-1 items-center justify-end gap-2">
-            <span className="text-sm font-medium">{match.away}</span>
-            <span className="text-xl">{match.awayLogo}</span>
+          <div className="flex flex-1 items-center justify-end gap-3">
+            <span className="text-base font-medium" style={{ color: theme.text }}>{match.away}</span>
+            {match.awayLogo.startsWith('http') ? (
+              <img src={match.awayLogo} alt={match.away} className="h-8 w-8 object-contain" />
+            ) : (
+              <span className="text-2xl">{match.awayLogo}</span>
+            )}
           </div>
         </div>
       </div>
