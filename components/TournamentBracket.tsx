@@ -28,6 +28,7 @@ interface TournamentBracketProps {
 function BracketMatchCard({ match }: { match: BracketMatch }) {
   const { theme } = useTheme();
   const isFinished = match.status === 'FT';
+  const isLive = ['1H', '2H', 'HT', 'ET', 'PT'].includes(match.status);
   const homeWon = isFinished && match.homeScore !== null && match.awayScore !== null && match.homeScore > match.awayScore;
   const awayWon = isFinished && match.homeScore !== null && match.awayScore !== null && match.awayScore > match.homeScore;
 
@@ -37,14 +38,23 @@ function BracketMatchCard({ match }: { match: BracketMatch }) {
         className="rounded p-1.5 transition-all hover:scale-[1.02] cursor-pointer w-full"
         style={{
           backgroundColor: theme.bgTertiary,
-          border: `1px solid ${theme.border}`,
+          border: `1px solid ${isLive ? theme.accent : theme.border}`,
         }}
       >
+        {/* Date/Time Header */}
+        <div
+          className="text-center pb-1 mb-1"
+          style={{ borderBottom: `1px solid ${theme.border}` }}
+        >
+          <span className="text-[9px]" style={{ color: isLive ? theme.accent : theme.textSecondary }}>
+            {isLive ? `● ${match.status} ${match.time}` : isFinished ? match.status : `${match.date} • ${match.time}`}
+          </span>
+        </div>
+
         {/* Home Team */}
         <div
           className="flex items-center justify-between gap-1 pb-1"
           style={{
-            borderBottom: `1px solid ${theme.border}`,
             opacity: awayWon ? 0.5 : 1,
           }}
         >
@@ -70,7 +80,10 @@ function BracketMatchCard({ match }: { match: BracketMatch }) {
         {/* Away Team */}
         <div
           className="flex items-center justify-between gap-1 pt-1"
-          style={{ opacity: homeWon ? 0.5 : 1 }}
+          style={{
+            borderTop: `1px solid ${theme.border}`,
+            opacity: homeWon ? 0.5 : 1
+          }}
         >
           <div className="flex items-center gap-1 flex-1 min-w-0">
             {match.awayLogo && (
