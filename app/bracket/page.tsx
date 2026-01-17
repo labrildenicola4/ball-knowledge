@@ -29,6 +29,7 @@ interface BracketData {
   stages: string[];
   stageNames: Record<string, string>;
   bracket: Record<string, BracketMatch[]>;
+  isHypothetical?: boolean;
 }
 
 const competitions = [
@@ -140,6 +141,21 @@ export default function BracketPage() {
           </div>
         ) : bracketData && totalMatches > 0 ? (
           <>
+            {/* Hypothetical Banner */}
+            {bracketData.isHypothetical && (
+              <div
+                className="rounded-lg px-4 py-3 mb-4"
+                style={{ backgroundColor: theme.gold + '20', border: `1px solid ${theme.gold}` }}
+              >
+                <p className="text-sm font-medium" style={{ color: theme.gold }}>
+                  Hypothetical Bracket
+                </p>
+                <p className="text-xs mt-1" style={{ color: theme.textSecondary }}>
+                  Based on current league standings. Actual knockout draw will differ.
+                </p>
+              </div>
+            )}
+
             {/* Competition Header */}
             <div className="mb-4">
               <h2 className="text-lg font-medium" style={{ color: theme.text }}>
@@ -147,6 +163,7 @@ export default function BracketPage() {
               </h2>
               <p className="text-sm" style={{ color: theme.textSecondary }}>
                 {totalMatches} knockout {totalMatches === 1 ? 'match' : 'matches'}
+                {bracketData.isHypothetical && ' (projected)'}
               </p>
             </div>
 
