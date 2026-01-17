@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
         fullDate: utcDate,
         timestamp: matchDate.getTime(),
         matchday: match.matchday,
+        stage: match.stage,
       };
     });
 
