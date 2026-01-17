@@ -256,12 +256,13 @@ export function mapStatus(status: string, minute: number | null): { status: stri
     case 'FINISHED':
       return { status: 'FT', time: 'FT' };
     case 'IN_PLAY':
-      // Determine which half based on minute
-      if (minute !== null) {
+      // Determine which half based on minute (if available)
+      if (typeof minute === 'number') {
         const half = minute <= 45 ? '1H' : '2H';
         return { status: half, time: `${minute}'` };
       }
-      return { status: 'LIVE', time: 'LIVE' };
+      // Minute not available from API - just show LIVE
+      return { status: 'LIVE', time: '' };
     case 'PAUSED':
       return { status: 'HT', time: 'HT' };
     case 'SCHEDULED':
