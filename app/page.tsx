@@ -164,8 +164,8 @@ export default function HomePage() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold">Today's Matches</h1>
-            <p className="text-sm" style={{ color: theme.textSecondary }}>
+            <h1 className="text-2xl font-semibold" style={{ color: theme.text }}>Today's Matches</h1>
+            <p className="text-base" style={{ color: theme.textSecondary }}>
               {dateStr}
             </p>
           </div>
@@ -184,7 +184,7 @@ export default function HomePage() {
           </button>
         </div>
         {lastUpdated && (
-          <p className="mt-1 text-xs" style={{ color: theme.textSecondary }}>
+          <p className="mt-1 text-sm" style={{ color: theme.textSecondary }}>
             Updated {lastUpdated.toLocaleTimeString()}
           </p>
         )}
@@ -305,7 +305,7 @@ export default function HomePage() {
                       ) : (
                         <span className="text-xl">{league.flag}</span>
                       )}
-                      <h2 className="text-sm font-medium">
+                      <h2 className="text-base font-medium" style={{ color: theme.text }}>
                         {league.name}
                       </h2>
                       <span

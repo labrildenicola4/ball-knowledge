@@ -23,7 +23,7 @@ export function Header() {
             <Trophy size={20} color="#fff" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-semibold tracking-wide">
+            <h1 className="font-display text-2xl font-semibold tracking-wide" style={{ color: theme.text }}>
               Ball Knowledge
             </h1>
             <p
