@@ -6,23 +6,7 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchCard } from '@/components/MatchCard';
 import { useTheme } from '@/lib/theme';
-
-// Fallback flags for leagues
-const LEAGUE_FLAGS: Record<string, string> = {
-  'PD': '🇪🇸',      // La Liga - Spain
-  'PL': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',      // Premier League - England
-  'SA': '🇮🇹',      // Serie A - Italy
-  'BL1': '🇩🇪',     // Bundesliga - Germany
-  'FL1': '🇫🇷',     // Ligue 1 - France
-};
-
-interface LeagueGroup {
-  name: string;
-  code: string;
-  logo: string | null;
-  flag: string;
-  matches: Match[];
-}
+import { NATIONS, getNationsForMatch, type Nation } from '@/lib/nations';
 
 interface Match {
   id: number;
@@ -31,6 +15,8 @@ interface Match {
   leagueLogo?: string;
   home: string;
   away: string;
+  homeId?: number;
+  awayId?: number;
   homeScore: number | null;
   awayScore: number | null;
   homeLogo: string;
@@ -41,13 +27,15 @@ interface Match {
   fullDate?: string;
 }
 
-const leagues = [
-  { id: 'all', name: 'All Leagues' },
-  { id: 'laliga', name: 'LaLiga' },
-  { id: 'premier', name: 'Premier League' },
-  { id: 'seriea', name: 'Serie A' },
-  { id: 'bundesliga', name: 'Bundesliga' },
-  { id: 'ligue1', name: 'Ligue 1' },
+interface NationGroup {
+  nation: Nation;
+  matches: Match[];
+}
+
+// Nation filter options
+const nationFilters = [
+  { id: 'all', name: 'All Nations' },
+  ...NATIONS.map(n => ({ id: n.id, name: n.name, flag: n.flag }))
 ];
 
 // 2025-26 season dates (using local time constructor)
@@ -58,42 +46,50 @@ export default function CalendarPage() {
   const { theme } = useTheme();
   // Start with today's date
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedLeague, setSelectedLeague] = useState('all');
+  const [selectedNation, setSelectedNation] = useState('all');
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [rateLimited, setRateLimited] = useState(false);
-  const [collapsedLeagues, setCollapsedLeagues] = useState<Set<string>>(new Set());
+  const [collapsedNations, setCollapsedNations] = useState<Set<string>>(new Set());
 
-  // Toggle league collapse
-  const toggleLeague = (leagueName: string) => {
-    setCollapsedLeagues((prev) => {
+  // Toggle nation collapse
+  const toggleNation = (nationId: string) => {
+    setCollapsedNations((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(leagueName)) {
-        newSet.delete(leagueName);
+      if (newSet.has(nationId)) {
+        newSet.delete(nationId);
       } else {
-        newSet.add(leagueName);
+        newSet.add(nationId);
       }
       return newSet;
     });
   };
 
-  // Group matches by league
-  const leagueGroups: LeagueGroup[] = Object.values(
-    matches.reduce((acc, match) => {
-      const leagueName = match.league;
-      if (!acc[leagueName]) {
-        acc[leagueName] = {
-          name: leagueName,
-          code: match.leagueCode || '',
-          logo: match.leagueLogo || null,
-          flag: LEAGUE_FLAGS[match.leagueCode || ''] || '⚽',
-          matches: [],
-        };
+  // Group matches by nation
+  const nationGroups: NationGroup[] = NATIONS.map((nation) => {
+    const nationMatches: Match[] = [];
+    const seenMatchIds = new Set<number>();
+
+    for (const match of matches) {
+      if (seenMatchIds.has(match.id)) continue;
+
+      const matchNations = getNationsForMatch(
+        match.leagueCode || '',
+        match.homeId || 0,
+        match.awayId || 0
+      );
+
+      if (matchNations.includes(nation.id)) {
+        nationMatches.push(match);
+        seenMatchIds.add(match.id);
       }
-      acc[leagueName].matches.push(match);
-      return acc;
-    }, {} as Record<string, LeagueGroup>)
-  );
+    }
+
+    return {
+      nation,
+      matches: nationMatches,
+    };
+  }).filter((group) => group.matches.length > 0);
 
   // Generate week days around selected date
   const getWeekDays = () => {
@@ -126,47 +122,57 @@ export default function CalendarPage() {
       try {
         const dateStr = formatDateForApi(selectedDate);
 
-        if (selectedLeague === 'all') {
-          // Fetch from all leagues sequentially to avoid rate limits
-          const leagueIds = ['laliga', 'premier', 'seriea', 'bundesliga', 'ligue1'];
-          const allMatches: Match[] = [];
-          let wasRateLimited = false;
+        // All leagues to fetch
+        const allLeagueIds = [
+          'laliga', 'premier', 'seriea', 'bundesliga', 'ligue1',
+          'brasileirao', 'eredivisie', 'primeiraliga', 'championship',
+          'championsleague', 'copalibertadores'
+        ];
 
-          for (const league of leagueIds) {
-            try {
-              const res = await fetch(`/api/fixtures?league=${league}&date=${dateStr}`);
-              const data = await res.json();
-              if (res.status === 429) {
-                wasRateLimited = true;
-              }
-              if (data.matches) {
-                allMatches.push(...data.matches);
-              }
-            } catch {
-              // Continue with other leagues
-            }
-          }
-
-          if (wasRateLimited && allMatches.length === 0) {
-            setRateLimited(true);
-          }
-
-          // Sort by league then time
-          allMatches.sort((a, b) => {
-            if (a.league !== b.league) return a.league.localeCompare(b.league);
-            return a.time.localeCompare(b.time);
-          });
-          setMatches(allMatches);
-        } else {
-          const res = await fetch(`/api/fixtures?league=${selectedLeague}&date=${dateStr}`);
-          const data = await res.json();
-          if (res.status === 429) {
-            setRateLimited(true);
-            setMatches([]);
-          } else {
-            setMatches(data.matches || []);
+        // If a specific nation is selected, only fetch relevant leagues
+        let leagueIds = allLeagueIds;
+        if (selectedNation !== 'all') {
+          const nation = NATIONS.find(n => n.id === selectedNation);
+          if (nation) {
+            // Get league IDs for this nation's competitions
+            const nationLeagueCodes = [...nation.domesticLeagues, ...nation.internationalCompetitions];
+            leagueIds = allLeagueIds.filter(id => {
+              const codeMapping: Record<string, string> = {
+                'laliga': 'PD', 'premier': 'PL', 'seriea': 'SA', 'bundesliga': 'BL1',
+                'ligue1': 'FL1', 'brasileirao': 'BSA', 'eredivisie': 'DED',
+                'primeiraliga': 'PPL', 'championship': 'ELC',
+                'championsleague': 'CL', 'copalibertadores': 'CLI'
+              };
+              return nationLeagueCodes.includes(codeMapping[id] || '');
+            });
           }
         }
+
+        const allMatches: Match[] = [];
+        let wasRateLimited = false;
+
+        for (const league of leagueIds) {
+          try {
+            const res = await fetch(`/api/fixtures?league=${league}&date=${dateStr}`);
+            const data = await res.json();
+            if (res.status === 429) {
+              wasRateLimited = true;
+            }
+            if (data.matches) {
+              allMatches.push(...data.matches);
+            }
+          } catch {
+            // Continue with other leagues
+          }
+        }
+
+        if (wasRateLimited && allMatches.length === 0) {
+          setRateLimited(true);
+        }
+
+        // Sort by time
+        allMatches.sort((a, b) => a.time.localeCompare(b.time));
+        setMatches(allMatches);
       } catch (err) {
         console.error('Error fetching fixtures:', err);
         setMatches([]);
@@ -175,7 +181,7 @@ export default function CalendarPage() {
       }
     }
     fetchFixtures();
-  }, [selectedDate, selectedLeague]);
+  }, [selectedDate, selectedNation]);
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     const newDate = new Date(selectedDate);
@@ -186,16 +192,7 @@ export default function CalendarPage() {
     }
   };
 
-  const jumpToDate = (monthOffset: number) => {
-    const newDate = new Date(selectedDate);
-    newDate.setMonth(newDate.getMonth() + monthOffset);
-    if (newDate >= SEASON_START && newDate <= SEASON_END) {
-      setSelectedDate(newDate);
-    }
-  };
-
   // Quick navigation months for 2025-26 season
-  // Using Date constructor with year, month (0-indexed), day to ensure local time
   const seasonMonths = [
     { label: 'Aug', date: new Date(2025, 7, 15) },
     { label: 'Sep', date: new Date(2025, 8, 15) },
@@ -213,6 +210,11 @@ export default function CalendarPage() {
     return monthDate.getMonth() === selectedDate.getMonth() &&
            monthDate.getFullYear() === selectedDate.getFullYear();
   };
+
+  // Filter nation groups if a specific nation is selected
+  const displayedNationGroups = selectedNation === 'all'
+    ? nationGroups
+    : nationGroups.filter(g => g.nation.id === selectedNation);
 
   return (
     <div
@@ -306,23 +308,24 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* League Filter */}
+      {/* Nation Filter */}
       <div
         className="flex gap-2 overflow-x-auto px-4 py-3"
         style={{ scrollbarWidth: 'none', borderBottom: `1px solid ${theme.border}` }}
       >
-        {leagues.map((league) => (
+        {nationFilters.map((filter) => (
           <button
-            key={league.id}
-            onClick={() => setSelectedLeague(league.id)}
-            className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium"
+            key={filter.id}
+            onClick={() => setSelectedNation(filter.id)}
+            className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2"
             style={{
-              backgroundColor: selectedLeague === league.id ? theme.accent : theme.bgSecondary,
-              color: selectedLeague === league.id ? '#fff' : theme.textSecondary,
-              border: `1px solid ${selectedLeague === league.id ? theme.accent : theme.border}`,
+              backgroundColor: selectedNation === filter.id ? theme.accent : theme.bgSecondary,
+              color: selectedNation === filter.id ? '#fff' : theme.textSecondary,
+              border: `1px solid ${selectedNation === filter.id ? theme.accent : theme.border}`,
             }}
           >
-            {league.name}
+            {'flag' in filter && <span>{filter.flag}</span>}
+            {filter.name}
           </button>
         ))}
       </div>
@@ -382,42 +385,33 @@ export default function CalendarPage() {
               Try navigating to a different day
             </p>
           </div>
-        ) : selectedLeague === 'all' && leagueGroups.length > 1 ? (
-          // Grouped view for "All Leagues"
+        ) : displayedNationGroups.length > 0 ? (
+          // Grouped view by nation
           <div className="flex flex-col gap-4">
-            {leagueGroups.map((league) => {
-              const isCollapsed = collapsedLeagues.has(league.name);
+            {displayedNationGroups.map(({ nation, matches: nationMatches }) => {
+              const isCollapsed = collapsedNations.has(nation.id);
               return (
                 <section
-                  key={league.name}
+                  key={nation.id}
                   className="rounded-xl overflow-hidden"
                   style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                 >
-                  {/* League Header - Collapsible */}
+                  {/* Nation Header - Collapsible */}
                   <button
-                    onClick={() => toggleLeague(league.name)}
+                    onClick={() => toggleNation(nation.id)}
                     className="w-full flex items-center justify-between px-4 py-3"
                     style={{ borderBottom: isCollapsed ? 'none' : `1px solid ${theme.border}` }}
                   >
                     <div className="flex items-center gap-3">
-                      {/* League Logo or Flag */}
-                      {league.logo ? (
-                        <img
-                          src={league.logo}
-                          alt={league.name}
-                          className="h-6 w-6 object-contain"
-                        />
-                      ) : (
-                        <span className="text-xl">{league.flag}</span>
-                      )}
-                      <h2 className="text-sm font-medium" style={{ color: theme.text }}>
-                        {league.name}
+                      <span className="text-2xl">{nation.flag}</span>
+                      <h2 className="text-base font-medium" style={{ color: theme.text }}>
+                        {nation.name}
                       </h2>
                       <span
                         className="rounded-full px-2.5 py-0.5 text-xs"
                         style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                       >
-                        {league.matches.length}
+                        {nationMatches.length}
                       </span>
                     </div>
                     {isCollapsed ? (
@@ -427,11 +421,11 @@ export default function CalendarPage() {
                     )}
                   </button>
 
-                  {/* League Matches */}
+                  {/* Nation Matches */}
                   {!isCollapsed && (
                     <div className="flex flex-col gap-3 p-3">
-                      {league.matches.map((match) => (
-                        <MatchCard key={match.id} match={match} />
+                      {nationMatches.map((match) => (
+                        <MatchCard key={`${nation.id}-${match.id}`} match={match} />
                       ))}
                     </div>
                   )}
@@ -440,7 +434,7 @@ export default function CalendarPage() {
             })}
           </div>
         ) : (
-          // Simple list for single league
+          // Fallback: simple list if no nation groups
           <div className="flex flex-col gap-3">
             {matches.map((match) => (
               <MatchCard key={match.id} match={match} />

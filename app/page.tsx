@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchCard } from '@/components/MatchCard';
 import { useTheme } from '@/lib/theme';
+import { NATIONS, getNationsForMatch, type Nation } from '@/lib/nations';
 
 interface Match {
   id: number;
@@ -14,6 +15,8 @@ interface Match {
   leagueLogo?: string;
   home: string;
   away: string;
+  homeId?: number;
+  awayId?: number;
   homeScore: number | null;
   awayScore: number | null;
   homeLogo: string;
@@ -23,29 +26,17 @@ interface Match {
   timestamp?: number;
 }
 
-interface LeagueGroup {
-  name: string;
-  code: string;
-  logo: string | null;
-  flag: string;
+interface NationGroup {
+  nation: Nation;
   matches: Match[];
 }
-
-// Fallback flags for leagues
-const LEAGUE_FLAGS: Record<string, string> = {
-  'PD': '🇪🇸',      // La Liga - Spain
-  'PL': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',      // Premier League - England
-  'SA': '🇮🇹',      // Serie A - Italy
-  'BL1': '🇩🇪',     // Bundesliga - Germany
-  'FL1': '🇫🇷',     // Ligue 1 - France
-};
 
 export default function HomePage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [collapsedLeagues, setCollapsedLeagues] = useState<Set<string>>(new Set());
+  const [collapsedNations, setCollapsedNations] = useState<Set<string>>(new Set());
   const [liveCollapsed, setLiveCollapsed] = useState(false);
   const { theme } = useTheme();
 
@@ -69,7 +60,12 @@ export default function HomePage() {
     setError(null);
     try {
       const todayStr = formatDateForApi(today);
-      const leagueIds = ['laliga', 'premier', 'seriea', 'bundesliga', 'ligue1'];
+      // Fetch from all competitions: domestic leagues + international
+      const leagueIds = [
+        'laliga', 'premier', 'seriea', 'bundesliga', 'ligue1',
+        'brasileirao', 'eredivisie', 'primeiraliga', 'championship',
+        'championsleague', 'copalibertadores'
+      ];
       const allMatches: Match[] = [];
 
       // Fetch sequentially to avoid rate limits
@@ -111,14 +107,14 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Toggle league collapse
-  const toggleLeague = (leagueName: string) => {
-    setCollapsedLeagues((prev) => {
+  // Toggle nation collapse
+  const toggleNation = (nationId: string) => {
+    setCollapsedNations((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(leagueName)) {
-        newSet.delete(leagueName);
+      if (newSet.has(nationId)) {
+        newSet.delete(nationId);
       } else {
-        newSet.add(leagueName);
+        newSet.add(nationId);
       }
       return newSet;
     });
@@ -132,23 +128,34 @@ export default function HomePage() {
     (m) => !['LIVE', '1H', '2H', 'HT'].includes(m.status)
   );
 
-  // Group other matches by league with metadata
-  const leagueGroups: LeagueGroup[] = Object.values(
-    otherMatches.reduce((acc, match) => {
-      const leagueName = match.league;
-      if (!acc[leagueName]) {
-        acc[leagueName] = {
-          name: leagueName,
-          code: match.leagueCode || '',
-          logo: match.leagueLogo || null,
-          flag: LEAGUE_FLAGS[match.leagueCode || ''] || '⚽',
-          matches: [],
-        };
+  // Group matches by nation
+  const nationGroups: NationGroup[] = NATIONS.map((nation) => {
+    const nationMatches: Match[] = [];
+    const seenMatchIds = new Set<number>();
+
+    for (const match of otherMatches) {
+      // Skip if we've already added this match to this nation
+      if (seenMatchIds.has(match.id)) continue;
+
+      // Get nations for this match
+      const matchNations = getNationsForMatch(
+        match.leagueCode || '',
+        match.homeId || 0,
+        match.awayId || 0
+      );
+
+      // If this match belongs to this nation, add it
+      if (matchNations.includes(nation.id)) {
+        nationMatches.push(match);
+        seenMatchIds.add(match.id);
       }
-      acc[leagueName].matches.push(match);
-      return acc;
-    }, {} as Record<string, LeagueGroup>)
-  );
+    }
+
+    return {
+      nation,
+      matches: nationMatches,
+    };
+  }).filter((group) => group.matches.length > 0);
 
   return (
     <div
@@ -279,40 +286,31 @@ export default function HomePage() {
               </section>
             )}
 
-            {/* League Sections */}
-            {leagueGroups.map((league) => {
-              const isCollapsed = collapsedLeagues.has(league.name);
+            {/* Nation Sections */}
+            {nationGroups.map(({ nation, matches: nationMatches }) => {
+              const isCollapsed = collapsedNations.has(nation.id);
               return (
                 <section
-                  key={league.name}
+                  key={nation.id}
                   className="rounded-xl overflow-hidden"
                   style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                 >
-                  {/* League Header - Collapsible */}
+                  {/* Nation Header - Collapsible */}
                   <button
-                    onClick={() => toggleLeague(league.name)}
+                    onClick={() => toggleNation(nation.id)}
                     className="w-full flex items-center justify-between px-4 py-3"
                     style={{ borderBottom: isCollapsed ? 'none' : `1px solid ${theme.border}` }}
                   >
                     <div className="flex items-center gap-3">
-                      {/* League Logo or Flag */}
-                      {league.logo ? (
-                        <img
-                          src={league.logo}
-                          alt={league.name}
-                          className="h-6 w-6 object-contain"
-                        />
-                      ) : (
-                        <span className="text-xl">{league.flag}</span>
-                      )}
+                      <span className="text-2xl">{nation.flag}</span>
                       <h2 className="text-base font-medium" style={{ color: theme.text }}>
-                        {league.name}
+                        {nation.name}
                       </h2>
                       <span
                         className="rounded-full px-2.5 py-0.5 text-xs"
                         style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                       >
-                        {league.matches.length}
+                        {nationMatches.length}
                       </span>
                     </div>
                     {isCollapsed ? (
@@ -322,11 +320,11 @@ export default function HomePage() {
                     )}
                   </button>
 
-                  {/* League Matches */}
+                  {/* Nation Matches */}
                   {!isCollapsed && (
                     <div className="flex flex-col gap-3 p-3">
-                      {league.matches.map((match) => (
-                        <MatchCard key={match.id} match={match} />
+                      {nationMatches.map((match) => (
+                        <MatchCard key={`${nation.id}-${match.id}`} match={match} />
                       ))}
                     </div>
                   )}

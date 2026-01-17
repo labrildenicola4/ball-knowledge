@@ -12,13 +12,22 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 6500; // 6.5 seconds between requests (safe for 10/min limit)
 
-// Competition codes for top 5 European leagues
+// Competition codes for leagues and international competitions
 export const COMPETITION_CODES = {
+  // Original 5 European leagues
   premier: 'PL',
   laliga: 'PD',
   seriea: 'SA',
   bundesliga: 'BL1',
   ligue1: 'FL1',
+  // Additional domestic leagues
+  brasileirao: 'BSA',
+  eredivisie: 'DED',
+  primeiraliga: 'PPL',
+  championship: 'ELC',
+  // International competitions
+  championsleague: 'CL',
+  copalibertadores: 'CLI',
 } as const;
 
 export type LeagueId = keyof typeof COMPETITION_CODES;
