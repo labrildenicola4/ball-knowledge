@@ -3,11 +3,20 @@
 import { useTheme } from '@/lib/theme';
 
 const leagues = [
-  { id: 'laliga', name: 'LaLiga', icon: '🇪🇸', apiId: 140 },
-  { id: 'premier', name: 'Premier', icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', apiId: 39 },
-  { id: 'seriea', name: 'Serie A', icon: '🇮🇹', apiId: 135 },
-  { id: 'bundesliga', name: 'Bundesliga', icon: '🇩🇪', apiId: 78 },
-  { id: 'ligue1', name: 'Ligue 1', icon: '🇫🇷', apiId: 61 },
+  // Top 5 European Leagues
+  { id: 'laliga', name: 'LaLiga', icon: '🇪🇸' },
+  { id: 'premier', name: 'Premier', icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  { id: 'seriea', name: 'Serie A', icon: '🇮🇹' },
+  { id: 'bundesliga', name: 'Bundesliga', icon: '🇩🇪' },
+  { id: 'ligue1', name: 'Ligue 1', icon: '🇫🇷' },
+  // Additional Leagues
+  { id: 'championship', name: 'Championship', icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  { id: 'eredivisie', name: 'Eredivisie', icon: '🇳🇱' },
+  { id: 'primeiraliga', name: 'Primeira Liga', icon: '🇵🇹' },
+  { id: 'brasileirao', name: 'Brasileirão', icon: '🇧🇷' },
+  // International
+  { id: 'championsleague', name: 'UCL', icon: '🏆' },
+  { id: 'copalibertadores', name: 'Libertadores', icon: '🏆' },
 ];
 
 interface LeagueTabsProps {
