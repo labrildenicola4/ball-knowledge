@@ -257,17 +257,17 @@ export default function CalendarPage() {
           <button
             onClick={() => navigateWeek('prev')}
             className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ border: `1px solid ${theme.border}` }}
+            style={{ border: `1px solid ${theme.border}`, color: theme.text }}
           >
             <ChevronLeft size={16} />
           </button>
-          <h2 className="text-base font-medium">
+          <h2 className="text-base font-medium" style={{ color: theme.text }}>
             {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </h2>
           <button
             onClick={() => navigateWeek('next')}
             className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ border: `1px solid ${theme.border}` }}
+            style={{ border: `1px solid ${theme.border}`, color: theme.text }}
           >
             <ChevronRight size={16} />
           </button>
@@ -410,7 +410,7 @@ export default function CalendarPage() {
                       ) : (
                         <span className="text-xl">{league.flag}</span>
                       )}
-                      <h2 className="text-sm font-medium">
+                      <h2 className="text-sm font-medium" style={{ color: theme.text }}>
                         {league.name}
                       </h2>
                       <span

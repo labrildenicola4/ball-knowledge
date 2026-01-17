@@ -47,7 +47,7 @@ export function MatchCard({ match }: MatchCardProps) {
               color: isLive ? '#fff' : theme.textSecondary,
             }}
           >
-            {isLive && '● '}{match.time}
+            {isLive && '● '}{isLive ? `${match.status} ${match.time}` : match.time}
           </span>
         </div>
 
