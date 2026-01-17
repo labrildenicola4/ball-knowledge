@@ -34,74 +34,70 @@ function BracketMatchCard({ match }: { match: BracketMatch }) {
 
   return (
     <Link href={`/match/${match.id}`} className="block w-full">
-      <div
-        className="rounded p-1.5 transition-all hover:scale-[1.02] cursor-pointer w-full"
-        style={{
-          backgroundColor: theme.bgTertiary,
-          border: `1px solid ${isLive ? theme.accent : theme.border}`,
-        }}
-      >
-        {/* Date/Time Header */}
-        <div
-          className="text-center pb-1 mb-1"
-          style={{ borderBottom: `1px solid ${theme.border}` }}
-        >
-          <span className="text-[9px]" style={{ color: isLive ? theme.accent : theme.textSecondary }}>
-            {isLive ? `● ${match.status} ${match.time}` : isFinished ? match.status : `${match.date} • ${match.time}`}
-          </span>
-        </div>
+      <div className="flex flex-col items-center w-full">
+        {/* Date/Time Outside Box */}
+        <span className="text-[10px] mb-1" style={{ color: isLive ? theme.accent : theme.textSecondary }}>
+          {isLive ? `● ${match.status} ${match.time}` : isFinished ? match.status : `${match.date} • ${match.time}`}
+        </span>
 
-        {/* Home Team */}
+        {/* Match Box */}
         <div
-          className="flex items-center justify-between gap-1 pb-1"
+          className="rounded p-2 transition-all hover:scale-[1.02] cursor-pointer w-full"
           style={{
-            opacity: awayWon ? 0.5 : 1,
+            backgroundColor: theme.bgTertiary,
+            border: `1px solid ${isLive ? theme.accent : theme.border}`,
           }}
         >
-          <div className="flex items-center gap-1 flex-1 min-w-0">
-            {match.homeLogo && (
-              <img src={match.homeLogo} alt={match.home} className="h-3 w-3 object-contain flex-shrink-0" />
-            )}
+          {/* Home Team */}
+          <div
+            className="flex items-center justify-between gap-1.5 pb-1.5"
+            style={{
+              borderBottom: `1px solid ${theme.border}`,
+              opacity: awayWon ? 0.5 : 1,
+            }}
+          >
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              {match.homeLogo && (
+                <img src={match.homeLogo} alt={match.home} className="h-4 w-4 object-contain flex-shrink-0" />
+              )}
+              <span
+                className="text-xs font-medium truncate"
+                style={{ color: homeWon ? theme.accent : theme.text }}
+              >
+                {match.home}
+              </span>
+            </div>
             <span
-              className="text-[10px] font-medium truncate"
+              className="text-xs font-bold tabular-nums"
               style={{ color: homeWon ? theme.accent : theme.text }}
             >
-              {match.home}
+              {match.homeScore ?? '-'}
             </span>
           </div>
-          <span
-            className="text-[10px] font-bold tabular-nums"
-            style={{ color: homeWon ? theme.accent : theme.text }}
-          >
-            {match.homeScore ?? '-'}
-          </span>
-        </div>
 
-        {/* Away Team */}
-        <div
-          className="flex items-center justify-between gap-1 pt-1"
-          style={{
-            borderTop: `1px solid ${theme.border}`,
-            opacity: homeWon ? 0.5 : 1
-          }}
-        >
-          <div className="flex items-center gap-1 flex-1 min-w-0">
-            {match.awayLogo && (
-              <img src={match.awayLogo} alt={match.away} className="h-3 w-3 object-contain flex-shrink-0" />
-            )}
+          {/* Away Team */}
+          <div
+            className="flex items-center justify-between gap-1.5 pt-1.5"
+            style={{ opacity: homeWon ? 0.5 : 1 }}
+          >
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              {match.awayLogo && (
+                <img src={match.awayLogo} alt={match.away} className="h-4 w-4 object-contain flex-shrink-0" />
+              )}
+              <span
+                className="text-xs font-medium truncate"
+                style={{ color: awayWon ? theme.accent : theme.text }}
+              >
+                {match.away}
+              </span>
+            </div>
             <span
-              className="text-[10px] font-medium truncate"
+              className="text-xs font-bold tabular-nums"
               style={{ color: awayWon ? theme.accent : theme.text }}
             >
-              {match.away}
+              {match.awayScore ?? '-'}
             </span>
           </div>
-          <span
-            className="text-[10px] font-bold tabular-nums"
-            style={{ color: awayWon ? theme.accent : theme.text }}
-          >
-            {match.awayScore ?? '-'}
-          </span>
         </div>
       </div>
     </Link>
