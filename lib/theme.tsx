@@ -44,7 +44,7 @@ const lightTheme: Theme = {
   bg: '#f5f2e8',             // Warm cream background
   bgSecondary: '#faf8f3',    // Slightly lighter cream (not pure white)
   bgTertiary: '#ebe7db',     // Warm beige
-  text: '#1a1c18',           // Very dark text for contrast
+  text: '#3a4a32',           // Dark olive green
   textSecondary: '#4a5240',  // Dark olive secondary text
   accent: '#4a5d3a',         // Forest green accent
   gold: '#8a6d25',           // Darker gold for light mode
