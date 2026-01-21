@@ -12,7 +12,7 @@ import LoginButton from '@/components/LoginButton';
 export default function FavoritesPage() {
   const { theme } = useTheme();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [favorites, setFavorites] = useState<number[]>([]);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function FavoritesPage() {
       } catch (error) {
         console.error('Auth error:', error);
       } finally {
-        setLoading(false);
+        setCheckingAuth(false);
       }
     };
 
@@ -56,8 +56,8 @@ export default function FavoritesPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Show sign-in screen if not logged in
-  if (!user && !loading) {
+  // Show sign-in screen if not logged in (or still checking)
+  if (!user) {
     return (
       <div
         className="flex min-h-screen flex-col"
@@ -83,25 +83,6 @@ export default function FavoritesPage() {
             </p>
             <LoginButton />
           </div>
-        </main>
-        <BottomNav />
-      </div>
-    );
-  }
-
-  // Show loading
-  if (loading) {
-    return (
-      <div
-        className="flex min-h-screen flex-col"
-        style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
-      >
-        <Header />
-        <main className="flex flex-1 items-center justify-center">
-          <div
-            className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-r-transparent"
-            style={{ borderColor: theme.accent, borderRightColor: 'transparent' }}
-          />
         </main>
         <BottomNav />
       </div>
