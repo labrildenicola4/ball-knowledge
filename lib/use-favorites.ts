@@ -24,13 +24,18 @@ export function useFavorites() {
   // Load user and favorites on mount
   useEffect(() => {
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
 
-      if (user) {
-        await loadFavorites();
+        if (user) {
+          await loadFavorites();
+        }
+      } catch (error) {
+        console.error('Auth error:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     init();

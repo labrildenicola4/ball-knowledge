@@ -106,26 +106,7 @@ export default function FavoritesPage() {
     }
   }, [isLoggedIn, authLoading, teamFavorites]);
 
-  // Show loading while checking auth
-  if (authLoading) {
-    return (
-      <div
-        className="flex min-h-screen flex-col transition-theme"
-        style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
-      >
-        <Header />
-        <main className="flex flex-1 items-center justify-center">
-          <div
-            className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-            style={{ color: theme.accent }}
-          />
-        </main>
-        <BottomNav />
-      </div>
-    );
-  }
-
-  // Show sign-in screen if not logged in
+  // Show sign-in screen if not logged in OR still loading
   if (!isLoggedIn) {
     return (
       <div
