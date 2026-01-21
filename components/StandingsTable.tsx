@@ -78,7 +78,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
                 <img src={team.logo} alt={team.team} className="h-5 w-5 object-contain" />
               )}
               <span className="truncate">{team.team}</span>
-              {isFavorite(team.teamId) && (
+              {isFavorite('team', team.teamId) && (
                 <Star size={10} fill={theme.gold} color={theme.gold} />
               )}
             </span>
@@ -104,14 +104,14 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
             <button
               onClick={(e) => {
                 e.preventDefault();
-                toggleFavorite(team.teamId);
+                toggleFavorite('team', team.teamId);
               }}
               className="flex items-center justify-center p-1"
             >
               <Heart
                 size={14}
-                color={isFavorite(team.teamId) ? theme.gold : theme.textSecondary}
-                fill={isFavorite(team.teamId) ? theme.gold : 'transparent'}
+                color={isFavorite('team', team.teamId) ? theme.gold : theme.textSecondary}
+                fill={isFavorite('team', team.teamId) ? theme.gold : 'transparent'}
               />
             </button>
           </div>
