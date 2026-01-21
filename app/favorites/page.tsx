@@ -45,6 +45,11 @@ export default function FavoritesPage() {
   const [favoriteTeams, setFavoriteTeams] = useState<Standing[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'matches' | 'teams'>('matches');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const teamFavorites = getFavoritesByType('team');
 
@@ -106,7 +111,18 @@ export default function FavoritesPage() {
     }
   }, [isLoggedIn, authLoading, teamFavorites]);
 
-  // Show sign-in screen if not logged in OR still loading
+  // Show loading until mounted to avoid hydration errors
+  if (!mounted) {
+    return (
+      <div className="flex min-h-screen flex-col bg-[#0a0f0a]" style={{ paddingBottom: '80px' }}>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-green-500 border-r-transparent" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show sign-in screen if not logged in
   if (!isLoggedIn) {
     return (
       <div
