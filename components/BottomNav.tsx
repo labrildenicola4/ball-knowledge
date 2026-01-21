@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Calendar, Trophy, Star, Settings, Swords } from 'lucide-react';
+import { Home, Calendar, Trophy, User, Settings, Swords } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -10,7 +10,7 @@ const navItems = [
   { id: 'calendar', href: '/calendar', icon: Calendar, label: 'Calendar' },
   { id: 'standings', href: '/standings', icon: Trophy, label: 'Tables' },
   { id: 'bracket', href: '/bracket', icon: Swords, label: 'Bracket' },
-  { id: 'favorites', href: '/favorites', icon: Star, label: 'Favorites' },
+  { id: 'mystuff', href: '/favorites', icon: User, label: 'My Stuff' },
 ];
 
 export function BottomNav() {

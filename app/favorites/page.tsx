@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Star, Heart } from 'lucide-react';
+import { Star, Heart, LogOut, User } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { useTheme } from '@/lib/theme';
 import { createBrowserClient } from '@supabase/ssr';
-import { User } from '@supabase/supabase-js';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 import LoginButton from '@/components/LoginButton';
 
 interface TeamInfo {
@@ -18,9 +18,9 @@ interface TeamInfo {
   form: string[];
 }
 
-export default function FavoritesPage() {
+export default function MyStuffPage() {
   const { theme } = useTheme();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [teams, setTeams] = useState<TeamInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,6 @@ export default function FavoritesPage() {
         setUser(user);
 
         if (user) {
-          // Load favorites
           const { data } = await supabase
             .from('user_favorites')
             .select('favorite_id')
@@ -47,7 +46,6 @@ export default function FavoritesPage() {
             const favIds = data.map(f => f.favorite_id);
             setFavorites(favIds);
 
-            // Fetch team details
             if (favIds.length > 0) {
               await fetchTeamDetails(favIds);
             }
@@ -109,6 +107,13 @@ export default function FavoritesPage() {
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setFavorites([]);
+    setTeams([]);
+  };
+
   // Show sign-in screen if not logged in
   if (!user) {
     return (
@@ -126,10 +131,10 @@ export default function FavoritesPage() {
               className="mb-4 flex h-16 w-16 items-center justify-center rounded-full"
               style={{ backgroundColor: theme.bgTertiary }}
             >
-              <Star size={32} color={theme.accent} />
+              <User size={32} color={theme.accent} />
             </div>
             <h2 className="mb-2 text-xl font-semibold" style={{ color: theme.text }}>
-              Save Your Favorites
+              Sign In
             </h2>
             <p className="mb-6 text-sm" style={{ color: theme.textSecondary }}>
               Sign in to save your favorite teams, leagues, and tournaments. Access them from any device.
@@ -150,11 +155,42 @@ export default function FavoritesPage() {
     >
       <Header />
       <main className="flex-1 overflow-y-auto px-4 py-4">
+        {/* User Profile Section */}
+        <div
+          className="mb-6 flex items-center justify-between rounded-xl p-4"
+          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        >
+          <div className="flex items-center gap-3">
+            <img
+              src={user.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user.email}&background=random`}
+              alt="Avatar"
+              className="h-12 w-12 rounded-full"
+            />
+            <div>
+              <p className="text-[14px] font-medium" style={{ color: theme.text }}>
+                {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
+              </p>
+              <p className="text-[12px]" style={{ color: theme.textSecondary }}>
+                {user.email}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-medium"
+            style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+          >
+            <LogOut size={16} />
+            Sign Out
+          </button>
+        </div>
+
+        {/* Favorite Teams Section */}
         <h2
           className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
           style={{ color: theme.textSecondary }}
         >
-          My Favorite Teams
+          Favorite Teams
         </h2>
 
         {loading ? (
