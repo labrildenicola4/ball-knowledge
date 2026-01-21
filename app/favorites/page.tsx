@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Star, Heart, Trash2 } from 'lucide-react';
+import { Star, Heart } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchCard } from '@/components/MatchCard';
 import { useTheme } from '@/lib/theme';
 import { useFavorites } from '@/lib/use-favorites';
+import LoginButton from '@/components/LoginButton';
 
 interface Match {
   id: number;
@@ -39,15 +40,17 @@ interface Standing {
 
 export default function FavoritesPage() {
   const { theme } = useTheme();
-  const { favorites, removeFavorite } = useFavorites();
+  const { isLoggedIn, loading: authLoading, getFavoritesByType, removeFavorite } = useFavorites();
   const [matches, setMatches] = useState<Match[]>([]);
   const [favoriteTeams, setFavoriteTeams] = useState<Standing[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'matches' | 'teams'>('matches');
 
+  const teamFavorites = getFavoritesByType('team');
+
   useEffect(() => {
     async function fetchFavoriteData() {
-      if (favorites.length === 0) {
+      if (!isLoggedIn || teamFavorites.length === 0) {
         setLoading(false);
         setMatches([]);
         setFavoriteTeams([]);
@@ -67,7 +70,7 @@ export default function FavoritesPage() {
         );
 
         const allStandings: Standing[] = standingsResponses.flatMap(r => r.standings || []);
-        const favTeams = allStandings.filter(team => favorites.includes(team.teamId));
+        const favTeams = allStandings.filter(team => teamFavorites.includes(team.teamId));
         setFavoriteTeams(favTeams);
 
         // Fetch all fixtures and filter for favorite teams
@@ -82,7 +85,7 @@ export default function FavoritesPage() {
 
         // Filter matches involving favorite teams
         const favoriteMatches = allMatches.filter(match =>
-          favorites.includes(match.homeId || 0) || favorites.includes(match.awayId || 0)
+          teamFavorites.includes(match.homeId || 0) || teamFavorites.includes(match.awayId || 0)
         );
 
         // Remove duplicates and sort by date/time
@@ -98,8 +101,62 @@ export default function FavoritesPage() {
       }
     }
 
-    fetchFavoriteData();
-  }, [favorites]);
+    if (!authLoading) {
+      fetchFavoriteData();
+    }
+  }, [isLoggedIn, authLoading, teamFavorites]);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div
+        className="flex min-h-screen flex-col transition-theme"
+        style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
+      >
+        <Header />
+        <main className="flex flex-1 items-center justify-center">
+          <div
+            className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+            style={{ color: theme.accent }}
+          />
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  // Show sign-in screen if not logged in
+  if (!isLoggedIn) {
+    return (
+      <div
+        className="flex min-h-screen flex-col transition-theme"
+        style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
+      >
+        <Header />
+        <main className="flex flex-1 flex-col items-center justify-center px-6">
+          <div
+            className="flex flex-col items-center rounded-2xl p-8 text-center"
+            style={{ backgroundColor: theme.bgSecondary, maxWidth: '360px' }}
+          >
+            <div
+              className="mb-4 flex h-16 w-16 items-center justify-center rounded-full"
+              style={{ backgroundColor: theme.bgTertiary }}
+            >
+              <Star size={32} color={theme.accent} />
+            </div>
+            <h2 className="mb-2 text-xl font-semibold" style={{ color: theme.text }}>
+              Save Your Favorites
+            </h2>
+            <p className="mb-6 text-sm" style={{ color: theme.textSecondary }}>
+              Sign in to save your favorite teams, leagues, and tournaments. Access them from any device.
+            </p>
+            <LoginButton />
+          </div>
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -131,12 +188,12 @@ export default function FavoritesPage() {
             color: activeTab === 'teams' ? '#fff' : theme.textSecondary,
           }}
         >
-          My Teams ({favorites.length})
+          My Teams ({teamFavorites.length})
         </button>
       </div>
 
       <main className="flex-1 overflow-y-auto px-4 py-4">
-        {favorites.length === 0 ? (
+        {teamFavorites.length === 0 ? (
           <div
             className="flex flex-col items-center justify-center rounded-xl py-12"
             style={{ backgroundColor: theme.bgSecondary }}
@@ -237,7 +294,7 @@ export default function FavoritesPage() {
                       ))}
                     </div>
                     <button
-                      onClick={() => removeFavorite(team.teamId)}
+                      onClick={() => removeFavorite('team', team.teamId)}
                       className="ml-2 flex h-8 w-8 items-center justify-center rounded-full"
                       style={{ backgroundColor: theme.bgTertiary }}
                     >

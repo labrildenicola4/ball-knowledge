@@ -146,10 +146,99 @@ INSERT INTO leagues (api_id, name, country, flag) VALUES
   (61, 'Ligue 1', 'France', '🇫🇷')
 ON CONFLICT (api_id) DO NOTHING;
 
--- Row Level Security (optional - for multi-user scenarios)
--- ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE standings ENABLE ROW LEVEL SECURITY;
+-- Profiles table (for authenticated users)
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+  email VARCHAR(255),
+  full_name VARCHAR(255),
+  avatar_url VARCHAR(500),
+  role VARCHAR(20) DEFAULT 'user',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 
--- Public read access policy
--- CREATE POLICY "Public read access" ON matches FOR SELECT USING (true);
--- CREATE POLICY "Public read access" ON standings FOR SELECT USING (true);
+-- Enable Row Level Security (RLS) on all tables
+ALTER TABLE leagues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
+ALTER TABLE standings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE match_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lineups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE match_stats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Policies: Public can READ everything (except profiles)
+CREATE POLICY "Public read leagues" ON leagues FOR SELECT USING (true);
+CREATE POLICY "Public read teams" ON teams FOR SELECT USING (true);
+CREATE POLICY "Public read matches" ON matches FOR SELECT USING (true);
+CREATE POLICY "Public read standings" ON standings FOR SELECT USING (true);
+CREATE POLICY "Public read events" ON match_events FOR SELECT USING (true);
+CREATE POLICY "Public read lineups" ON lineups FOR SELECT USING (true);
+CREATE POLICY "Public read stats" ON match_stats FOR SELECT USING (true);
+
+-- Policies: Profiles
+CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+
+-- Policies: Service Role/Admin (Implicitly full access, but here for clarity if needed later)
+-- Note: Queries using the SERVICE_ROLE_KEY bypass RLS automatically.
+
+-- Trigger for profiles updated_at
+CREATE TRIGGER update_profiles_updated_at
+  BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- Function to handle new user signup (auto-create profile)
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, avatar_url)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data->>'avatar_url'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to call the function on signup
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- ============================================
+-- USER FAVORITES (Protected - per user)
+-- Supports: teams, leagues, tournaments
+-- ============================================
+CREATE TABLE IF NOT EXISTS user_favorites (
+  id SERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  favorite_type VARCHAR(20) NOT NULL CHECK (favorite_type IN ('team', 'league', 'tournament')),
+  favorite_id INTEGER NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, favorite_type, favorite_id)
+);
+
+-- Enable RLS
+ALTER TABLE user_favorites ENABLE ROW LEVEL SECURITY;
+
+-- Users can only see their own favorites
+CREATE POLICY "Users can view own favorites"
+  ON user_favorites FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- Users can only add their own favorites
+CREATE POLICY "Users can add own favorites"
+  ON user_favorites FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- Users can only delete their own favorites
+CREATE POLICY "Users can delete own favorites"
+  ON user_favorites FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- Index for fast lookups
+CREATE INDEX IF NOT EXISTS idx_user_favorites_user ON user_favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_favorites_type ON user_favorites(user_id, favorite_type);
