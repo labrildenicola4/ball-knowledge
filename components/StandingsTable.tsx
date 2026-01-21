@@ -1,6 +1,7 @@
 'use client';
 
 import { Star, Heart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme';
 import { useFavorites } from '@/lib/use-favorites';
 
@@ -25,7 +26,16 @@ interface StandingsTableProps {
 
 export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
   const { theme } = useTheme();
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite, isLoggedIn } = useFavorites();
+  const router = useRouter();
+
+  const handleFavoriteClick = (teamId: number) => {
+    if (!isLoggedIn) {
+      router.push('/favorites');
+      return;
+    }
+    toggleFavorite('team', teamId);
+  };
 
   return (
     <div>
@@ -104,7 +114,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
             <button
               onClick={(e) => {
                 e.preventDefault();
-                toggleFavorite('team', team.teamId);
+                handleFavoriteClick(team.teamId);
               }}
               className="flex items-center justify-center p-1"
             >
