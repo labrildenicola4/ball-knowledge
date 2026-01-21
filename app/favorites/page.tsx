@@ -9,18 +9,28 @@ import { createBrowserClient } from '@supabase/ssr';
 import { User } from '@supabase/supabase-js';
 import LoginButton from '@/components/LoginButton';
 
+interface TeamInfo {
+  teamId: number;
+  team: string;
+  logo?: string;
+  position: number;
+  points: number;
+  form: string[];
+}
+
 export default function FavoritesPage() {
   const { theme } = useTheme();
   const [user, setUser] = useState<User | null>(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [teams, setTeams] = useState<TeamInfo[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
     const checkAuth = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -34,13 +44,17 @@ export default function FavoritesPage() {
             .eq('favorite_type', 'team');
 
           if (data) {
-            setFavorites(data.map(f => f.favorite_id));
+            const favIds = data.map(f => f.favorite_id);
+            setFavorites(favIds);
+
+            // Fetch team details
+            if (favIds.length > 0) {
+              await fetchTeamDetails(favIds);
+            }
           }
         }
       } catch (error) {
         console.error('Auth error:', error);
-      } finally {
-        setCheckingAuth(false);
       }
     };
 
@@ -50,13 +64,52 @@ export default function FavoritesPage() {
       setUser(session?.user ?? null);
       if (!session?.user) {
         setFavorites([]);
+        setTeams([]);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Show sign-in screen if not logged in (or still checking)
+  const fetchTeamDetails = async (favoriteIds: number[]) => {
+    setLoading(true);
+    try {
+      const leagueIds = ['laliga', 'premier', 'seriea', 'bundesliga', 'ligue1'];
+      const responses = await Promise.all(
+        leagueIds.map(league =>
+          fetch(`/api/standings?league=${league}`)
+            .then(res => res.ok ? res.json() : { standings: [] })
+            .catch(() => ({ standings: [] }))
+        )
+      );
+
+      const allTeams: TeamInfo[] = responses.flatMap(r => r.standings || []);
+      const favoriteTeams = allTeams.filter(team => favoriteIds.includes(team.teamId));
+      setTeams(favoriteTeams);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeFavorite = async (teamId: number) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('user_favorites')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('favorite_type', 'team')
+      .eq('favorite_id', teamId);
+
+    if (!error) {
+      setFavorites(prev => prev.filter(id => id !== teamId));
+      setTeams(prev => prev.filter(t => t.teamId !== teamId));
+    }
+  };
+
+  // Show sign-in screen if not logged in
   if (!user) {
     return (
       <div
@@ -104,7 +157,17 @@ export default function FavoritesPage() {
           My Favorite Teams
         </h2>
 
-        {favorites.length === 0 ? (
+        {loading ? (
+          <div className="py-8 text-center">
+            <div
+              className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-r-transparent"
+              style={{ borderColor: theme.accent, borderRightColor: 'transparent' }}
+            />
+            <p className="mt-2 text-[12px]" style={{ color: theme.textSecondary }}>
+              Loading favorites...
+            </p>
+          </div>
+        ) : favorites.length === 0 ? (
           <div
             className="flex flex-col items-center justify-center rounded-xl py-12"
             style={{ backgroundColor: theme.bgSecondary }}
@@ -119,7 +182,67 @@ export default function FavoritesPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            <p style={{ color: theme.text }}>You have {favorites.length} favorite team(s)</p>
+            {teams.map((team) => (
+              <div
+                key={team.teamId}
+                className="flex items-center gap-3 rounded-xl p-4"
+                style={{
+                  backgroundColor: theme.bgSecondary,
+                  border: `1px solid ${theme.border}`,
+                }}
+              >
+                {team.logo && (
+                  <img
+                    src={team.logo}
+                    alt={team.team}
+                    className="h-10 w-10 object-contain"
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                    {team.team}
+                  </p>
+                  <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                    {team.position}{team.position === 1 ? 'st' : team.position === 2 ? 'nd' : team.position === 3 ? 'rd' : 'th'} place
+                    {' '}&bull;{' '}
+                    {team.points} pts
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {team.form && (
+                    <div className="flex gap-1">
+                      {team.form.slice(0, 5).map((result, i) => (
+                        <span
+                          key={i}
+                          className="flex h-5 w-5 items-center justify-center rounded text-[9px] font-semibold text-white"
+                          style={{
+                            backgroundColor:
+                              result === 'W'
+                                ? theme.green
+                                : result === 'D'
+                                ? theme.gold
+                                : theme.red,
+                          }}
+                        >
+                          {result}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => removeFavorite(team.teamId)}
+                    className="ml-2 flex h-8 w-8 items-center justify-center rounded-full"
+                    style={{ backgroundColor: theme.bgTertiary }}
+                  >
+                    <Heart
+                      size={16}
+                      color={theme.gold}
+                      fill={theme.gold}
+                    />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </main>
