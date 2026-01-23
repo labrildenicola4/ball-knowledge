@@ -2,6 +2,7 @@
 
 import { Star, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { useFavorites } from '@/lib/use-favorites';
 
@@ -83,7 +84,11 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
               {team.position}
             </span>
 
-            <span className="flex items-center gap-2 text-[13px] font-medium">
+            <Link
+              href={`/team/${team.teamId}`}
+              className="flex items-center gap-2 text-[13px] font-medium transition-opacity hover:opacity-80"
+              style={{ color: theme.text }}
+            >
               {team.logo && (
                 <img src={team.logo} alt={team.team} className="h-5 w-5 object-contain" />
               )}
@@ -91,7 +96,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
               {isFavorite('team', team.teamId) && (
                 <Star size={10} fill={theme.gold} color={theme.gold} />
               )}
-            </span>
+            </Link>
 
             <span
               className="font-mono text-center text-xs"

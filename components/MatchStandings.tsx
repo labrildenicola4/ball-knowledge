@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 
 interface Standing {
@@ -60,9 +61,10 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
         {standings.map((team) => {
           const highlighted = isHighlighted(team.teamId);
           return (
-            <div
+            <Link
               key={team.teamId}
-              className="grid grid-cols-[28px_1fr_36px_36px_44px] items-center px-3 py-3"
+              href={`/team/${team.teamId}`}
+              className="grid grid-cols-[28px_1fr_36px_36px_44px] items-center px-3 py-3 transition-opacity hover:opacity-80"
               style={{
                 borderTop: `1px solid ${theme.border}`,
                 backgroundColor: highlighted ? `${theme.accent}30` : 'transparent',
@@ -111,7 +113,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
               >
                 {team.points}
               </span>
-            </div>
+            </Link>
           );
         })}
       </div>

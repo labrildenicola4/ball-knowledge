@@ -49,10 +49,7 @@ export function Header() {
   }, [query]);
 
   const handleTeamClick = (team: SearchableTeam) => {
-    // Navigate to calendar with that team's league for now
-    // In future, could go to a team page
-    localStorage.setItem('calendar_selectedNation', 'all');
-    router.push(`/calendar`);
+    router.push(`/team/${team.id}`);
     setSearchOpen(false);
     setQuery('');
   };

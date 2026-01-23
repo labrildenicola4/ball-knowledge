@@ -293,6 +293,52 @@ export async function getTeamForm(teamId: number, limit: number = 5): Promise<st
   }
 }
 
+// Team details response type
+export interface TeamDetails {
+  id: number;
+  name: string;
+  shortName: string;
+  tla: string;
+  crest: string;
+  address: string;
+  website: string;
+  founded: number;
+  clubColors: string;
+  venue: string;
+  runningCompetitions: Array<{
+    id: number;
+    name: string;
+    code: string;
+    emblem: string;
+  }>;
+  coach: {
+    id: number;
+    name: string;
+    nationality: string;
+  } | null;
+  squad: Array<{
+    id: number;
+    name: string;
+    position: string;
+    nationality: string;
+  }>;
+}
+
+// Get team details
+export async function getTeamDetails(teamId: number): Promise<TeamDetails> {
+  return fetchApi<TeamDetails>(`/teams/${teamId}`);
+}
+
+// Get team's matches (recent and upcoming)
+export async function getTeamMatches(teamId: number, status?: 'SCHEDULED' | 'FINISHED', limit: number = 10): Promise<Match[]> {
+  let endpoint = `/teams/${teamId}/matches?limit=${limit}`;
+  if (status) {
+    endpoint += `&status=${status}`;
+  }
+  const data = await fetchApi<MatchesResponse>(endpoint);
+  return data.matches;
+}
+
 // Map status codes to display format
 export function mapStatus(status: string, minute: number | null): { status: string; time: string } {
   switch (status) {

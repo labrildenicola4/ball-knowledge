@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
@@ -199,14 +200,14 @@ export default function MatchPage() {
       <section className="px-4 py-8" style={{ backgroundColor: theme.bgSecondary }}>
         <div className="flex items-center justify-between">
           {/* Home Team */}
-          <div className="flex-1 text-center">
+          <Link href={`/team/${match.home.id}`} className="flex-1 text-center transition-opacity hover:opacity-80">
             <div className="mx-auto mb-3 h-20 w-20">
               <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain" />
             </div>
             <p className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</p>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.home.shortName}</p>
             {homeForm.length > 0 && <FormIndicator form={homeForm} />}
-          </div>
+          </Link>
 
           {/* Score */}
           <div className="px-4 text-center">
@@ -244,14 +245,14 @@ export default function MatchPage() {
           </div>
 
           {/* Away Team */}
-          <div className="flex-1 text-center">
+          <Link href={`/team/${match.away.id}`} className="flex-1 text-center transition-opacity hover:opacity-80">
             <div className="mx-auto mb-3 h-20 w-20">
               <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain" />
             </div>
             <p className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</p>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.away.shortName}</p>
             {awayForm.length > 0 && <FormIndicator form={awayForm} />}
-          </div>
+          </Link>
         </div>
       </section>
 
