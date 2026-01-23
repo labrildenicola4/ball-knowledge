@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStandings, COMPETITION_CODES, type LeagueId } from '@/lib/football-data';
 
+// Reverse mapping: competition code -> league id
+const CODE_TO_LEAGUE: Record<string, string> = Object.entries(COMPETITION_CODES).reduce(
+  (acc, [leagueId, code]) => ({ ...acc, [code]: leagueId }),
+  {}
+);
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const league = searchParams.get('league') || 'laliga';
 
   try {
-    const competitionCode = COMPETITION_CODES[league as LeagueId];
+    // Support both league names (laliga) and competition codes (PD)
+    let competitionCode: string | undefined = COMPETITION_CODES[league as LeagueId];
+
+    // If not found by league name, check if it's already a competition code
+    if (!competitionCode && CODE_TO_LEAGUE[league]) {
+      competitionCode = league;
+    }
 
     if (!competitionCode) {
       return NextResponse.json({ error: 'Invalid league' }, { status: 400 });

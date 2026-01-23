@@ -232,7 +232,12 @@ export default function TeamPage() {
           style={{ backgroundColor: theme.bgTertiary }}
         >
           {/* Competition logo */}
-          <img src={match.competitionLogo} alt="" className="h-5 w-5 object-contain" />
+          <div
+            className="flex h-6 w-6 items-center justify-center rounded"
+            style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.9)' : 'transparent' }}
+          >
+            <img src={match.competitionLogo} alt="" className="h-4 w-4 object-contain" />
+          </div>
 
           {/* Date */}
           <div className="w-14 text-center">
@@ -474,7 +479,12 @@ export default function TeamPage() {
                 >
                   <div className="flex items-center gap-3">
                     {selectedCompetitionData && (
-                      <img src={selectedCompetitionData.logo} alt="" className="h-5 w-5 object-contain" />
+                      <div
+                        className="flex h-7 w-7 items-center justify-center rounded"
+                        style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.9)' : 'transparent' }}
+                      >
+                        <img src={selectedCompetitionData.logo} alt="" className="h-5 w-5 object-contain" />
+                      </div>
                     )}
                     <span className="text-sm font-medium" style={{ color: theme.text }}>
                       {selectedCompetitionData?.name || 'Select Competition'}
@@ -509,7 +519,12 @@ export default function TeamPage() {
                           borderBottom: `1px solid ${theme.border}`,
                         }}
                       >
-                        <img src={comp.logo} alt="" className="h-5 w-5 object-contain" />
+                        <div
+                          className="flex h-7 w-7 items-center justify-center rounded"
+                          style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.9)' : 'transparent' }}
+                        >
+                          <img src={comp.logo} alt="" className="h-5 w-5 object-contain" />
+                        </div>
                         <span
                           className="text-sm"
                           style={{

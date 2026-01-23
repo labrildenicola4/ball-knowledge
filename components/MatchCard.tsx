@@ -20,7 +20,7 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match }: MatchCardProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const isFinished = match.status === 'FT';
   const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(match.status);
 
@@ -37,11 +37,16 @@ export function MatchCard({ match }: MatchCardProps) {
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {match.leagueLogo && (
-              <img
-                src={match.leagueLogo}
-                alt={match.league}
-                className="h-5 w-5 object-contain"
-              />
+              <div
+                className="flex h-6 w-6 items-center justify-center rounded"
+                style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.9)' : 'transparent' }}
+              >
+                <img
+                  src={match.leagueLogo}
+                  alt={match.league}
+                  className="h-4 w-4 object-contain"
+                />
+              </div>
             )}
             <span
               className="text-sm uppercase tracking-wider font-medium"
