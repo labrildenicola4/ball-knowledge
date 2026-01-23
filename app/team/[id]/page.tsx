@@ -694,18 +694,18 @@ export default function TeamPage() {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[640px]"
+                          className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[700px]"
                           style={{
                             gridTemplateColumns: isGoalkeeper
-                              ? '32px 1fr 40px 32px 32px 32px 32px 32px 32px 32px'
-                              : '32px 1fr 40px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
+                              ? '32px minmax(120px, 1fr) minmax(80px, auto) 32px 32px 32px 32px 32px 32px 32px'
+                              : '32px minmax(120px, 1fr) minmax(80px, auto) 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
                             backgroundColor: theme.bgTertiary,
                             color: theme.textSecondary,
                           }}
                         >
                           <span className="text-center">#</span>
                           <span>Player</span>
-                          <span className="text-center">NAT</span>
+                          <span>Nationality</span>
                           <span className="text-center">AGE</span>
                           <span className="text-center">APP</span>
                           <span className="text-center">SUB</span>
@@ -734,11 +734,11 @@ export default function TeamPage() {
                         {group.players.map((player, idx) => (
                           <div
                             key={player.id}
-                            className="grid items-center px-3 py-2.5 min-w-[640px]"
+                            className="grid items-center px-3 py-2.5 min-w-[700px]"
                             style={{
                               gridTemplateColumns: isGoalkeeper
-                                ? '32px 1fr 40px 32px 32px 32px 32px 32px 32px 32px'
-                                : '32px 1fr 40px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
+                                ? '32px minmax(120px, 1fr) minmax(80px, auto) 32px 32px 32px 32px 32px 32px 32px'
+                                : '32px minmax(120px, 1fr) minmax(80px, auto) 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
                               borderTop: `1px solid ${theme.border}`,
                             }}
                           >
@@ -756,8 +756,8 @@ export default function TeamPage() {
                             </span>
 
                             {/* Nationality */}
-                            <span className="text-center text-xs" style={{ color: theme.textSecondary }}>
-                              {player.nationality?.substring(0, 3).toUpperCase() || '-'}
+                            <span className="text-xs truncate" style={{ color: theme.textSecondary }}>
+                              {player.nationality || '-'}
                             </span>
 
                             {/* Age */}
