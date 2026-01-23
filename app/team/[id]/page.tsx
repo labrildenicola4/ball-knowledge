@@ -694,38 +694,35 @@ export default function TeamPage() {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[700px]"
+                          className="flex items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider"
                           style={{
-                            gridTemplateColumns: isGoalkeeper
-                              ? '32px minmax(120px, 1fr) minmax(80px, auto) 32px 32px 32px 32px 32px 32px 32px'
-                              : '32px minmax(120px, 1fr) minmax(80px, auto) 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
                             backgroundColor: theme.bgTertiary,
                             color: theme.textSecondary,
                           }}
                         >
-                          <span className="text-center">#</span>
-                          <span>Player</span>
-                          <span>Nationality</span>
-                          <span className="text-center">AGE</span>
-                          <span className="text-center">APP</span>
-                          <span className="text-center">SUB</span>
+                          <span className="w-8 text-center shrink-0">#</span>
+                          <span className="w-32 shrink-0">Player</span>
+                          <span className="w-20 shrink-0">Nationality</span>
+                          <span className="w-10 text-center shrink-0">AGE</span>
+                          <span className="w-10 text-center shrink-0">APP</span>
+                          <span className="w-10 text-center shrink-0">SUB</span>
                           {isGoalkeeper ? (
                             <>
-                              <span className="text-center">SV</span>
-                              <span className="text-center">GA</span>
-                              <span className="text-center">YC</span>
-                              <span className="text-center">RC</span>
+                              <span className="w-10 text-center shrink-0">SV</span>
+                              <span className="w-10 text-center shrink-0">GA</span>
+                              <span className="w-10 text-center shrink-0">YC</span>
+                              <span className="w-10 text-center shrink-0">RC</span>
                             </>
                           ) : (
                             <>
-                              <span className="text-center">G</span>
-                              <span className="text-center">A</span>
-                              <span className="text-center">SH</span>
-                              <span className="text-center">ST</span>
-                              <span className="text-center">FC</span>
-                              <span className="text-center">FA</span>
-                              <span className="text-center">YC</span>
-                              <span className="text-center">RC</span>
+                              <span className="w-10 text-center shrink-0">G</span>
+                              <span className="w-10 text-center shrink-0">A</span>
+                              <span className="w-10 text-center shrink-0">SH</span>
+                              <span className="w-10 text-center shrink-0">ST</span>
+                              <span className="w-10 text-center shrink-0">FC</span>
+                              <span className="w-10 text-center shrink-0">FA</span>
+                              <span className="w-10 text-center shrink-0">YC</span>
+                              <span className="w-10 text-center shrink-0">RC</span>
                             </>
                           )}
                         </div>
@@ -734,84 +731,81 @@ export default function TeamPage() {
                         {group.players.map((player, idx) => (
                           <div
                             key={player.id}
-                            className="grid items-center px-3 py-2.5 min-w-[700px]"
+                            className="flex items-center px-3 py-2.5"
                             style={{
-                              gridTemplateColumns: isGoalkeeper
-                                ? '32px minmax(120px, 1fr) minmax(80px, auto) 32px 32px 32px 32px 32px 32px 32px'
-                                : '32px minmax(120px, 1fr) minmax(80px, auto) 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
                               borderTop: `1px solid ${theme.border}`,
                             }}
                           >
                             {/* Jersey Number */}
                             <span
-                              className="text-center font-mono text-sm font-semibold"
+                              className="w-8 text-center font-mono text-sm font-semibold shrink-0"
                               style={{ color: theme.accent }}
                             >
                               {player.shirtNumber ?? '-'}
                             </span>
 
                             {/* Player Name */}
-                            <span className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                            <span className="w-32 text-sm font-medium truncate shrink-0" style={{ color: theme.text }}>
                               {player.name}
                             </span>
 
                             {/* Nationality */}
-                            <span className="text-xs truncate" style={{ color: theme.textSecondary }}>
+                            <span className="w-20 text-xs truncate shrink-0" style={{ color: theme.textSecondary }}>
                               {player.nationality || '-'}
                             </span>
 
                             {/* Age */}
-                            <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                            <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                               {player.age ?? '-'}
                             </span>
 
                             {/* Stats */}
-                            <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                            <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                               {player.stats?.appearances ?? '-'}
                             </span>
-                            <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                            <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                               {player.stats?.substitutions ?? '-'}
                             </span>
 
                             {isGoalkeeper ? (
                               <>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                                   {player.stats?.saves ?? '-'}
                                 </span>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                                   {player.stats?.goalsAgainst ?? '-'}
                                 </span>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.gold }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.gold }}>
                                   {player.stats?.yellowCards ?? '-'}
                                 </span>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.red }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.red }}>
                                   {player.stats?.redCards ?? '-'}
                                 </span>
                               </>
                             ) : (
                               <>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                                   {player.stats?.goals ?? '-'}
                                 </span>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                                   {player.stats?.assists ?? '-'}
                                 </span>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                                   {player.stats?.shots ?? '-'}
                                 </span>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                                   {player.stats?.shotsOnTarget ?? '-'}
                                 </span>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                                   {player.stats?.foulsCommitted ?? '-'}
                                 </span>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
                                   {player.stats?.foulsSuffered ?? '-'}
                                 </span>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.gold }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.gold }}>
                                   {player.stats?.yellowCards ?? '-'}
                                 </span>
-                                <span className="text-center text-xs font-mono" style={{ color: theme.red }}>
+                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.red }}>
                                   {player.stats?.redCards ?? '-'}
                                 </span>
                               </>
