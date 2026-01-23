@@ -138,6 +138,35 @@ export default function MatchPage() {
   const isLive = ['LIVE', '1H', '2H', 'HT'].includes(match.status);
   const isUpcoming = match.status === 'NS';
 
+  // Get team form from standings
+  const getTeamForm = (teamId: number): string[] => {
+    const team = standings.find(s => s.teamId === teamId);
+    return team?.form?.slice(0, 5) || [];
+  };
+
+  const homeForm = getTeamForm(match.home.id);
+  const awayForm = getTeamForm(match.away.id);
+
+  // Form indicator component
+  const FormIndicator = ({ form }: { form: string[] }) => (
+    <div className="flex justify-center gap-1 mt-2">
+      {form.map((result, i) => (
+        <span
+          key={i}
+          className="flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white"
+          style={{
+            backgroundColor:
+              result === 'W' ? '#22c55e' :
+              result === 'D' ? '#6b7280' :
+              result === 'L' ? '#ef4444' : theme.bgTertiary,
+          }}
+        >
+          {result}
+        </span>
+      ))}
+    </div>
+  );
+
   return (
     <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}>
       {/* Header */}
@@ -173,6 +202,7 @@ export default function MatchPage() {
             </div>
             <p className="text-sm font-medium">{match.home.name}</p>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.home.shortName}</p>
+            {homeForm.length > 0 && <FormIndicator form={homeForm} />}
           </div>
 
           {/* Score */}
@@ -217,6 +247,7 @@ export default function MatchPage() {
             </div>
             <p className="text-sm font-medium">{match.away.name}</p>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.away.shortName}</p>
+            {awayForm.length > 0 && <FormIndicator form={awayForm} />}
           </div>
         </div>
       </section>
