@@ -1,10 +1,70 @@
 'use client';
 
-import { Trophy, Sun, Moon } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { Trophy, Sun, Moon, Search, X } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
+import { searchAll, type SearchableTeam, type SearchableLeague } from '@/lib/search-data';
 
 export function Header() {
   const { darkMode, toggleDarkMode, theme } = useTheme();
+  const router = useRouter();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<{ teams: SearchableTeam[]; leagues: SearchableLeague[] }>({
+    teams: [],
+    leagues: [],
+  });
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Focus input when search opens
+  useEffect(() => {
+    if (searchOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [searchOpen]);
+
+  // Close search when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setSearchOpen(false);
+        setQuery('');
+        setResults({ teams: [], leagues: [] });
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Search as user types
+  useEffect(() => {
+    if (query.length >= 2) {
+      const searchResults = searchAll(query);
+      setResults(searchResults);
+    } else {
+      setResults({ teams: [], leagues: [] });
+    }
+  }, [query]);
+
+  const handleTeamClick = (team: SearchableTeam) => {
+    // Navigate to calendar with that team's league for now
+    // In future, could go to a team page
+    localStorage.setItem('calendar_selectedNation', 'all');
+    router.push(`/calendar`);
+    setSearchOpen(false);
+    setQuery('');
+  };
+
+  const handleLeagueClick = (league: SearchableLeague) => {
+    // Navigate to standings for that league
+    router.push(`/standings?league=${league.id}`);
+    setSearchOpen(false);
+    setQuery('');
+  };
+
+  const hasResults = results.teams.length > 0 || results.leagues.length > 0;
 
   return (
     <header
@@ -15,7 +75,8 @@ export function Header() {
       }}
     >
       <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
+        {/* Logo - hide when search is open on mobile */}
+        <div className={`flex items-center gap-3 ${searchOpen ? 'hidden sm:flex' : 'flex'}`}>
           <div
             className="flex h-10 w-10 items-center justify-center rounded-full"
             style={{ backgroundColor: theme.accent }}
@@ -35,7 +96,125 @@ export function Header() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Search and Controls */}
+        <div ref={containerRef} className={`flex items-center gap-3 ${searchOpen ? 'flex-1 sm:flex-none' : ''}`}>
+          {/* Search Bar */}
+          {searchOpen ? (
+            <div className="relative flex-1 sm:w-72">
+              <div
+                className="flex items-center gap-2 rounded-full px-4 py-2"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <Search size={18} style={{ color: theme.textSecondary }} />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search teams, leagues..."
+                  className="flex-1 bg-transparent text-sm outline-none"
+                  style={{ color: theme.text }}
+                />
+                <button onClick={() => { setSearchOpen(false); setQuery(''); }}>
+                  <X size={18} style={{ color: theme.textSecondary }} />
+                </button>
+              </div>
+
+              {/* Results Dropdown */}
+              {query.length >= 2 && (
+                <div
+                  className="absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto rounded-xl shadow-lg"
+                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                >
+                  {!hasResults ? (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-sm" style={{ color: theme.textSecondary }}>
+                        No results for "{query}"
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Leagues */}
+                      {results.leagues.length > 0 && (
+                        <div>
+                          <div
+                            className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                          >
+                            Leagues
+                          </div>
+                          {results.leagues.map((league) => (
+                            <button
+                              key={league.id}
+                              onClick={() => handleLeagueClick(league)}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              style={{ borderBottom: `1px solid ${theme.border}` }}
+                            >
+                              <span className="text-xl">{league.flag}</span>
+                              <div>
+                                <p className="text-sm font-medium" style={{ color: theme.text }}>
+                                  {league.name}
+                                </p>
+                                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                                  {league.country}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Teams */}
+                      {results.teams.length > 0 && (
+                        <div>
+                          <div
+                            className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                          >
+                            Teams
+                          </div>
+                          {results.teams.map((team) => (
+                            <button
+                              key={team.id}
+                              onClick={() => handleTeamClick(team)}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              style={{ borderBottom: `1px solid ${theme.border}` }}
+                            >
+                              <div
+                                className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
+                                style={{ backgroundColor: theme.accent, color: '#fff' }}
+                              >
+                                {team.shortName.slice(0, 2)}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium" style={{ color: theme.text }}>
+                                  {team.name}
+                                </p>
+                                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                                  {team.league}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+              style={{ border: `1px solid ${theme.border}` }}
+              aria-label="Search"
+            >
+              <Search size={20} color={theme.text} />
+            </button>
+          )}
+
+          {/* Theme Toggle */}
           <button
             onClick={toggleDarkMode}
             className="flex h-10 w-10 items-center justify-center rounded-full transition-colors"
