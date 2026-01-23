@@ -121,9 +121,9 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
                     className="flex h-4 w-4 items-center justify-center rounded text-[9px] font-bold text-white"
                     style={{
                       backgroundColor:
-                        result === 'W' ? '#22c55e' :
-                        result === 'D' ? '#6b7280' :
-                        result === 'L' ? '#ef4444' : theme.bgTertiary,
+                        result === 'W' ? theme.green :
+                        result === 'D' ? theme.textSecondary :
+                        result === 'L' ? theme.red : theme.bgTertiary,
                     }}
                   >
                     {result}

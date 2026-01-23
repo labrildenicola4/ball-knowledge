@@ -152,9 +152,9 @@ export default function MatchPage() {
           className="flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white"
           style={{
             backgroundColor:
-              result === 'W' ? '#22c55e' :
-              result === 'D' ? '#6b7280' :
-              result === 'L' ? '#ef4444' : theme.bgTertiary,
+              result === 'W' ? theme.green :
+              result === 'D' ? theme.textSecondary :
+              result === 'L' ? theme.red : theme.bgTertiary,
           }}
         >
           {result}
