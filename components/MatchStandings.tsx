@@ -46,7 +46,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
       >
         {/* Header */}
         <div
-          className="grid grid-cols-[28px_1fr_32px_32px_32px_72px] px-3 py-2 text-[9px] font-semibold uppercase tracking-wider"
+          className="grid grid-cols-[28px_1fr_32px_32px_40px] px-3 py-2 text-[9px] font-semibold uppercase tracking-wider"
           style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
         >
           <span>#</span>
@@ -54,7 +54,6 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
           <span className="text-center">P</span>
           <span className="text-center">GD</span>
           <span className="text-center">Pts</span>
-          <span className="text-center">Form</span>
         </div>
 
         {/* Rows */}
@@ -63,7 +62,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
           return (
             <div
               key={team.teamId}
-              className="grid grid-cols-[28px_1fr_32px_32px_32px_72px] items-center px-3 py-2.5"
+              className="grid grid-cols-[28px_1fr_32px_32px_40px] items-center px-3 py-2.5"
               style={{
                 borderTop: `1px solid ${theme.border}`,
                 backgroundColor: highlighted ? `${theme.accent}30` : 'transparent',
@@ -112,24 +111,6 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
               >
                 {team.points}
               </span>
-
-              {/* Form indicators */}
-              <div className="flex justify-center gap-0.5">
-                {team.form.slice(0, 5).map((result, i) => (
-                  <span
-                    key={i}
-                    className="flex h-4 w-4 items-center justify-center rounded text-[9px] font-bold text-white"
-                    style={{
-                      backgroundColor:
-                        result === 'W' ? theme.green :
-                        result === 'D' ? theme.gold :
-                        result === 'L' ? theme.red : theme.bgTertiary,
-                    }}
-                  >
-                    {result}
-                  </span>
-                ))}
-              </div>
             </div>
           );
         })}
