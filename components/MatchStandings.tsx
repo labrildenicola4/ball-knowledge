@@ -31,7 +31,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
   return (
     <div>
       <h3
-        className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+        className="mb-3 text-[12px] font-semibold uppercase tracking-wider"
         style={{ color: theme.textSecondary }}
       >
         {leagueName} Table
@@ -46,7 +46,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
       >
         {/* Header */}
         <div
-          className="grid grid-cols-[28px_1fr_32px_32px_40px] px-3 py-2 text-[9px] font-semibold uppercase tracking-wider"
+          className="grid grid-cols-[28px_1fr_36px_36px_44px] px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider"
           style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
         >
           <span>#</span>
@@ -62,7 +62,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
           return (
             <div
               key={team.teamId}
-              className="grid grid-cols-[28px_1fr_32px_32px_40px] items-center px-3 py-2.5"
+              className="grid grid-cols-[28px_1fr_36px_36px_44px] items-center px-3 py-3"
               style={{
                 borderTop: `1px solid ${theme.border}`,
                 backgroundColor: highlighted ? `${theme.accent}30` : 'transparent',
@@ -70,7 +70,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
               }}
             >
               <span
-                className="font-mono text-xs"
+                className="font-mono text-sm"
                 style={{
                   color: team.position <= 4 ? theme.accent : theme.textSecondary,
                   fontWeight: team.position <= 4 || highlighted ? 600 : 400,
@@ -80,24 +80,24 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
               </span>
 
               <span
-                className="flex items-center gap-2 text-[12px]"
-                style={{ fontWeight: highlighted ? 600 : 400, color: theme.text }}
+                className="flex items-center gap-2 text-[14px]"
+                style={{ fontWeight: highlighted ? 600 : 500, color: theme.text }}
               >
                 {team.logo && (
-                  <img src={team.logo} alt={team.team} className="h-4 w-4 object-contain" />
+                  <img src={team.logo} alt={team.team} className="h-5 w-5 object-contain" />
                 )}
                 <span className="truncate">{team.team}</span>
               </span>
 
               <span
-                className="font-mono text-center text-[11px]"
+                className="font-mono text-center text-[13px]"
                 style={{ color: theme.textSecondary }}
               >
                 {team.played}
               </span>
 
               <span
-                className="font-mono text-center text-[11px]"
+                className="font-mono text-center text-[13px]"
                 style={{
                   color: team.gd.startsWith('+') ? theme.accent : team.gd.startsWith('-') ? theme.red : theme.textSecondary,
                 }}
@@ -106,7 +106,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
               </span>
 
               <span
-                className="font-mono text-center text-[12px]"
+                className="font-mono text-center text-[14px]"
                 style={{ fontWeight: highlighted ? 700 : 600, color: theme.text }}
               >
                 {team.points}
