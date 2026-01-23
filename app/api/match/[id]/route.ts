@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMatch, getHeadToHead, mapStatus } from '@/lib/football-data';
+import { getMatch, getHeadToHead, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
+
+// Reverse mapping: competition code (PD) -> league ID (laliga)
+const CODE_TO_LEAGUE: Record<string, string> = Object.fromEntries(
+  Object.entries(COMPETITION_CODES).map(([leagueId, code]) => [code, leagueId])
+);
 
 export async function GET(
   request: NextRequest,
@@ -52,9 +57,12 @@ export async function GET(
 
     // Build the response
     // Note: Football-Data.org free tier doesn't provide lineups, detailed stats, or events
+    const leagueCode = CODE_TO_LEAGUE[match.competition.code] || null;
+
     const matchDetails = {
       id: match.id,
       league: match.competition.name,
+      leagueCode: leagueCode,
       date: displayDate,
       venue: match.venue || 'TBD',
       attendance: null,

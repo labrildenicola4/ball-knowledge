@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronLeft, MapPin, Calendar, Trophy } from 'lucide-react';
+import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
+import { MatchStandings } from '@/components/MatchStandings';
 
 interface Team {
   id: number;
@@ -14,9 +15,24 @@ interface Team {
   score: number | null;
 }
 
+interface Standing {
+  position: number;
+  teamId: number;
+  team: string;
+  logo?: string;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  gd: string;
+  points: number;
+  form: string[];
+}
+
 interface MatchDetails {
   id: number;
   league: string;
+  leagueCode: string | null;
   date: string;
   venue: string;
   status: string;
@@ -32,6 +48,8 @@ export default function MatchPage() {
   const router = useRouter();
   const { theme } = useTheme();
   const [match, setMatch] = useState<MatchDetails | null>(null);
+  const [standings, setStandings] = useState<Standing[]>([]);
+  const [standingsLoading, setStandingsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,6 +82,28 @@ export default function MatchPage() {
       fetchMatch();
     }
   }, [matchId]);
+
+  // Fetch standings when match is loaded and has a league code
+  useEffect(() => {
+    async function fetchStandings() {
+      if (!match?.leagueCode) return;
+
+      setStandingsLoading(true);
+      try {
+        const res = await fetch(`/api/standings?league=${match.leagueCode}`);
+        if (res.ok) {
+          const data = await res.json();
+          setStandings(data.standings || []);
+        }
+      } catch (err) {
+        console.error('Error fetching standings:', err);
+      } finally {
+        setStandingsLoading(false);
+      }
+    }
+
+    fetchStandings();
+  }, [match?.leagueCode]);
 
   // Loading state
   if (loading) {
@@ -273,8 +313,38 @@ export default function MatchPage() {
         </section>
       )}
 
-      {/* Placeholder for future features */}
-      {!match.h2h.total && (
+      {/* League Standings */}
+      {match.leagueCode && standings.length > 0 && (
+        <section className="px-4 py-6">
+          <div className="flex items-center gap-2 mb-4">
+            <TableIcon size={14} style={{ color: theme.accent }} />
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+              League Table
+            </h3>
+          </div>
+          <MatchStandings
+            standings={standings}
+            homeTeamId={match.home.id}
+            awayTeamId={match.away.id}
+            leagueName={match.league}
+          />
+        </section>
+      )}
+
+      {/* Standings loading */}
+      {match.leagueCode && standingsLoading && (
+        <section className="px-4 py-6">
+          <div className="flex justify-center">
+            <div
+              className="h-5 w-5 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+              style={{ color: theme.accent }}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* Placeholder for no data */}
+      {!match.h2h.total && !match.leagueCode && (
         <section className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
             <p className="text-[12px]" style={{ color: theme.textSecondary }}>
