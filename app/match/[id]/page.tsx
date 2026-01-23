@@ -153,7 +153,7 @@ export default function MatchPage() {
           style={{
             backgroundColor:
               result === 'W' ? theme.green :
-              result === 'D' ? theme.textSecondary :
+              result === 'D' ? theme.gold :
               result === 'L' ? theme.red : theme.bgTertiary,
           }}
         >
@@ -196,7 +196,7 @@ export default function MatchPage() {
             <div className="mx-auto mb-3 h-20 w-20">
               <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain" />
             </div>
-            <p className="text-sm font-medium">{match.home.name}</p>
+            <p className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</p>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.home.shortName}</p>
             {homeForm.length > 0 && <FormIndicator form={homeForm} />}
           </div>
@@ -213,9 +213,9 @@ export default function MatchPage() {
             ) : (
               <div>
                 <div className="flex items-center gap-4">
-                  <span className="font-mono text-5xl font-light">{match.home.score ?? 0}</span>
+                  <span className="font-mono text-5xl font-light" style={{ color: theme.text }}>{match.home.score ?? 0}</span>
                   <span className="text-2xl" style={{ color: theme.textSecondary }}>-</span>
-                  <span className="font-mono text-5xl font-light">{match.away.score ?? 0}</span>
+                  <span className="font-mono text-5xl font-light" style={{ color: theme.text }}>{match.away.score ?? 0}</span>
                 </div>
                 <span
                   className="mt-3 inline-block rounded-full px-4 py-1 text-[10px] font-medium"
@@ -241,7 +241,7 @@ export default function MatchPage() {
             <div className="mx-auto mb-3 h-20 w-20">
               <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain" />
             </div>
-            <p className="text-sm font-medium">{match.away.name}</p>
+            <p className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</p>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.away.shortName}</p>
             {awayForm.length > 0 && <FormIndicator form={awayForm} />}
           </div>
@@ -282,10 +282,10 @@ export default function MatchPage() {
             <div className="flex justify-between items-center">
               {/* Home wins */}
               <div className="flex-1 text-center">
-                <p className="font-mono text-4xl font-light" style={{ color: theme.accent }}>
+                <p className="font-mono text-4xl font-light" style={{ color: theme.green }}>
                   {match.h2h.homeWins}
                 </p>
-                <p className="mt-1 text-[11px]" style={{ color: theme.textSecondary }}>
+                <p className="mt-1 text-[11px]" style={{ color: theme.text }}>
                   {match.home.shortName}
                 </p>
               </div>
@@ -295,17 +295,17 @@ export default function MatchPage() {
                 <p className="font-mono text-4xl font-light" style={{ color: theme.gold }}>
                   {match.h2h.draws}
                 </p>
-                <p className="mt-1 text-[11px]" style={{ color: theme.textSecondary }}>
+                <p className="mt-1 text-[11px]" style={{ color: theme.text }}>
                   Draws
                 </p>
               </div>
 
               {/* Away wins */}
               <div className="flex-1 text-center">
-                <p className="font-mono text-4xl font-light" style={{ color: theme.sepia }}>
+                <p className="font-mono text-4xl font-light" style={{ color: theme.red }}>
                   {match.h2h.awayWins}
                 </p>
-                <p className="mt-1 text-[11px]" style={{ color: theme.textSecondary }}>
+                <p className="mt-1 text-[11px]" style={{ color: theme.text }}>
                   {match.away.shortName}
                 </p>
               </div>
@@ -318,7 +318,7 @@ export default function MatchPage() {
                   <div
                     style={{
                       width: `${(match.h2h.homeWins / match.h2h.total) * 100}%`,
-                      backgroundColor: theme.accent,
+                      backgroundColor: theme.green,
                     }}
                   />
                   <div
@@ -330,7 +330,7 @@ export default function MatchPage() {
                   <div
                     style={{
                       width: `${(match.h2h.awayWins / match.h2h.total) * 100}%`,
-                      backgroundColor: theme.sepia,
+                      backgroundColor: theme.red,
                     }}
                   />
                 </>

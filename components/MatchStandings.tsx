@@ -82,7 +82,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
 
               <span
                 className="flex items-center gap-2 text-[12px]"
-                style={{ fontWeight: highlighted ? 600 : 400 }}
+                style={{ fontWeight: highlighted ? 600 : 400, color: theme.text }}
               >
                 {team.logo && (
                   <img src={team.logo} alt={team.team} className="h-4 w-4 object-contain" />
@@ -108,7 +108,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
 
               <span
                 className="font-mono text-center text-[12px]"
-                style={{ fontWeight: highlighted ? 700 : 600 }}
+                style={{ fontWeight: highlighted ? 700 : 600, color: theme.text }}
               >
                 {team.points}
               </span>
@@ -122,7 +122,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
                     style={{
                       backgroundColor:
                         result === 'W' ? theme.green :
-                        result === 'D' ? theme.textSecondary :
+                        result === 'D' ? theme.gold :
                         result === 'L' ? theme.red : theme.bgTertiary,
                     }}
                   >
