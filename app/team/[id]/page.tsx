@@ -694,17 +694,19 @@ export default function TeamPage() {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[580px]"
+                          className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[640px]"
                           style={{
                             gridTemplateColumns: isGoalkeeper
-                              ? '32px 1fr 32px 32px 32px 32px 32px 32px'
-                              : '32px 1fr 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
+                              ? '32px 1fr 40px 32px 32px 32px 32px 32px 32px 32px'
+                              : '32px 1fr 40px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
                             backgroundColor: theme.bgTertiary,
                             color: theme.textSecondary,
                           }}
                         >
                           <span className="text-center">#</span>
                           <span>Player</span>
+                          <span className="text-center">NAT</span>
+                          <span className="text-center">AGE</span>
                           <span className="text-center">APP</span>
                           <span className="text-center">SUB</span>
                           {isGoalkeeper ? (
@@ -732,11 +734,11 @@ export default function TeamPage() {
                         {group.players.map((player, idx) => (
                           <div
                             key={player.id}
-                            className="grid items-center px-3 py-2.5 min-w-[580px]"
+                            className="grid items-center px-3 py-2.5 min-w-[640px]"
                             style={{
                               gridTemplateColumns: isGoalkeeper
-                                ? '32px 1fr 32px 32px 32px 32px 32px 32px'
-                                : '32px 1fr 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
+                                ? '32px 1fr 40px 32px 32px 32px 32px 32px 32px 32px'
+                                : '32px 1fr 40px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
                               borderTop: `1px solid ${theme.border}`,
                             }}
                           >
@@ -748,15 +750,20 @@ export default function TeamPage() {
                               {player.shirtNumber ?? '-'}
                             </span>
 
-                            {/* Player Name with Nationality & Age */}
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="text-sm font-medium truncate" style={{ color: theme.text }}>
-                                {player.name}
-                              </span>
-                              <span className="text-[10px] shrink-0" style={{ color: theme.textSecondary }}>
-                                {player.nationality?.substring(0, 3).toUpperCase() || '-'}, {player.age ?? '-'}
-                              </span>
-                            </div>
+                            {/* Player Name */}
+                            <span className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                              {player.name}
+                            </span>
+
+                            {/* Nationality */}
+                            <span className="text-center text-xs" style={{ color: theme.textSecondary }}>
+                              {player.nationality?.substring(0, 3).toUpperCase() || '-'}
+                            </span>
+
+                            {/* Age */}
+                            <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                              {player.age ?? '-'}
+                            </span>
 
                             {/* Stats */}
                             <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
