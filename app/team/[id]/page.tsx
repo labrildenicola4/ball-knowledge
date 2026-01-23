@@ -694,19 +694,17 @@ export default function TeamPage() {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[640px]"
+                          className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[580px]"
                           style={{
                             gridTemplateColumns: isGoalkeeper
-                              ? '40px 1fr 44px 32px 32px 32px 32px 32px 32px 32px'
-                              : '40px 1fr 44px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
+                              ? '32px 1fr 32px 32px 32px 32px 32px 32px'
+                              : '32px 1fr 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
                             backgroundColor: theme.bgTertiary,
                             color: theme.textSecondary,
                           }}
                         >
                           <span className="text-center">#</span>
                           <span>Player</span>
-                          <span className="text-center">NAT</span>
-                          <span className="text-center">AGE</span>
                           <span className="text-center">APP</span>
                           <span className="text-center">SUB</span>
                           {isGoalkeeper ? (
@@ -734,11 +732,11 @@ export default function TeamPage() {
                         {group.players.map((player, idx) => (
                           <div
                             key={player.id}
-                            className="grid items-center px-3 py-2.5 min-w-[640px]"
+                            className="grid items-center px-3 py-2.5 min-w-[580px]"
                             style={{
                               gridTemplateColumns: isGoalkeeper
-                                ? '40px 1fr 44px 32px 32px 32px 32px 32px 32px 32px'
-                                : '40px 1fr 44px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
+                                ? '32px 1fr 32px 32px 32px 32px 32px 32px'
+                                : '32px 1fr 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
                               borderTop: `1px solid ${theme.border}`,
                             }}
                           >
@@ -747,23 +745,18 @@ export default function TeamPage() {
                               className="text-center font-mono text-sm font-semibold"
                               style={{ color: theme.accent }}
                             >
-                              {player.shirtNumber || '-'}
+                              {player.shirtNumber ?? '-'}
                             </span>
 
-                            {/* Player Name */}
-                            <span className="text-sm font-medium truncate" style={{ color: theme.text }}>
-                              {player.name}
-                            </span>
-
-                            {/* Nationality */}
-                            <span className="text-center text-xs" style={{ color: theme.textSecondary }}>
-                              {player.nationality?.substring(0, 3).toUpperCase() || '-'}
-                            </span>
-
-                            {/* Age */}
-                            <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
-                              {player.age ?? '-'}
-                            </span>
+                            {/* Player Name with Nationality & Age */}
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                                {player.name}
+                              </span>
+                              <span className="text-[10px] shrink-0" style={{ color: theme.textSecondary }}>
+                                {player.nationality?.substring(0, 3).toUpperCase() || '-'}, {player.age ?? '-'}
+                              </span>
+                            </div>
 
                             {/* Stats */}
                             <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
