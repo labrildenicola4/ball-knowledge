@@ -694,122 +694,126 @@ export default function TeamPage() {
                       >
                         {/* Table Header */}
                         <div
-                          className="flex items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider"
+                          className="flex items-center justify-between px-3 py-2 text-[10px] font-semibold uppercase tracking-wider"
                           style={{
                             backgroundColor: theme.bgTertiary,
                             color: theme.textSecondary,
                           }}
                         >
-                          <span className="w-8 text-center shrink-0">#</span>
-                          <span className="w-32 shrink-0">Player</span>
-                          <span className="w-20 shrink-0">Nationality</span>
-                          <span className="w-10 text-center shrink-0">AGE</span>
-                          <span className="w-10 text-center shrink-0">APP</span>
-                          <span className="w-10 text-center shrink-0">SUB</span>
-                          {isGoalkeeper ? (
-                            <>
-                              <span className="w-10 text-center shrink-0">SV</span>
-                              <span className="w-10 text-center shrink-0">GA</span>
-                              <span className="w-10 text-center shrink-0">YC</span>
-                              <span className="w-10 text-center shrink-0">RC</span>
-                            </>
-                          ) : (
-                            <>
-                              <span className="w-10 text-center shrink-0">G</span>
-                              <span className="w-10 text-center shrink-0">A</span>
-                              <span className="w-10 text-center shrink-0">SH</span>
-                              <span className="w-10 text-center shrink-0">ST</span>
-                              <span className="w-10 text-center shrink-0">FC</span>
-                              <span className="w-10 text-center shrink-0">FA</span>
-                              <span className="w-10 text-center shrink-0">YC</span>
-                              <span className="w-10 text-center shrink-0">RC</span>
-                            </>
-                          )}
+                          {/* Left side - Player info */}
+                          <div className="flex items-center">
+                            <span className="w-8 text-center">#</span>
+                            <span className="w-36">Player</span>
+                            <span className="w-24">Nationality</span>
+                            <span className="w-10 text-center">AGE</span>
+                          </div>
+                          {/* Right side - Stats */}
+                          <div className="flex items-center">
+                            <span className="w-10 text-center">APP</span>
+                            <span className="w-10 text-center">SUB</span>
+                            {isGoalkeeper ? (
+                              <>
+                                <span className="w-10 text-center">SV</span>
+                                <span className="w-10 text-center">GA</span>
+                                <span className="w-10 text-center">YC</span>
+                                <span className="w-10 text-center">RC</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="w-10 text-center">G</span>
+                                <span className="w-10 text-center">A</span>
+                                <span className="w-10 text-center">SH</span>
+                                <span className="w-10 text-center">ST</span>
+                                <span className="w-10 text-center">FC</span>
+                                <span className="w-10 text-center">FA</span>
+                                <span className="w-10 text-center">YC</span>
+                                <span className="w-10 text-center">RC</span>
+                              </>
+                            )}
+                          </div>
                         </div>
 
                         {/* Players */}
                         {group.players.map((player, idx) => (
                           <div
                             key={player.id}
-                            className="flex items-center px-3 py-2.5"
+                            className="flex items-center justify-between px-3 py-2.5"
                             style={{
                               borderTop: `1px solid ${theme.border}`,
                             }}
                           >
-                            {/* Jersey Number */}
-                            <span
-                              className="w-8 text-center font-mono text-sm font-semibold shrink-0"
-                              style={{ color: theme.accent }}
-                            >
-                              {player.shirtNumber ?? '-'}
-                            </span>
+                            {/* Left side - Player info */}
+                            <div className="flex items-center">
+                              <span
+                                className="w-8 text-center font-mono text-sm font-semibold"
+                                style={{ color: theme.accent }}
+                              >
+                                {player.shirtNumber ?? '-'}
+                              </span>
+                              <span className="w-36 text-sm font-medium truncate" style={{ color: theme.text }}>
+                                {player.name}
+                              </span>
+                              <span className="w-24 text-xs truncate" style={{ color: theme.textSecondary }}>
+                                {player.nationality || '-'}
+                              </span>
+                              <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                {player.age ?? '-'}
+                              </span>
+                            </div>
 
-                            {/* Player Name */}
-                            <span className="w-32 text-sm font-medium truncate shrink-0" style={{ color: theme.text }}>
-                              {player.name}
-                            </span>
+                            {/* Right side - Stats */}
+                            <div className="flex items-center">
+                              <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                {player.stats?.appearances ?? '-'}
+                              </span>
+                              <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                {player.stats?.substitutions ?? '-'}
+                              </span>
 
-                            {/* Nationality */}
-                            <span className="w-20 text-xs truncate shrink-0" style={{ color: theme.textSecondary }}>
-                              {player.nationality || '-'}
-                            </span>
-
-                            {/* Age */}
-                            <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                              {player.age ?? '-'}
-                            </span>
-
-                            {/* Stats */}
-                            <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                              {player.stats?.appearances ?? '-'}
-                            </span>
-                            <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                              {player.stats?.substitutions ?? '-'}
-                            </span>
-
-                            {isGoalkeeper ? (
-                              <>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                                  {player.stats?.saves ?? '-'}
-                                </span>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                                  {player.stats?.goalsAgainst ?? '-'}
-                                </span>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.gold }}>
-                                  {player.stats?.yellowCards ?? '-'}
-                                </span>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.red }}>
-                                  {player.stats?.redCards ?? '-'}
-                                </span>
-                              </>
-                            ) : (
-                              <>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                                  {player.stats?.goals ?? '-'}
-                                </span>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                                  {player.stats?.assists ?? '-'}
-                                </span>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                                  {player.stats?.shots ?? '-'}
-                                </span>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                                  {player.stats?.shotsOnTarget ?? '-'}
-                                </span>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                                  {player.stats?.foulsCommitted ?? '-'}
-                                </span>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.textSecondary }}>
-                                  {player.stats?.foulsSuffered ?? '-'}
-                                </span>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.gold }}>
-                                  {player.stats?.yellowCards ?? '-'}
-                                </span>
-                                <span className="w-10 text-center text-xs font-mono shrink-0" style={{ color: theme.red }}>
-                                  {player.stats?.redCards ?? '-'}
-                                </span>
-                              </>
-                            )}
+                              {isGoalkeeper ? (
+                                <>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.stats?.saves ?? '-'}
+                                  </span>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.stats?.goalsAgainst ?? '-'}
+                                  </span>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.gold }}>
+                                    {player.stats?.yellowCards ?? '-'}
+                                  </span>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.red }}>
+                                    {player.stats?.redCards ?? '-'}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.stats?.goals ?? '-'}
+                                  </span>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.stats?.assists ?? '-'}
+                                  </span>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.stats?.shots ?? '-'}
+                                  </span>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.stats?.shotsOnTarget ?? '-'}
+                                  </span>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.stats?.foulsCommitted ?? '-'}
+                                  </span>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.stats?.foulsSuffered ?? '-'}
+                                  </span>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.gold }}>
+                                    {player.stats?.yellowCards ?? '-'}
+                                  </span>
+                                  <span className="w-10 text-center text-xs font-mono" style={{ color: theme.red }}>
+                                    {player.stats?.redCards ?? '-'}
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
