@@ -150,7 +150,11 @@ export function Header() {
                               className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
-                              <span className="text-xl">{league.flag}</span>
+                              <img
+                                src={league.logo}
+                                alt={league.name}
+                                className="h-6 w-6 object-contain"
+                              />
                               <div>
                                 <p className="text-sm font-medium" style={{ color: theme.text }}>
                                   {league.name}

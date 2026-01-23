@@ -17,23 +17,41 @@ export interface SearchableLeague {
   name: string;
   code: string;
   country: string;
-  flag: string;
+  logo: string;
 }
+
+// Competition emblem URLs from Football-Data.org
+const LEAGUE_LOGOS: Record<string, string> = {
+  'PD': 'https://crests.football-data.org/laliga.png',
+  'PL': 'https://crests.football-data.org/PL.png',
+  'SA': 'https://crests.football-data.org/SA.png',
+  'BL1': 'https://crests.football-data.org/BL1.png',
+  'FL1': 'https://crests.football-data.org/FL1.png',
+  'ELC': 'https://crests.football-data.org/ELC.png',
+  'DED': 'https://crests.football-data.org/DED.png',
+  'PPL': 'https://crests.football-data.org/PPL.png',
+  'BSA': 'https://crests.football-data.org/BSA.png',
+  'CL': 'https://crests.football-data.org/CL.png',
+  'CLI': 'https://crests.football-data.org/CLI.png',
+};
 
 // Major leagues
 export const LEAGUES: SearchableLeague[] = [
-  { id: 'laliga', name: 'La Liga', code: 'PD', country: 'Spain', flag: '🇪🇸' },
-  { id: 'premier', name: 'Premier League', code: 'PL', country: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
-  { id: 'seriea', name: 'Serie A', code: 'SA', country: 'Italy', flag: '🇮🇹' },
-  { id: 'bundesliga', name: 'Bundesliga', code: 'BL1', country: 'Germany', flag: '🇩🇪' },
-  { id: 'ligue1', name: 'Ligue 1', code: 'FL1', country: 'France', flag: '🇫🇷' },
-  { id: 'championship', name: 'Championship', code: 'ELC', country: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
-  { id: 'eredivisie', name: 'Eredivisie', code: 'DED', country: 'Netherlands', flag: '🇳🇱' },
-  { id: 'primeiraliga', name: 'Primeira Liga', code: 'PPL', country: 'Portugal', flag: '🇵🇹' },
-  { id: 'brasileirao', name: 'Brasileirão', code: 'BSA', country: 'Brazil', flag: '🇧🇷' },
-  { id: 'championsleague', name: 'Champions League', code: 'CL', country: 'Europe', flag: '🏆' },
-  { id: 'copalibertadores', name: 'Copa Libertadores', code: 'CLI', country: 'South America', flag: '🏆' },
+  { id: 'laliga', name: 'La Liga', code: 'PD', country: 'Spain', logo: LEAGUE_LOGOS['PD'] },
+  { id: 'premier', name: 'Premier League', code: 'PL', country: 'England', logo: LEAGUE_LOGOS['PL'] },
+  { id: 'seriea', name: 'Serie A', code: 'SA', country: 'Italy', logo: LEAGUE_LOGOS['SA'] },
+  { id: 'bundesliga', name: 'Bundesliga', code: 'BL1', country: 'Germany', logo: LEAGUE_LOGOS['BL1'] },
+  { id: 'ligue1', name: 'Ligue 1', code: 'FL1', country: 'France', logo: LEAGUE_LOGOS['FL1'] },
+  { id: 'championship', name: 'Championship', code: 'ELC', country: 'England', logo: LEAGUE_LOGOS['ELC'] },
+  { id: 'eredivisie', name: 'Eredivisie', code: 'DED', country: 'Netherlands', logo: LEAGUE_LOGOS['DED'] },
+  { id: 'primeiraliga', name: 'Primeira Liga', code: 'PPL', country: 'Portugal', logo: LEAGUE_LOGOS['PPL'] },
+  { id: 'brasileirao', name: 'Brasileirão', code: 'BSA', country: 'Brazil', logo: LEAGUE_LOGOS['BSA'] },
+  { id: 'championsleague', name: 'Champions League', code: 'CL', country: 'Europe', logo: LEAGUE_LOGOS['CL'] },
+  { id: 'copalibertadores', name: 'Copa Libertadores', code: 'CLI', country: 'South America', logo: LEAGUE_LOGOS['CLI'] },
 ];
+
+// Export for use elsewhere
+export { LEAGUE_LOGOS };
 
 // Major teams from top leagues
 export const TEAMS: SearchableTeam[] = [

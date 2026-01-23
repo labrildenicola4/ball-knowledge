@@ -7,6 +7,7 @@ interface MatchCardProps {
   match: {
     id: number;
     league: string;
+    leagueLogo?: string;
     home: string;
     away: string;
     homeScore: number | null;
@@ -34,12 +35,21 @@ export function MatchCard({ match }: MatchCardProps) {
       >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
-          <span
-            className="text-sm uppercase tracking-wider font-medium"
-            style={{ color: theme.textSecondary }}
-          >
-            {match.league}
-          </span>
+          <div className="flex items-center gap-2">
+            {match.leagueLogo && (
+              <img
+                src={match.leagueLogo}
+                alt={match.league}
+                className="h-5 w-5 object-contain"
+              />
+            )}
+            <span
+              className="text-sm uppercase tracking-wider font-medium"
+              style={{ color: theme.textSecondary }}
+            >
+              {match.league}
+            </span>
+          </div>
           <span
             className="font-mono rounded-lg px-3 py-1 text-sm"
             style={{
