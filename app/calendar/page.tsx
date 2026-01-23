@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Calendar as CalendarIcon } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -44,13 +45,59 @@ const SEASON_END = new Date(2026, 4, 31);    // May 31, 2026
 
 export default function CalendarPage() {
   const { theme } = useTheme();
-  // Start with today's date
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const router = useRouter();
+  // Initialize with null, will be set from localStorage or default to today
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedNation, setSelectedNation] = useState('all');
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [rateLimited, setRateLimited] = useState(false);
   const [collapsedNations, setCollapsedNations] = useState<Set<string>>(new Set());
+  const [initialized, setInitialized] = useState(false);
+  const [lastViewedMatch, setLastViewedMatch] = useState<string | null>(null);
+
+  // Load saved date and last match from localStorage on mount
+  useEffect(() => {
+    const savedDate = localStorage.getItem('calendar_selectedDate');
+    const savedNation = localStorage.getItem('calendar_selectedNation');
+    const savedMatch = localStorage.getItem('lastViewedMatch');
+
+    if (savedDate) {
+      const parsed = new Date(savedDate);
+      // Check if date is valid and within season bounds
+      if (!isNaN(parsed.getTime()) && parsed >= SEASON_START && parsed <= SEASON_END) {
+        setSelectedDate(parsed);
+      } else {
+        setSelectedDate(new Date());
+      }
+    } else {
+      setSelectedDate(new Date());
+    }
+
+    if (savedNation) {
+      setSelectedNation(savedNation);
+    }
+
+    if (savedMatch) {
+      setLastViewedMatch(savedMatch);
+    }
+
+    setInitialized(true);
+  }, []);
+
+  // Save date to localStorage whenever it changes
+  useEffect(() => {
+    if (initialized && selectedDate) {
+      localStorage.setItem('calendar_selectedDate', selectedDate.toISOString());
+    }
+  }, [selectedDate, initialized]);
+
+  // Save nation to localStorage whenever it changes
+  useEffect(() => {
+    if (initialized) {
+      localStorage.setItem('calendar_selectedNation', selectedNation);
+    }
+  }, [selectedNation, initialized]);
 
   // Toggle nation collapse
   const toggleNation = (nationId: string) => {
@@ -93,6 +140,7 @@ export default function CalendarPage() {
 
   // Generate week days around selected date
   const getWeekDays = () => {
+    if (!selectedDate) return [];
     const days = [];
     for (let i = -3; i <= 3; i++) {
       const date = new Date(selectedDate);
@@ -116,11 +164,13 @@ export default function CalendarPage() {
 
   // Fetch fixtures for the selected date range
   useEffect(() => {
+    if (!selectedDate) return; // Wait for initialization
+
     async function fetchFixtures() {
       setLoading(true);
       setRateLimited(false);
       try {
-        const dateStr = formatDateForApi(selectedDate);
+        const dateStr = formatDateForApi(selectedDate!);
 
         // All leagues to fetch
         const allLeagueIds = [
@@ -184,6 +234,7 @@ export default function CalendarPage() {
   }, [selectedDate, selectedNation]);
 
   const navigateWeek = (direction: 'prev' | 'next') => {
+    if (!selectedDate) return;
     const newDate = new Date(selectedDate);
     newDate.setDate(selectedDate.getDate() + (direction === 'next' ? 7 : -7));
     // Keep within season bounds
@@ -207,6 +258,7 @@ export default function CalendarPage() {
   ];
 
   const isCurrentMonth = (monthDate: Date) => {
+    if (!selectedDate) return false;
     return monthDate.getMonth() === selectedDate.getMonth() &&
            monthDate.getFullYear() === selectedDate.getFullYear();
   };
@@ -216,12 +268,52 @@ export default function CalendarPage() {
     ? nationGroups
     : nationGroups.filter(g => g.nation.id === selectedNation);
 
+  // Show loading while initializing from localStorage
+  if (!selectedDate) {
+    return (
+      <div
+        className="flex min-h-screen flex-col items-center justify-center transition-theme"
+        style={{ backgroundColor: theme.bg }}
+      >
+        <div
+          className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+          style={{ color: theme.accent }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
       style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
     >
       <Header />
+
+      {/* Continue watching banner */}
+      {lastViewedMatch && (
+        <div
+          className="flex items-center justify-between px-4 py-3"
+          style={{ backgroundColor: theme.accent }}
+        >
+          <button
+            onClick={() => router.push(`/match/${lastViewedMatch}`)}
+            className="flex items-center gap-2 flex-1"
+          >
+            <span className="text-sm font-medium text-white">Continue watching match</span>
+            <ChevronRight size={18} className="text-white" />
+          </button>
+          <button
+            onClick={() => {
+              setLastViewedMatch(null);
+              localStorage.removeItem('lastViewedMatch');
+            }}
+            className="text-white/70 text-xs ml-4 px-2 py-1"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Season Banner */}
       <div

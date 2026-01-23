@@ -56,6 +56,13 @@ export default function MatchPage() {
 
   const matchId = params.id;
 
+  // Save last viewed match to localStorage
+  useEffect(() => {
+    if (matchId) {
+      localStorage.setItem('lastViewedMatch', String(matchId));
+    }
+  }, [matchId]);
+
   useEffect(() => {
     async function fetchMatch() {
       setLoading(true);
