@@ -49,11 +49,28 @@ interface Standing {
   points: number;
 }
 
+interface PlayerStats {
+  appearances: number | null;
+  substitutions: number | null;
+  goals: number | null;
+  assists: number | null;
+  shots: number | null;
+  shotsOnTarget: number | null;
+  foulsCommitted: number | null;
+  foulsSuffered: number | null;
+  yellowCards: number | null;
+  redCards: number | null;
+  saves: number | null;
+  goalsAgainst: number | null;
+}
+
 interface Player {
   id: number;
   name: string;
   position: string;
   nationality: string;
+  shirtNumber: number | null;
+  stats: PlayerStats;
 }
 
 interface SquadGroup {
@@ -232,12 +249,12 @@ export default function TeamPage() {
           style={{ backgroundColor: theme.bgTertiary }}
         >
           {/* Competition logo */}
-          <div
-            className="flex h-6 w-6 items-center justify-center rounded"
-            style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.9)' : 'transparent' }}
-          >
-            <img src={match.competitionLogo} alt="" className="h-4 w-4 object-contain" />
-          </div>
+          <img
+            src={match.competitionLogo}
+            alt=""
+            className="h-5 w-5 object-contain"
+            style={{ filter: darkMode ? 'brightness(0) invert(1)' : 'none' }}
+          />
 
           {/* Date */}
           <div className="w-14 text-center">
@@ -479,12 +496,12 @@ export default function TeamPage() {
                 >
                   <div className="flex items-center gap-3">
                     {selectedCompetitionData && (
-                      <div
-                        className="flex h-7 w-7 items-center justify-center rounded"
-                        style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.9)' : 'transparent' }}
-                      >
-                        <img src={selectedCompetitionData.logo} alt="" className="h-5 w-5 object-contain" />
-                      </div>
+                      <img
+                        src={selectedCompetitionData.logo}
+                        alt=""
+                        className="h-5 w-5 object-contain"
+                        style={{ filter: darkMode ? 'brightness(0) invert(1)' : 'none' }}
+                      />
                     )}
                     <span className="text-sm font-medium" style={{ color: theme.text }}>
                       {selectedCompetitionData?.name || 'Select Competition'}
@@ -519,12 +536,12 @@ export default function TeamPage() {
                           borderBottom: `1px solid ${theme.border}`,
                         }}
                       >
-                        <div
-                          className="flex h-7 w-7 items-center justify-center rounded"
-                          style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.9)' : 'transparent' }}
-                        >
-                          <img src={comp.logo} alt="" className="h-5 w-5 object-contain" />
-                        </div>
+                        <img
+                          src={comp.logo}
+                          alt=""
+                          className="h-5 w-5 object-contain"
+                          style={{ filter: darkMode ? 'brightness(0) invert(1)' : 'none' }}
+                        />
                         <span
                           className="text-sm"
                           style={{
@@ -670,28 +687,205 @@ export default function TeamPage() {
 
             {/* Squad by position */}
             {team.squad.length > 0 ? (
-              team.squad.map((group) => (
-                <div key={group.position} className="mb-4">
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
-                    {group.position}
+              <>
+                {team.squad.map((group) => {
+                  const isGoalkeeper = group.position === 'Goalkeeper';
+                  return (
+                    <div key={group.position} className="mb-4">
+                      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                        {group.position}
+                      </h3>
+                      <div
+                        className="overflow-x-auto rounded-xl"
+                        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                      >
+                        {/* Table Header */}
+                        <div
+                          className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[600px]"
+                          style={{
+                            gridTemplateColumns: isGoalkeeper
+                              ? '40px 1fr 60px 32px 32px 32px 32px 32px 32px'
+                              : '40px 1fr 60px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
+                            backgroundColor: theme.bgTertiary,
+                            color: theme.textSecondary,
+                          }}
+                        >
+                          <span className="text-center">#</span>
+                          <span>Player</span>
+                          <span className="text-center">NAT</span>
+                          <span className="text-center">APP</span>
+                          <span className="text-center">SUB</span>
+                          {isGoalkeeper ? (
+                            <>
+                              <span className="text-center">SV</span>
+                              <span className="text-center">GA</span>
+                              <span className="text-center">YC</span>
+                              <span className="text-center">RC</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-center">G</span>
+                              <span className="text-center">A</span>
+                              <span className="text-center">SH</span>
+                              <span className="text-center">ST</span>
+                              <span className="text-center">FC</span>
+                              <span className="text-center">FA</span>
+                              <span className="text-center">YC</span>
+                              <span className="text-center">RC</span>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Players */}
+                        {group.players.map((player, idx) => (
+                          <div
+                            key={player.id}
+                            className="grid items-center px-3 py-2.5 min-w-[600px]"
+                            style={{
+                              gridTemplateColumns: isGoalkeeper
+                                ? '40px 1fr 60px 32px 32px 32px 32px 32px 32px'
+                                : '40px 1fr 60px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
+                              borderTop: `1px solid ${theme.border}`,
+                            }}
+                          >
+                            {/* Jersey Number */}
+                            <span
+                              className="text-center font-mono text-sm font-semibold"
+                              style={{ color: theme.accent }}
+                            >
+                              {player.shirtNumber || '-'}
+                            </span>
+
+                            {/* Player Name */}
+                            <span className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                              {player.name}
+                            </span>
+
+                            {/* Nationality */}
+                            <span className="text-center text-xs" style={{ color: theme.textSecondary }}>
+                              {player.nationality?.substring(0, 3).toUpperCase() || '-'}
+                            </span>
+
+                            {/* Stats */}
+                            <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                              {player.stats?.appearances ?? '-'}
+                            </span>
+                            <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                              {player.stats?.substitutions ?? '-'}
+                            </span>
+
+                            {isGoalkeeper ? (
+                              <>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                  {player.stats?.saves ?? '-'}
+                                </span>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                  {player.stats?.goalsAgainst ?? '-'}
+                                </span>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.gold }}>
+                                  {player.stats?.yellowCards ?? '-'}
+                                </span>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.red }}>
+                                  {player.stats?.redCards ?? '-'}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                  {player.stats?.goals ?? '-'}
+                                </span>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                  {player.stats?.assists ?? '-'}
+                                </span>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                  {player.stats?.shots ?? '-'}
+                                </span>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                  {player.stats?.shotsOnTarget ?? '-'}
+                                </span>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                  {player.stats?.foulsCommitted ?? '-'}
+                                </span>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                  {player.stats?.foulsSuffered ?? '-'}
+                                </span>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.gold }}>
+                                  {player.stats?.yellowCards ?? '-'}
+                                </span>
+                                <span className="text-center text-xs font-mono" style={{ color: theme.red }}>
+                                  {player.stats?.redCards ?? '-'}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Glossary */}
+                <div className="mt-6">
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                    Glossary
                   </h3>
                   <div
-                    className="overflow-hidden rounded-xl"
+                    className="rounded-xl p-4"
                     style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
-                    {group.players.map((player, idx) => (
-                      <div
-                        key={player.id}
-                        className="flex items-center justify-between px-4 py-3"
-                        style={{ borderTop: idx > 0 ? `1px solid ${theme.border}` : 'none' }}
-                      >
-                        <p className="text-sm font-medium" style={{ color: theme.text }}>{player.name}</p>
-                        <p className="text-xs" style={{ color: theme.textSecondary }}>{player.nationality}</p>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>APP:</span>
+                        <span style={{ color: theme.textSecondary }}>Appearances</span>
                       </div>
-                    ))}
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>FC:</span>
+                        <span style={{ color: theme.textSecondary }}>Fouls Committed</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>SUB:</span>
+                        <span style={{ color: theme.textSecondary }}>Substitute Appearances</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>FA:</span>
+                        <span style={{ color: theme.textSecondary }}>Fouls Suffered</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>G:</span>
+                        <span style={{ color: theme.textSecondary }}>Total Goals</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>YC:</span>
+                        <span style={{ color: theme.textSecondary }}>Yellow Cards</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>A:</span>
+                        <span style={{ color: theme.textSecondary }}>Assists</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>RC:</span>
+                        <span style={{ color: theme.textSecondary }}>Red Cards</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>SH:</span>
+                        <span style={{ color: theme.textSecondary }}>Shots</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>SV:</span>
+                        <span style={{ color: theme.textSecondary }}>Saves</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>ST:</span>
+                        <span style={{ color: theme.textSecondary }}>Shots On Target</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>GA:</span>
+                        <span style={{ color: theme.textSecondary }}>Goals Against</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))
+              </>
             ) : (
               <div className="py-8 text-center">
                 <p className="text-sm" style={{ color: theme.textSecondary }}>

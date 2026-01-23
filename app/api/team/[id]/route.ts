@@ -138,6 +138,22 @@ export async function GET(
       name: player.name,
       position: player.position || 'Unknown',
       nationality: player.nationality || 'Unknown',
+      shirtNumber: player.shirtNumber || null,
+      // Placeholder stats - Football-Data.org free tier doesn't provide these
+      stats: {
+        appearances: null,
+        substitutions: null,
+        goals: null,
+        assists: null,
+        shots: null,
+        shotsOnTarget: null,
+        foulsCommitted: null,
+        foulsSuffered: null,
+        yellowCards: null,
+        redCards: null,
+        saves: null, // For goalkeepers
+        goalsAgainst: null, // For goalkeepers
+      },
     }));
 
     // Group squad by position

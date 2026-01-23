@@ -321,6 +321,8 @@ export interface TeamDetails {
     name: string;
     position: string;
     nationality: string;
+    shirtNumber?: number;
+    dateOfBirth?: string;
   }>;
 }
 
