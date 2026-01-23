@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         id: match.id,
         league: match.competition.name,
         leagueCode: match.competition.code,
-        leagueLogo: match.competition.emblem,
+        leagueLogo: match.competition.emblem || `https://crests.football-data.org/${match.competition.code}.png`,
         home: match.homeTeam.shortName || match.homeTeam.name,
         away: match.awayTeam.shortName || match.awayTeam.name,
         homeId: match.homeTeam.id,

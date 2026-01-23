@@ -38,7 +38,7 @@ export async function GET(
         id: match.id,
         competition: match.competition.name,
         competitionCode: match.competition.code,
-        competitionLogo: match.competition.emblem,
+        competitionLogo: match.competition.emblem || `https://crests.football-data.org/${match.competition.code}.png`,
         date: displayDate,
         fullDate: matchDate.toISOString(),
         time: displayTime,
@@ -167,7 +167,8 @@ export async function GET(
         id: c.id,
         name: c.name,
         code: c.code,
-        logo: c.emblem,
+        // Use emblem from API, fallback to constructed URL
+        logo: c.emblem || `https://crests.football-data.org/${c.code}.png`,
       })),
       form: form.slice(0, 5),
       // Full season matches
