@@ -180,12 +180,11 @@ export function Header() {
                               className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
-                              <div
-                                className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
-                                style={{ backgroundColor: theme.accent, color: '#fff' }}
-                              >
-                                {team.shortName.slice(0, 2)}
-                              </div>
+                              <img
+                                src={team.logo}
+                                alt={team.name}
+                                className="h-8 w-8 object-contain"
+                              />
                               <div>
                                 <p className="text-sm font-medium" style={{ color: theme.text }}>
                                   {team.name}
