@@ -175,8 +175,8 @@ export default function MatchPage() {
           <ChevronLeft size={18} />
         </button>
         <div className="flex-1">
-          <p className="text-[11px] font-medium" style={{ color: theme.accent }}>{match.league}</p>
-          <p className="text-[10px]" style={{ color: theme.textSecondary }}>Matchday {match.matchday}</p>
+          <p className="text-[15px] font-semibold" style={{ color: theme.accent }}>{match.league}</p>
+          <p className="text-[13px]" style={{ color: theme.textSecondary }}>Matchday {match.matchday}</p>
         </div>
         {isLive && (
           <span
