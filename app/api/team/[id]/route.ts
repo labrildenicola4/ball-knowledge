@@ -133,28 +133,43 @@ export async function GET(
     const ppg = played > 0 ? (points / played).toFixed(2) : '0.00';
 
     // Transform squad data
-    const squad = (teamDetails.squad || []).map(player => ({
-      id: player.id,
-      name: player.name,
-      position: player.position || 'Unknown',
-      nationality: player.nationality || 'Unknown',
-      shirtNumber: player.shirtNumber || null,
-      // Placeholder stats - Football-Data.org free tier doesn't provide these
-      stats: {
-        appearances: null,
-        substitutions: null,
-        goals: null,
-        assists: null,
-        shots: null,
-        shotsOnTarget: null,
-        foulsCommitted: null,
-        foulsSuffered: null,
-        yellowCards: null,
-        redCards: null,
-        saves: null, // For goalkeepers
-        goalsAgainst: null, // For goalkeepers
-      },
-    }));
+    const squad = (teamDetails.squad || []).map(player => {
+      // Calculate age from dateOfBirth
+      let age: number | null = null;
+      if (player.dateOfBirth) {
+        const birthDate = new Date(player.dateOfBirth);
+        const today = new Date();
+        age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+      }
+
+      return {
+        id: player.id,
+        name: player.name,
+        position: player.position || 'Unknown',
+        nationality: player.nationality || 'Unknown',
+        shirtNumber: player.shirtNumber || null,
+        age,
+        // Placeholder stats - Football-Data.org free tier doesn't provide these
+        stats: {
+          appearances: null,
+          substitutions: null,
+          goals: null,
+          assists: null,
+          shots: null,
+          shotsOnTarget: null,
+          foulsCommitted: null,
+          foulsSuffered: null,
+          yellowCards: null,
+          redCards: null,
+          saves: null, // For goalkeepers
+          goalsAgainst: null, // For goalkeepers
+        },
+      };
+    });
 
     // Group squad by position
     const positions = ['Goalkeeper', 'Defence', 'Midfield', 'Offence'];

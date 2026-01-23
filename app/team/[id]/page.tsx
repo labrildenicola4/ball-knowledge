@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronDown, MapPin, Trophy, Users, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, ChevronDown, MapPin, Trophy, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
@@ -70,6 +70,7 @@ interface Player {
   position: string;
   nationality: string;
   shirtNumber: number | null;
+  age: number | null;
   stats: PlayerStats;
 }
 
@@ -666,21 +667,13 @@ export default function TeamPage() {
                   Manager
                 </h3>
                 <div
-                  className="flex items-center gap-3 rounded-xl p-4"
+                  className="rounded-xl px-4 py-3"
                   style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                 >
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full"
-                    style={{ backgroundColor: theme.accent }}
-                  >
-                    <Users size={20} color="#fff" />
-                  </div>
-                  <div>
-                    <p className="font-medium" style={{ color: theme.text }}>{team.coach}</p>
-                    {team.coachNationality && (
-                      <p className="text-xs" style={{ color: theme.textSecondary }}>{team.coachNationality}</p>
-                    )}
-                  </div>
+                  <p className="font-medium" style={{ color: theme.text }}>{team.coach}</p>
+                  {team.coachNationality && (
+                    <p className="text-xs mt-0.5" style={{ color: theme.textSecondary }}>{team.coachNationality}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -701,11 +694,11 @@ export default function TeamPage() {
                       >
                         {/* Table Header */}
                         <div
-                          className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[600px]"
+                          className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider min-w-[640px]"
                           style={{
                             gridTemplateColumns: isGoalkeeper
-                              ? '40px 1fr 60px 32px 32px 32px 32px 32px 32px'
-                              : '40px 1fr 60px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
+                              ? '40px 1fr 44px 32px 32px 32px 32px 32px 32px 32px'
+                              : '40px 1fr 44px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
                             backgroundColor: theme.bgTertiary,
                             color: theme.textSecondary,
                           }}
@@ -713,6 +706,7 @@ export default function TeamPage() {
                           <span className="text-center">#</span>
                           <span>Player</span>
                           <span className="text-center">NAT</span>
+                          <span className="text-center">AGE</span>
                           <span className="text-center">APP</span>
                           <span className="text-center">SUB</span>
                           {isGoalkeeper ? (
@@ -740,11 +734,11 @@ export default function TeamPage() {
                         {group.players.map((player, idx) => (
                           <div
                             key={player.id}
-                            className="grid items-center px-3 py-2.5 min-w-[600px]"
+                            className="grid items-center px-3 py-2.5 min-w-[640px]"
                             style={{
                               gridTemplateColumns: isGoalkeeper
-                                ? '40px 1fr 60px 32px 32px 32px 32px 32px 32px'
-                                : '40px 1fr 60px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
+                                ? '40px 1fr 44px 32px 32px 32px 32px 32px 32px 32px'
+                                : '40px 1fr 44px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px',
                               borderTop: `1px solid ${theme.border}`,
                             }}
                           >
@@ -764,6 +758,11 @@ export default function TeamPage() {
                             {/* Nationality */}
                             <span className="text-center text-xs" style={{ color: theme.textSecondary }}>
                               {player.nationality?.substring(0, 3).toUpperCase() || '-'}
+                            </span>
+
+                            {/* Age */}
+                            <span className="text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                              {player.age ?? '-'}
                             </span>
 
                             {/* Stats */}
@@ -835,52 +834,60 @@ export default function TeamPage() {
                   >
                     <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
                       <div className="flex gap-2">
-                        <span className="font-semibold" style={{ color: theme.text }}>APP:</span>
-                        <span style={{ color: theme.textSecondary }}>Appearances</span>
+                        <span className="font-semibold" style={{ color: theme.text }}>NAT:</span>
+                        <span style={{ color: theme.textSecondary }}>Nationality</span>
                       </div>
                       <div className="flex gap-2">
                         <span className="font-semibold" style={{ color: theme.text }}>FC:</span>
                         <span style={{ color: theme.textSecondary }}>Fouls Committed</span>
                       </div>
                       <div className="flex gap-2">
-                        <span className="font-semibold" style={{ color: theme.text }}>SUB:</span>
-                        <span style={{ color: theme.textSecondary }}>Substitute Appearances</span>
+                        <span className="font-semibold" style={{ color: theme.text }}>AGE:</span>
+                        <span style={{ color: theme.textSecondary }}>Player Age</span>
                       </div>
                       <div className="flex gap-2">
                         <span className="font-semibold" style={{ color: theme.text }}>FA:</span>
                         <span style={{ color: theme.textSecondary }}>Fouls Suffered</span>
                       </div>
                       <div className="flex gap-2">
-                        <span className="font-semibold" style={{ color: theme.text }}>G:</span>
-                        <span style={{ color: theme.textSecondary }}>Total Goals</span>
+                        <span className="font-semibold" style={{ color: theme.text }}>APP:</span>
+                        <span style={{ color: theme.textSecondary }}>Appearances</span>
                       </div>
                       <div className="flex gap-2">
                         <span className="font-semibold" style={{ color: theme.text }}>YC:</span>
                         <span style={{ color: theme.textSecondary }}>Yellow Cards</span>
                       </div>
                       <div className="flex gap-2">
-                        <span className="font-semibold" style={{ color: theme.text }}>A:</span>
-                        <span style={{ color: theme.textSecondary }}>Assists</span>
+                        <span className="font-semibold" style={{ color: theme.text }}>SUB:</span>
+                        <span style={{ color: theme.textSecondary }}>Substitute Appearances</span>
                       </div>
                       <div className="flex gap-2">
                         <span className="font-semibold" style={{ color: theme.text }}>RC:</span>
                         <span style={{ color: theme.textSecondary }}>Red Cards</span>
                       </div>
                       <div className="flex gap-2">
-                        <span className="font-semibold" style={{ color: theme.text }}>SH:</span>
-                        <span style={{ color: theme.textSecondary }}>Shots</span>
+                        <span className="font-semibold" style={{ color: theme.text }}>G:</span>
+                        <span style={{ color: theme.textSecondary }}>Goals</span>
                       </div>
                       <div className="flex gap-2">
                         <span className="font-semibold" style={{ color: theme.text }}>SV:</span>
                         <span style={{ color: theme.textSecondary }}>Saves</span>
                       </div>
                       <div className="flex gap-2">
-                        <span className="font-semibold" style={{ color: theme.text }}>ST:</span>
-                        <span style={{ color: theme.textSecondary }}>Shots On Target</span>
+                        <span className="font-semibold" style={{ color: theme.text }}>A:</span>
+                        <span style={{ color: theme.textSecondary }}>Assists</span>
                       </div>
                       <div className="flex gap-2">
                         <span className="font-semibold" style={{ color: theme.text }}>GA:</span>
                         <span style={{ color: theme.textSecondary }}>Goals Against</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>SH:</span>
+                        <span style={{ color: theme.textSecondary }}>Shots</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-semibold" style={{ color: theme.text }}>ST:</span>
+                        <span style={{ color: theme.textSecondary }}>Shots On Target</span>
                       </div>
                     </div>
                   </div>
