@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronDown, MapPin, Calendar, Trophy, Users, BarChart3 } from 'lucide-react';
+import { ChevronLeft, ChevronDown, MapPin, Trophy, Users, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
@@ -107,7 +107,7 @@ const DOMESTIC_LEAGUES = ['PD', 'PL', 'SA', 'BL1', 'FL1', 'BSA', 'DED', 'PPL', '
 export default function TeamPage() {
   const params = useParams();
   const router = useRouter();
-  const { theme } = useTheme();
+  const { theme, darkMode, toggleDarkMode } = useTheme();
   const [team, setTeam] = useState<TeamData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -355,6 +355,13 @@ export default function TeamPage() {
             <p className="text-xs" style={{ color: theme.textSecondary }}>{team.tla}</p>
           )}
         </div>
+        <button
+          onClick={toggleDarkMode}
+          className="flex h-9 w-9 items-center justify-center rounded-full"
+          style={{ border: `1px solid ${theme.border}` }}
+        >
+          {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
+        </button>
       </header>
 
       {/* Team Hero Section */}

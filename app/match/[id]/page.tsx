@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon } from 'lucide-react';
+import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchStandings } from '@/components/MatchStandings';
@@ -48,7 +48,7 @@ interface MatchDetails {
 export default function MatchPage() {
   const params = useParams();
   const router = useRouter();
-  const { theme } = useTheme();
+  const { theme, darkMode, toggleDarkMode } = useTheme();
   const [match, setMatch] = useState<MatchDetails | null>(null);
   const [standings, setStandings] = useState<Standing[]>([]);
   const [standingsLoading, setStandingsLoading] = useState(false);
@@ -180,7 +180,7 @@ export default function MatchPage() {
           className="flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${theme.border}` }}
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={18} style={{ color: theme.text }} />
         </button>
         <div className="flex-1">
           <p className="text-[15px] font-semibold" style={{ color: theme.accent }}>{match.league}</p>
@@ -194,6 +194,13 @@ export default function MatchPage() {
             LIVE
           </span>
         )}
+        <button
+          onClick={toggleDarkMode}
+          className="flex h-9 w-9 items-center justify-center rounded-full"
+          style={{ border: `1px solid ${theme.border}` }}
+        >
+          {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
+        </button>
       </header>
 
       {/* Main Score Section */}
