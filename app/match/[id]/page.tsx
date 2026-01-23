@@ -13,6 +13,7 @@ interface Team {
   shortName: string;
   logo: string;
   score: number | null;
+  form: string[];
 }
 
 interface Standing {
@@ -138,14 +139,9 @@ export default function MatchPage() {
   const isLive = ['LIVE', '1H', '2H', 'HT'].includes(match.status);
   const isUpcoming = match.status === 'NS';
 
-  // Get team form from standings
-  const getTeamForm = (teamId: number): string[] => {
-    const team = standings.find(s => s.teamId === teamId);
-    return team?.form?.slice(0, 5) || [];
-  };
-
-  const homeForm = getTeamForm(match.home.id);
-  const awayForm = getTeamForm(match.away.id);
+  // Get team form from match data (fetched from API)
+  const homeForm = match.home.form || [];
+  const awayForm = match.away.form || [];
 
   // Form indicator component
   const FormIndicator = ({ form }: { form: string[] }) => (

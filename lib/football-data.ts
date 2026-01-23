@@ -259,6 +259,40 @@ export async function getHeadToHead(matchId: number, limit: number = 10): Promis
   return data.matches;
 }
 
+// Get a team's recent matches to compute form
+export async function getTeamForm(teamId: number, limit: number = 5): Promise<string[]> {
+  try {
+    const data = await fetchApi<MatchesResponse>(
+      `/teams/${teamId}/matches?status=FINISHED&limit=${limit}`
+    );
+
+    // Compute form from recent matches (most recent first)
+    const form: string[] = [];
+    const matches = data.matches.slice(-limit).reverse(); // Get last N matches, most recent first
+
+    for (const match of matches) {
+      const isHome = match.homeTeam.id === teamId;
+      const teamScore = isHome ? match.score.fullTime.home : match.score.fullTime.away;
+      const opponentScore = isHome ? match.score.fullTime.away : match.score.fullTime.home;
+
+      if (teamScore === null || opponentScore === null) continue;
+
+      if (teamScore > opponentScore) {
+        form.push('W');
+      } else if (teamScore < opponentScore) {
+        form.push('L');
+      } else {
+        form.push('D');
+      }
+    }
+
+    return form;
+  } catch (error) {
+    console.error(`Error fetching form for team ${teamId}:`, error);
+    return [];
+  }
+}
+
 // Map status codes to display format
 export function mapStatus(status: string, minute: number | null): { status: string; time: string } {
   switch (status) {

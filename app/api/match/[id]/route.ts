@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMatch, getHeadToHead, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
+import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
 
 // Reverse mapping: competition code (PD) -> league ID (laliga)
 const CODE_TO_LEAGUE: Record<string, string> = Object.fromEntries(
@@ -17,15 +17,19 @@ export async function GET(
   }
 
   try {
-    // Fetch match details and head-to-head in parallel
-    const [match, h2hMatches] = await Promise.all([
-      getMatch(matchId),
-      getHeadToHead(matchId, 10).catch(() => []),
-    ]);
+    // Fetch match details first to get team IDs
+    const match = await getMatch(matchId);
 
     if (!match) {
       return NextResponse.json({ error: 'Match not found' }, { status: 404 });
     }
+
+    // Fetch H2H and team forms in parallel
+    const [h2hMatches, homeForm, awayForm] = await Promise.all([
+      getHeadToHead(matchId, 10).catch(() => []),
+      getTeamForm(match.homeTeam.id, 5).catch(() => []),
+      getTeamForm(match.awayTeam.id, 5).catch(() => []),
+    ]);
 
     const matchDate = new Date(match.utcDate);
     const { status: displayStatus, time } = mapStatus(match.status, match.minute);
@@ -74,15 +78,7 @@ export async function GET(
         shortName: match.homeTeam.tla || match.homeTeam.shortName || match.homeTeam.name.substring(0, 3).toUpperCase(),
         logo: match.homeTeam.crest,
         score: match.score.fullTime.home,
-        // Stats not available in free tier
-        possession: 0,
-        shots: 0,
-        shotsOnTarget: 0,
-        corners: 0,
-        fouls: 0,
-        form: [],
-        scorers: [],
-        lineup: null,
+        form: homeForm,
       },
       away: {
         id: match.awayTeam.id,
@@ -90,15 +86,7 @@ export async function GET(
         shortName: match.awayTeam.tla || match.awayTeam.shortName || match.awayTeam.name.substring(0, 3).toUpperCase(),
         logo: match.awayTeam.crest,
         score: match.score.fullTime.away,
-        // Stats not available in free tier
-        possession: 0,
-        shots: 0,
-        shotsOnTarget: 0,
-        corners: 0,
-        fouls: 0,
-        form: [],
-        scorers: [],
-        lineup: null,
+        form: awayForm,
       },
       timeline: [], // Not available in free tier
       h2h: h2hStats,
