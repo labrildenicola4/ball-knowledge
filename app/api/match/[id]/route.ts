@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
+import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES, LineupPlayer } from '@/lib/football-data';
 
 // Force dynamic rendering - no caching at Vercel edge
 export const dynamic = 'force-dynamic';
@@ -150,6 +150,12 @@ export async function GET(
     // e.g., american football: yards, touchdowns, turnovers by quarter
     const mockStats = (isLive || statusInfo.status === 'FT') ? generateSoccerStats(statusInfo.status) : null;
 
+    // Extract lineup data if available
+    const homeLineup: LineupPlayer[] = match.homeTeam.lineup || [];
+    const homeBench: LineupPlayer[] = match.homeTeam.bench || [];
+    const awayLineup: LineupPlayer[] = match.awayTeam.lineup || [];
+    const awayBench: LineupPlayer[] = match.awayTeam.bench || [];
+
     const matchDetails = {
       id: match.id,
       league: match.competition.name,
@@ -167,6 +173,10 @@ export async function GET(
         logo: match.homeTeam.crest,
         score: match.score.fullTime.home,
         form: homeForm,
+        lineup: homeLineup,
+        bench: homeBench,
+        formation: match.homeTeam.formation || null,
+        coach: match.homeTeam.coach?.name || null,
       },
       away: {
         id: match.awayTeam.id,
@@ -175,6 +185,10 @@ export async function GET(
         logo: match.awayTeam.crest,
         score: match.score.fullTime.away,
         form: awayForm,
+        lineup: awayLineup,
+        bench: awayBench,
+        formation: match.awayTeam.formation || null,
+        coach: match.awayTeam.coach?.name || null,
       },
       h2h: h2hStats,
       halfTimeScore: {

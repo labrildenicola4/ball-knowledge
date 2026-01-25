@@ -127,6 +127,24 @@ export interface MatchesResponse {
   };
 }
 
+export interface LineupPlayer {
+  id: number;
+  name: string;
+  position: string;
+  shirtNumber: number | null;
+}
+
+export interface TeamLineup {
+  lineup: LineupPlayer[];
+  bench: LineupPlayer[];
+  coach?: {
+    id: number;
+    name: string;
+    nationality?: string;
+  };
+  formation?: string;
+}
+
 export interface MatchResponse {
   id: number;
   utcDate: string;
@@ -134,8 +152,8 @@ export interface MatchResponse {
   minute: number | null;
   venue: string | null;
   matchday: number;
-  homeTeam: Team;
-  awayTeam: Team;
+  homeTeam: Team & { lineup?: LineupPlayer[]; bench?: LineupPlayer[]; coach?: { id: number; name: string }; formation?: string };
+  awayTeam: Team & { lineup?: LineupPlayer[]; bench?: LineupPlayer[]; coach?: { id: number; name: string }; formation?: string };
   score: {
     winner: string | null;
     duration: string;

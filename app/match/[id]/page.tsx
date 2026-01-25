@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon, Sun, Moon, BarChart3, Heart } from 'lucide-react';
+import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon, Sun, Moon, BarChart3, Heart, Users } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchStandings } from '@/components/MatchStandings';
 import { LiveStats, LiveStatsData } from '@/components/LiveStats';
+import { MatchLineup, LineupPlayer } from '@/components/MatchLineup';
 import { useLiveMatch } from '@/lib/use-live-scores';
 import { createBrowserClient } from '@supabase/ssr';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -25,6 +26,10 @@ interface Team {
   logo: string;
   score: number | null;
   form: string[];
+  lineup: LineupPlayer[];
+  bench: LineupPlayer[];
+  formation: string | null;
+  coach: string | null;
 }
 
 interface Standing {
@@ -443,6 +448,32 @@ export default function MatchPage() {
           />
         </section>
       )}
+
+      {/* Lineups */}
+      <section className="px-4 py-6" style={{ borderBottom: `1px solid ${theme.border}` }}>
+        <div className="flex items-center gap-2 mb-4">
+          <Users size={14} style={{ color: theme.accent }} />
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+            Lineups
+          </h3>
+        </div>
+        <MatchLineup
+          home={{
+            lineup: match.home.lineup || [],
+            bench: match.home.bench || [],
+            formation: match.home.formation,
+            coach: match.home.coach,
+          }}
+          away={{
+            lineup: match.away.lineup || [],
+            bench: match.away.bench || [],
+            formation: match.away.formation,
+            coach: match.away.coach,
+          }}
+          homeShortName={match.home.shortName}
+          awayShortName={match.away.shortName}
+        />
+      </section>
 
       {/* Head to Head */}
       {match.h2h.total > 0 && (
