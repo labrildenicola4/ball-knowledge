@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
 
+// Force dynamic rendering - no caching at Vercel edge
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Generate realistic mock stats for demo purposes
 // In production, replace with API-Football or similar
 function generateMockStats(isLive: boolean, isFinished: boolean, minute: number | null) {
@@ -159,7 +163,12 @@ export async function GET(
       ),
     };
 
-    return NextResponse.json(matchDetails);
+    // Return with no-cache headers for live data
+    return NextResponse.json(matchDetails, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      },
+    });
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json({ error: 'Failed to fetch match details' }, { status: 500 });

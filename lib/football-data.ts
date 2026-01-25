@@ -157,13 +157,21 @@ async function fetchApi<T>(endpoint: string, retries = 2, customCacheTTL?: numbe
 
   console.log(`[Football-Data] Fetching: ${url}`);
 
-  const revalidateTime = customCacheTTL ? Math.floor(customCacheTTL / 1000) : 300;
-  const response = await fetch(url, {
+  // For live data (short cache), disable Next.js fetch caching entirely
+  const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
     headers: {
       'X-Auth-Token': API_KEY,
     },
-    next: { revalidate: revalidateTime },
-  });
+  };
+
+  if (customCacheTTL && customCacheTTL <= LIVE_CACHE_TTL) {
+    // No Next.js caching for live data
+    fetchOptions.cache = 'no-store';
+  } else {
+    fetchOptions.next = { revalidate: 300 };
+  }
+
+  const response = await fetch(url, fetchOptions);
 
   if (!response.ok) {
     const errorText = await response.text();
