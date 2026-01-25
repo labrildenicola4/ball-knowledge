@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon, Sun, Moon, BarChart3 } from 'lucide-react';
+import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon, Sun, Moon, BarChart3, Heart } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchStandings } from '@/components/MatchStandings';
 import { LiveStats, LiveStatsData } from '@/components/LiveStats';
 import { useLiveMatch } from '@/lib/use-live-scores';
+import { createBrowserClient } from '@supabase/ssr';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'Match not found' : 'Failed to fetch');
@@ -123,6 +125,71 @@ export default function MatchPage() {
 
   const standings = standingsData?.standings || [];
 
+  // Favorites state for both teams
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [homeFavorite, setHomeFavorite] = useState(false);
+  const [awayFavorite, setAwayFavorite] = useState(false);
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  // Check auth and load favorites
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user && match) {
+        const { data } = await supabase
+          .from('user_favorites')
+          .select('favorite_id')
+          .eq('user_id', user.id)
+          .eq('favorite_type', 'team')
+          .in('favorite_id', [match.home.id, match.away.id]);
+
+        if (data) {
+          const favIds = data.map(f => f.favorite_id);
+          setHomeFavorite(favIds.includes(match.home.id));
+          setAwayFavorite(favIds.includes(match.away.id));
+        }
+      }
+    };
+
+    if (match) checkAuth();
+  }, [match?.home.id, match?.away.id]);
+
+  // Toggle favorite for a team
+  const toggleFavorite = async (teamId: number, isHome: boolean) => {
+    if (!user) {
+      alert('Please sign in to save favorites');
+      return;
+    }
+
+    const isFav = isHome ? homeFavorite : awayFavorite;
+
+    if (isFav) {
+      await supabase
+        .from('user_favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('favorite_type', 'team')
+        .eq('favorite_id', teamId);
+    } else {
+      await supabase
+        .from('user_favorites')
+        .insert({
+          user_id: user.id,
+          favorite_type: 'team',
+          favorite_id: teamId,
+        });
+    }
+
+    if (isHome) setHomeFavorite(!isFav);
+    else setAwayFavorite(!isFav);
+  };
+
   // Save last viewed match to localStorage
   useEffect(() => {
     if (matchId) {
@@ -232,20 +299,27 @@ export default function MatchPage() {
       <section className="px-4 py-8" style={{ backgroundColor: theme.bgSecondary }}>
         <div className="flex items-center justify-between">
           {/* Home Team */}
-          <Link href={`/team/${match.home.id}`} className="flex-1 text-center transition-opacity hover:opacity-80">
-            <span
-              className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider"
-              style={{ color: theme.textSecondary }}
-            >
-              Home
-            </span>
-            <div className="mx-auto mb-3 h-20 w-20">
-              <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain" />
+          <div className="flex-1 text-center">
+            <Link href={`/team/${match.home.id}`} className="transition-opacity hover:opacity-80">
+              <span
+                className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider"
+                style={{ color: theme.textSecondary }}
+              >
+                Home
+              </span>
+              <div className="mx-auto mb-3 h-20 w-20">
+                <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain" />
+              </div>
+            </Link>
+            <div className="flex items-center justify-center gap-1">
+              <p className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</p>
+              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5">
+                <Heart size={14} fill={homeFavorite ? '#ec4899' : 'none'} style={{ color: '#ec4899' }} />
+              </button>
             </div>
-            <p className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</p>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.home.shortName}</p>
             {homeForm.length > 0 && <FormIndicator form={homeForm} />}
-          </Link>
+          </div>
 
           {/* Score */}
           <div className="px-4 text-center">
@@ -311,20 +385,27 @@ export default function MatchPage() {
           </div>
 
           {/* Away Team */}
-          <Link href={`/team/${match.away.id}`} className="flex-1 text-center transition-opacity hover:opacity-80">
-            <span
-              className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider"
-              style={{ color: theme.textSecondary }}
-            >
-              Away
-            </span>
-            <div className="mx-auto mb-3 h-20 w-20">
-              <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain" />
+          <div className="flex-1 text-center">
+            <Link href={`/team/${match.away.id}`} className="transition-opacity hover:opacity-80">
+              <span
+                className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider"
+                style={{ color: theme.textSecondary }}
+              >
+                Away
+              </span>
+              <div className="mx-auto mb-3 h-20 w-20">
+                <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain" />
+              </div>
+            </Link>
+            <div className="flex items-center justify-center gap-1">
+              <p className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</p>
+              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5">
+                <Heart size={14} fill={awayFavorite ? '#ec4899' : 'none'} style={{ color: '#ec4899' }} />
+              </button>
             </div>
-            <p className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</p>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.away.shortName}</p>
             {awayForm.length > 0 && <FormIndicator form={awayForm} />}
-          </Link>
+          </div>
         </div>
       </section>
 

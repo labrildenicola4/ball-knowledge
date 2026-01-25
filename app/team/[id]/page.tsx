@@ -443,17 +443,6 @@ export default function TeamPage() {
           )}
         </div>
         <button
-          onClick={toggleFavorite}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
-        >
-          <Heart
-            size={18}
-            fill={isFavorite ? theme.red : 'none'}
-            style={{ color: isFavorite ? theme.red : theme.text }}
-          />
-        </button>
-        <button
           onClick={toggleDarkMode}
           className="flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${theme.border}` }}
@@ -470,8 +459,17 @@ export default function TeamPage() {
             <img src={team.crest} alt={team.name} className="h-full w-full object-contain" />
           </div>
 
-          {/* Name */}
-          <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
+          {/* Name with favorite button */}
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
+            <button onClick={toggleFavorite} className="p-1">
+              <Heart
+                size={20}
+                fill={isFavorite ? '#ec4899' : 'none'}
+                style={{ color: '#ec4899' }}
+              />
+            </button>
+          </div>
 
           {/* Form */}
           {team.form.length > 0 && (
