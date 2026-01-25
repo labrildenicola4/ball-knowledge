@@ -70,7 +70,10 @@ export function MatchCard({ match }: MatchCardProps) {
             ) : (
               <span className="text-2xl">{match.homeLogo}</span>
             )}
-            <span className="text-lg font-medium" style={{ color: theme.text }}>{match.home}</span>
+            <div className="flex flex-col">
+              <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Home</span>
+              <span className="text-lg font-medium" style={{ color: theme.text }}>{match.home}</span>
+            </div>
           </div>
 
           <div
@@ -83,7 +86,10 @@ export function MatchCard({ match }: MatchCardProps) {
           </div>
 
           <div className="flex flex-1 items-center justify-end gap-3">
-            <span className="text-lg font-medium" style={{ color: theme.text }}>{match.away}</span>
+            <div className="flex flex-col items-end">
+              <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Away</span>
+              <span className="text-lg font-medium" style={{ color: theme.text }}>{match.away}</span>
+            </div>
             {match.awayLogo.startsWith('http') ? (
               <img src={match.awayLogo} alt={match.away} className="h-8 w-8 object-contain" />
             ) : (

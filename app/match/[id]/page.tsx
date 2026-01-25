@@ -244,8 +244,8 @@ export default function MatchPage() {
           {/* Home Team */}
           <Link href={`/team/${match.home.id}`} className="flex-1 text-center transition-opacity hover:opacity-80">
             <span
-              className="inline-block mb-2 rounded px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
-              style={{ backgroundColor: theme.red, color: '#fff' }}
+              className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider"
+              style={{ color: theme.textSecondary }}
             >
               Home
             </span>
@@ -323,8 +323,8 @@ export default function MatchPage() {
           {/* Away Team */}
           <Link href={`/team/${match.away.id}`} className="flex-1 text-center transition-opacity hover:opacity-80">
             <span
-              className="inline-block mb-2 rounded px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
-              style={{ backgroundColor: theme.blue, color: '#fff' }}
+              className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider"
+              style={{ color: theme.textSecondary }}
             >
               Away
             </span>

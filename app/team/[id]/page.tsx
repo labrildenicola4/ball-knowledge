@@ -264,13 +264,10 @@ export default function TeamPage() {
 
           {/* Home/Away indicator */}
           <span
-            className="w-7 rounded px-1.5 py-0.5 text-center text-[10px] font-medium"
-            style={{
-              backgroundColor: match.isHome ? theme.accent : theme.bgSecondary,
-              color: match.isHome ? '#fff' : theme.textSecondary,
-            }}
+            className="w-10 text-center text-[9px] font-medium uppercase tracking-wider"
+            style={{ color: theme.textSecondary }}
           >
-            {match.isHome ? 'H' : 'A'}
+            {match.isHome ? 'Home' : 'Away'}
           </span>
 
           {/* Opponent */}
