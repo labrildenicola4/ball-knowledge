@@ -6,7 +6,8 @@ const API_KEY = process.env.FOOTBALL_DATA_KEY!;
 
 // Simple in-memory cache for API responses
 const cache = new Map<string, { data: unknown; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for general data
+const LIVE_CACHE_TTL = 30 * 1000; // 30 seconds cache for live match data
 
 // Rate limit tracking
 let lastRequestTime = 0;
@@ -132,13 +133,14 @@ export interface MatchResponse {
   };
 }
 
-async function fetchApi<T>(endpoint: string, retries = 2): Promise<T> {
+async function fetchApi<T>(endpoint: string, retries = 2, customCacheTTL?: number): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
   const cacheKey = endpoint;
+  const cacheTTL = customCacheTTL ?? CACHE_TTL;
 
   // Check cache first
   const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+  if (cached && Date.now() - cached.timestamp < cacheTTL) {
     console.log(`[Football-Data] Cache hit: ${endpoint}`);
     return cached.data as T;
   }
@@ -155,11 +157,12 @@ async function fetchApi<T>(endpoint: string, retries = 2): Promise<T> {
 
   console.log(`[Football-Data] Fetching: ${url}`);
 
+  const revalidateTime = customCacheTTL ? Math.floor(customCacheTTL / 1000) : 300;
   const response = await fetch(url, {
     headers: {
       'X-Auth-Token': API_KEY,
     },
-    next: { revalidate: 300 }, // Cache for 5 minutes
+    next: { revalidate: revalidateTime },
   });
 
   if (!response.ok) {
@@ -182,7 +185,7 @@ async function fetchApi<T>(endpoint: string, retries = 2): Promise<T> {
 
       console.log(`[Football-Data] Rate limited, retrying in ${waitTime}ms...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
-      return fetchApi<T>(endpoint, retries - 1);
+      return fetchApi<T>(endpoint, retries - 1, customCacheTTL);
     }
 
     throw new Error(`API Error: ${response.status}`);
@@ -246,9 +249,9 @@ export async function getStandings(competitionCode: string): Promise<Standing[]>
   return totalStandings?.table || [];
 }
 
-// Get a single match with details
+// Get a single match with details (uses shorter cache for live updates)
 export async function getMatch(matchId: number): Promise<MatchResponse> {
-  return fetchApi<MatchResponse>(`/matches/${matchId}`);
+  return fetchApi<MatchResponse>(`/matches/${matchId}`, 2, LIVE_CACHE_TTL);
 }
 
 // Get head-to-head for a match
