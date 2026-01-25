@@ -118,7 +118,43 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Sync] Total fixtures to upsert: ${allFixtures.length}`);
 
-    // Upsert in batches of 100
+    // Extract unique teams from fixtures
+    const teamsMap = new Map<number, {
+      api_id: number;
+      sport_type: string;
+      name: string;
+      short_name: string | null;
+      tla: string | null;
+      crest: string | null;
+    }>();
+
+    for (const fixture of allFixtures) {
+      if (!teamsMap.has(fixture.home_team_id)) {
+        teamsMap.set(fixture.home_team_id, {
+          api_id: fixture.home_team_id,
+          sport_type: 'soccer',
+          name: fixture.home_team_name,
+          short_name: fixture.home_team_name,
+          tla: fixture.home_team_short,
+          crest: fixture.home_team_logo,
+        });
+      }
+      if (!teamsMap.has(fixture.away_team_id)) {
+        teamsMap.set(fixture.away_team_id, {
+          api_id: fixture.away_team_id,
+          sport_type: 'soccer',
+          name: fixture.away_team_name,
+          short_name: fixture.away_team_name,
+          tla: fixture.away_team_short,
+          crest: fixture.away_team_logo,
+        });
+      }
+    }
+
+    const allTeams = Array.from(teamsMap.values());
+    console.log(`[Sync] Found ${allTeams.length} unique teams`);
+
+    // Upsert fixtures in batches of 100
     const batchSize = 100;
     let totalUpserted = 0;
 
@@ -138,6 +174,27 @@ export async function GET(request: NextRequest) {
         totalUpserted += batch.length;
       }
     }
+
+    // Upsert teams
+    let teamsUpserted = 0;
+    for (let i = 0; i < allTeams.length; i += batchSize) {
+      const batch = allTeams.slice(i, i + batchSize);
+
+      const { error } = await supabase
+        .from('teams_cache')
+        .upsert(batch, {
+          onConflict: 'api_id',
+          ignoreDuplicates: false,
+        });
+
+      if (error) {
+        console.error(`[Sync] Teams upsert error:`, error);
+      } else {
+        teamsUpserted += batch.length;
+      }
+    }
+
+    console.log(`[Sync] Upserted ${teamsUpserted} teams`);
 
     // Log the sync
     const duration = Date.now() - startTime;

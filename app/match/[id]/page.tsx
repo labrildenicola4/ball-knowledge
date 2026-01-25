@@ -1,13 +1,19 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import useSWR from 'swr';
 import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon, Sun, Moon, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchStandings } from '@/components/MatchStandings';
 import { LiveStats, LiveStatsData } from '@/components/LiveStats';
+
+const fetcher = (url: string) => fetch(url).then(res => {
+  if (!res.ok) throw new Error(res.status === 404 ? 'Match not found' : 'Failed to fetch');
+  return res.json();
+});
 
 interface Team {
   id: number;
@@ -52,14 +58,36 @@ export default function MatchPage() {
   const params = useParams();
   const router = useRouter();
   const { theme, darkMode, toggleDarkMode } = useTheme();
-  const [match, setMatch] = useState<MatchDetails | null>(null);
-  const [standings, setStandings] = useState<Standing[]>([]);
-  const [standingsLoading, setStandingsLoading] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-
   const matchId = params.id;
+
+  // Use SWR for match data with auto-refresh for live matches
+  const { data: match, error: swrError, isLoading: loading } = useSWR<MatchDetails>(
+    matchId ? `/api/match/${matchId}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      refreshInterval: (data) => {
+        // Auto-refresh every 30s for live matches
+        const isLive = data && ['LIVE', '1H', '2H', 'HT'].includes(data.status);
+        return isLive ? 30000 : 0;
+      },
+    }
+  );
+
+  const error = swrError?.message || null;
+
+  // Use SWR for standings (with cached endpoint)
+  const { data: standingsData, isLoading: standingsLoading } = useSWR(
+    match?.leagueCode ? `/api/standings/cached?league=${match.leagueCode}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000,
+    }
+  );
+
+  const standings = standingsData?.standings || [];
 
   // Save last viewed match to localStorage
   useEffect(() => {
@@ -67,80 +95,6 @@ export default function MatchPage() {
       localStorage.setItem('lastViewedMatch', String(matchId));
     }
   }, [matchId]);
-
-  // Fetch match data
-  const fetchMatch = useCallback(async (showLoading = true) => {
-    if (!matchId) return;
-
-    if (showLoading) {
-      setLoading(true);
-    }
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/match/${matchId}`);
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError('Match not found');
-        } else {
-          throw new Error('Failed to fetch match');
-        }
-        return;
-      }
-      const data = await res.json();
-      setMatch(data);
-      setLastUpdated(new Date());
-    } catch (err) {
-      console.error('Error fetching match:', err);
-      if (showLoading) {
-        setError('Failed to load match details');
-      }
-    } finally {
-      if (showLoading) {
-        setLoading(false);
-      }
-    }
-  }, [matchId]);
-
-  // Initial fetch
-  useEffect(() => {
-    fetchMatch(true);
-  }, [fetchMatch]);
-
-  // Auto-refresh for live matches (every 30 seconds)
-  useEffect(() => {
-    const isLive = match && ['LIVE', '1H', '2H', 'HT'].includes(match.status);
-
-    if (!isLive) return;
-
-    const interval = setInterval(() => {
-      fetchMatch(false); // Don't show loading spinner on refresh
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(interval);
-  }, [match?.status, fetchMatch]);
-
-  // Fetch standings when match is loaded and has a league code
-  useEffect(() => {
-    async function fetchStandings() {
-      if (!match?.leagueCode) return;
-
-      setStandingsLoading(true);
-      try {
-        const res = await fetch(`/api/standings?league=${match.leagueCode}`);
-        if (res.ok) {
-          const data = await res.json();
-          setStandings(data.standings || []);
-        }
-      } catch (err) {
-        console.error('Error fetching standings:', err);
-      } finally {
-        setStandingsLoading(false);
-      }
-    }
-
-    fetchStandings();
-  }, [match?.leagueCode]);
 
   // Loading state
   if (loading) {
@@ -222,11 +176,9 @@ export default function MatchPage() {
             >
               LIVE
             </span>
-            {lastUpdated && (
-              <span className="text-[9px]" style={{ color: theme.textSecondary }}>
-                Auto-updating
-              </span>
-            )}
+            <span className="text-[9px]" style={{ color: theme.textSecondary }}>
+              Auto-updating
+            </span>
           </div>
         )}
         <button

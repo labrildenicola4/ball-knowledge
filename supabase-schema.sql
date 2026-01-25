@@ -322,3 +322,59 @@ CREATE TABLE IF NOT EXISTS sync_log (
 
 -- Index for recent syncs
 CREATE INDEX IF NOT EXISTS idx_sync_log_type_time ON sync_log(sync_type, started_at DESC);
+
+-- ============================================
+-- TEAMS CACHE (Denormalized for fast reads)
+-- Populated when teams appear in fixtures
+-- ============================================
+CREATE TABLE IF NOT EXISTS teams_cache (
+  id SERIAL PRIMARY KEY,
+  api_id INTEGER NOT NULL UNIQUE,
+  sport_type VARCHAR(20) NOT NULL DEFAULT 'soccer',
+
+  -- Team info
+  name VARCHAR(200) NOT NULL,
+  short_name VARCHAR(50),
+  tla VARCHAR(10),
+  crest VARCHAR(500),
+
+  -- Metadata
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_teams_cache_api_id ON teams_cache(api_id);
+ALTER TABLE teams_cache ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read teams cache" ON teams_cache FOR SELECT USING (true);
+
+CREATE TRIGGER update_teams_cache_updated_at
+  BEFORE UPDATE ON teams_cache
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================
+-- STANDINGS CACHE (Denormalized for fast reads)
+-- ============================================
+CREATE TABLE IF NOT EXISTS standings_cache (
+  id SERIAL PRIMARY KEY,
+  sport_type VARCHAR(20) NOT NULL DEFAULT 'soccer',
+  league_code VARCHAR(20) NOT NULL,
+  league_name VARCHAR(200) NOT NULL,
+  season INTEGER NOT NULL,
+
+  -- Team standing data (JSON array for simplicity)
+  standings JSONB NOT NULL,
+
+  -- Metadata
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE(league_code, season, sport_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_standings_cache_league ON standings_cache(league_code);
+ALTER TABLE standings_cache ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read standings cache" ON standings_cache FOR SELECT USING (true);
+
+CREATE TRIGGER update_standings_cache_updated_at
+  BEFORE UPDATE ON standings_cache
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();

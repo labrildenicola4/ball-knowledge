@@ -8,10 +8,23 @@ import useSWR from 'swr';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 
-const fetcher = (url: string) => fetch(url).then(res => {
+const fetcher = async (url: string) => {
+  // Extract team ID from URL
+  const teamId = url.split('/').pop();
+
+  // Try cached endpoint first for faster response
+  try {
+    const cachedRes = await fetch(`/api/team/cached/${teamId}`);
+    if (cachedRes.ok) {
+      return cachedRes.json();
+    }
+  } catch {}
+
+  // Fall back to direct API
+  const res = await fetch(url);
   if (!res.ok) throw new Error(res.status === 429 ? 'Rate limited' : 'Failed to fetch');
   return res.json();
-});
+};
 
 interface MatchTeam {
   id: number;
@@ -178,7 +191,7 @@ export default function TeamPage() {
 
       setStandingsLoading(true);
       try {
-        const res = await fetch(`/api/standings?league=${selectedCompetition}`);
+        const res = await fetch(`/api/standings/cached?league=${selectedCompetition}`);
         if (res.ok) {
           const data = await res.json();
           setStandings(data.standings || []);
