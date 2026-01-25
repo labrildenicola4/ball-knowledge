@@ -62,17 +62,26 @@ export default function MatchPage() {
   const matchId = params.id;
   const numericMatchId = matchId ? parseInt(String(matchId)) : null;
 
-  // Use SWR for full match data (stats, H2H, etc.)
-  const { data: apiMatch, error: swrError, isLoading: loading } = useSWR<MatchDetails>(
+  // STEP 1: Get cached data instantly (basic match info)
+  const { data: cachedMatch, isLoading: cachedLoading } = useSWR<MatchDetails>(
+    matchId ? `/api/match/cached/${matchId}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000,
+    }
+  );
+
+  // STEP 2: Load full match data in background (H2H, stats, form)
+  const { data: fullMatch, error: swrError } = useSWR<MatchDetails>(
     matchId ? `/api/match/${matchId}` : null,
     fetcher,
     {
       revalidateOnFocus: false,
       dedupingInterval: 30000,
-      // Reduced polling since realtime handles live updates
       refreshInterval: (data) => {
         const isLive = data && ['LIVE', '1H', '2H', 'HT'].includes(data.status);
-        return isLive ? 60000 : 0; // Slower polling, realtime handles scores
+        return isLive ? 60000 : 0;
       },
     }
   );
@@ -80,22 +89,26 @@ export default function MatchPage() {
   // Subscribe to realtime score updates from Supabase
   const { match: liveMatch, isConnected: realtimeConnected } = useLiveMatch(numericMatchId);
 
-  // Merge API data with realtime scores (realtime takes priority for scores)
-  const match = apiMatch ? {
-    ...apiMatch,
-    // Override with realtime data if available
-    status: liveMatch?.status || apiMatch.status,
-    minute: liveMatch?.minute ?? apiMatch.minute,
+  // Use full data if available, otherwise cached data
+  const baseMatch = fullMatch || cachedMatch;
+
+  // Merge with realtime scores (realtime takes priority)
+  const match = baseMatch ? {
+    ...baseMatch,
+    status: liveMatch?.status || baseMatch.status,
+    minute: liveMatch?.minute ?? baseMatch.minute,
     home: {
-      ...apiMatch.home,
-      score: liveMatch?.home_score ?? apiMatch.home.score,
+      ...baseMatch.home,
+      score: liveMatch?.home_score ?? baseMatch.home.score,
     },
     away: {
-      ...apiMatch.away,
-      score: liveMatch?.away_score ?? apiMatch.away.score,
+      ...baseMatch.away,
+      score: liveMatch?.away_score ?? baseMatch.away.score,
     },
   } : null;
 
+  // Only show loading if we have no data at all
+  const loading = cachedLoading && !cachedMatch && !fullMatch;
   const error = swrError?.message || null;
 
   // Use SWR for standings (with cached endpoint)
