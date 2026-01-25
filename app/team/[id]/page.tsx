@@ -128,6 +128,9 @@ type TabType = 'schedule' | 'tables' | 'squad' | 'statistics';
 // Domestic league codes - these should be prioritized
 const DOMESTIC_LEAGUES = ['PD', 'PL', 'SA', 'BL1', 'FL1', 'BSA', 'DED', 'PPL', 'ELC'];
 
+// Leagues that should keep their original colored logos in dark mode
+const COLORED_LOGO_LEAGUES = ['SA', 'BL1', 'PPL', 'BSA'];
+
 export default function TeamPage() {
   const params = useParams();
   const router = useRouter();
@@ -240,7 +243,7 @@ export default function TeamPage() {
             src={match.competitionLogo}
             alt=""
             className="h-5 w-5 object-contain"
-            style={{ filter: darkMode ? 'brightness(0) invert(1)' : 'none' }}
+            style={{ filter: darkMode && !COLORED_LOGO_LEAGUES.includes(match.competitionCode || '') ? 'brightness(0) invert(1)' : 'none' }}
           />
 
           {/* Date */}
@@ -484,7 +487,7 @@ export default function TeamPage() {
                         src={selectedCompetitionData.logo}
                         alt=""
                         className="h-5 w-5 object-contain"
-                        style={{ filter: darkMode ? 'brightness(0) invert(1)' : 'none' }}
+                        style={{ filter: darkMode && !COLORED_LOGO_LEAGUES.includes(selectedCompetitionData.code) ? 'brightness(0) invert(1)' : 'none' }}
                       />
                     )}
                     <span className="text-sm font-medium" style={{ color: theme.text }}>
@@ -524,7 +527,7 @@ export default function TeamPage() {
                           src={comp.logo}
                           alt=""
                           className="h-5 w-5 object-contain"
-                          style={{ filter: darkMode ? 'brightness(0) invert(1)' : 'none' }}
+                          style={{ filter: darkMode && !COLORED_LOGO_LEAGUES.includes(comp.code) ? 'brightness(0) invert(1)' : 'none' }}
                         />
                         <span
                           className="text-sm"
