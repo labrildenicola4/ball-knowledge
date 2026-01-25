@@ -4,8 +4,14 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronDown, MapPin, Trophy, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
+import useSWR from 'swr';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
+
+const fetcher = (url: string) => fetch(url).then(res => {
+  if (!res.ok) throw new Error(res.status === 429 ? 'Rate limited' : 'Failed to fetch');
+  return res.json();
+});
 
 interface MatchTeam {
   id: number;
@@ -126,9 +132,19 @@ export default function TeamPage() {
   const params = useParams();
   const router = useRouter();
   const { theme, darkMode, toggleDarkMode } = useTheme();
-  const [team, setTeam] = useState<TeamData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const teamId = params.id;
+
+  // Use SWR for data fetching with caching
+  const { data: team, error: swrError, isLoading: loading } = useSWR<TeamData>(
+    teamId ? `/api/team/${teamId}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000, // Don't refetch within 1 minute
+    }
+  );
+
+  const error = swrError?.message || null;
 
   // Tab state
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
@@ -142,45 +158,15 @@ export default function TeamPage() {
   // Schedule filter
   const [scheduleFilter, setScheduleFilter] = useState<'all' | 'upcoming' | 'results'>('all');
 
-  const teamId = params.id;
-
+  // Set default competition when team loads
   useEffect(() => {
-    async function fetchTeam() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/team/${teamId}`);
-        if (!res.ok) {
-          if (res.status === 404) {
-            setError('Team not found');
-          } else if (res.status === 429) {
-            setError('Rate limited - please wait a moment');
-          } else {
-            throw new Error('Failed to fetch team');
-          }
-          return;
-        }
-        const data = await res.json();
-        setTeam(data);
-
-        // Set default competition to domestic league
-        if (data.competitions && data.competitions.length > 0) {
-          const domesticLeague = data.competitions.find((c: Competition) =>
-            DOMESTIC_LEAGUES.includes(c.code)
-          );
-          setSelectedCompetition(domesticLeague?.code || data.competitions[0].code);
-        }
-      } catch (err) {
-        console.error('Error fetching team:', err);
-        setError('Failed to load team details');
-      } finally {
-        setLoading(false);
-      }
+    if (team?.competitions && team.competitions.length > 0 && !selectedCompetition) {
+      const domesticLeague = team.competitions.find((c: Competition) =>
+        DOMESTIC_LEAGUES.includes(c.code)
+      );
+      setSelectedCompetition(domesticLeague?.code || team.competitions[0].code);
     }
-    if (teamId) {
-      fetchTeam();
-    }
-  }, [teamId]);
+  }, [team, selectedCompetition]);
 
   // Fetch standings when competition changes
   useEffect(() => {
