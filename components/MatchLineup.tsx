@@ -22,24 +22,34 @@ interface MatchLineupProps {
   away: TeamLineupData;
   homeShortName: string;
   awayShortName: string;
+  matchStatus?: string;
 }
 
 type TabType = 'home' | 'away';
 
-export function MatchLineup({ home, away, homeShortName, awayShortName }: MatchLineupProps) {
+export function MatchLineup({ home, away, homeShortName, awayShortName, matchStatus }: MatchLineupProps) {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('home');
 
   const hasLineups = home.lineup.length > 0 || away.lineup.length > 0;
 
   if (!hasLineups) {
+    // Show different message based on match status
+    const isFinished = matchStatus === 'FT';
+    const isLive = ['LIVE', '1H', '2H', 'HT'].includes(matchStatus || '');
+
+    let message = 'Lineups will be available closer to kickoff';
+    if (isFinished || isLive) {
+      message = 'Lineup data not available for this match';
+    }
+
     return (
       <div
         className="rounded-xl p-6 text-center"
         style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <p className="text-[12px]" style={{ color: theme.textSecondary }}>
-          Lineups will be available closer to kickoff
+          {message}
         </p>
       </div>
     );
