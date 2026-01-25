@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronDown, MapPin, Trophy, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, ChevronDown, MapPin, Trophy, Sun, Moon, Heart } from 'lucide-react';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
+import { createBrowserClient } from '@supabase/ssr';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 429 ? 'Rate limited' : 'Failed to fetch');
@@ -175,6 +177,67 @@ export default function TeamPage() {
 
   // Schedule filter
   const [scheduleFilter, setScheduleFilter] = useState<'all' | 'upcoming' | 'results'>('all');
+
+  // Favorites state with Supabase auth
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  // Check auth and load favorite status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user && teamId) {
+        const { data } = await supabase
+          .from('user_favorites')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('favorite_type', 'team')
+          .eq('favorite_id', Number(teamId))
+          .single();
+
+        setIsFavorite(!!data);
+      }
+    };
+
+    checkAuth();
+  }, [teamId]);
+
+  // Toggle favorite
+  const toggleFavorite = async () => {
+    if (!user) {
+      // Redirect to login or show message
+      alert('Please sign in to save favorites');
+      return;
+    }
+
+    if (isFavorite) {
+      // Remove favorite
+      await supabase
+        .from('user_favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('favorite_type', 'team')
+        .eq('favorite_id', Number(teamId));
+    } else {
+      // Add favorite
+      await supabase
+        .from('user_favorites')
+        .insert({
+          user_id: user.id,
+          favorite_type: 'team',
+          favorite_id: Number(teamId),
+        });
+    }
+
+    setIsFavorite(!isFavorite);
+  };
 
   // Set default competition when team loads
   useEffect(() => {
@@ -379,6 +442,17 @@ export default function TeamPage() {
             <p className="text-xs" style={{ color: theme.textSecondary }}>{team.tla}</p>
           )}
         </div>
+        <button
+          onClick={toggleFavorite}
+          className="flex h-9 w-9 items-center justify-center rounded-full"
+          style={{ border: `1px solid ${theme.border}` }}
+        >
+          <Heart
+            size={18}
+            fill={isFavorite ? theme.red : 'none'}
+            style={{ color: isFavorite ? theme.red : theme.text }}
+          />
+        </button>
         <button
           onClick={toggleDarkMode}
           className="flex h-9 w-9 items-center justify-center rounded-full"
