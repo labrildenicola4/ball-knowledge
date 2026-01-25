@@ -466,8 +466,8 @@ export default function TeamPage() {
               <button onClick={toggleFavorite} className="p-1">
                 <Heart
                   size={18}
-                  fill={isFavorite ? theme.accent : 'none'}
-                  style={{ color: theme.accent }}
+                  fill={isFavorite ? '#d68b94' : 'none'}
+                  style={{ color: '#d68b94' }}
                 />
               </button>
             </div>

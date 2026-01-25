@@ -315,7 +315,7 @@ export default function MatchPage() {
               <div className="flex items-center gap-1">
                 <p className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</p>
                 <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5">
-                  <Heart size={12} fill={homeFavorite ? theme.accent : 'none'} style={{ color: theme.accent }} />
+                  <Heart size={12} fill={homeFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
                 </button>
               </div>
             </div>
@@ -403,7 +403,7 @@ export default function MatchPage() {
               <div className="flex items-center gap-1">
                 <p className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</p>
                 <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5">
-                  <Heart size={12} fill={awayFavorite ? theme.accent : 'none'} style={{ color: theme.accent }} />
+                  <Heart size={12} fill={awayFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
                 </button>
               </div>
             </div>
