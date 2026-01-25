@@ -30,13 +30,34 @@ interface FixturesResponse {
   cached?: boolean;
   cacheAge?: number;
   count?: number;
+  source?: string;
 }
 
-const fetcher = (url: string): Promise<FixturesResponse> =>
-  fetch(url).then((res) => {
-    if (!res.ok) throw new Error('Failed to fetch');
-    return res.json();
-  });
+// Smart fetcher: tries Supabase cache first, falls back to direct API
+const fetcher = async (url: string): Promise<FixturesResponse> => {
+  // Extract date from URL
+  const urlParams = new URLSearchParams(url.split('?')[1]);
+  const date = urlParams.get('date');
+
+  // Try Supabase cache first (instant response)
+  try {
+    const cachedRes = await fetch(`/api/fixtures/cached?date=${date}`);
+    if (cachedRes.ok) {
+      const cachedData = await cachedRes.json();
+      // If cache has data, use it
+      if (cachedData.matches && cachedData.matches.length > 0) {
+        return cachedData;
+      }
+    }
+  } catch {
+    // Cache miss or error, fall through to direct API
+  }
+
+  // Fallback to direct API (slower but always fresh)
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to fetch');
+  return res.json();
+};
 
 // Format date as YYYY-MM-DD
 function formatDate(date: Date): string {

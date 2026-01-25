@@ -242,3 +242,83 @@ CREATE POLICY "Users can delete own favorites"
 -- Index for fast lookups
 CREATE INDEX IF NOT EXISTS idx_user_favorites_user ON user_favorites(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_favorites_type ON user_favorites(user_id, favorite_type);
+
+-- ============================================
+-- FIXTURES CACHE (Denormalized for fast reads)
+-- This is a cache table - data is synced from external APIs
+-- Supports multiple sports via sport_type column
+-- ============================================
+CREATE TABLE IF NOT EXISTS fixtures_cache (
+  id SERIAL PRIMARY KEY,
+  api_id INTEGER NOT NULL,
+  sport_type VARCHAR(20) NOT NULL DEFAULT 'soccer',
+
+  -- Match info
+  match_date DATE NOT NULL,
+  kickoff TIMESTAMPTZ NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'NS',
+  minute INTEGER,
+  venue VARCHAR(200),
+  matchday INTEGER,
+  stage VARCHAR(100),
+
+  -- League info (denormalized)
+  league_name VARCHAR(200) NOT NULL,
+  league_code VARCHAR(20) NOT NULL,
+  league_logo VARCHAR(500),
+
+  -- Home team (denormalized)
+  home_team_id INTEGER NOT NULL,
+  home_team_name VARCHAR(200) NOT NULL,
+  home_team_short VARCHAR(10),
+  home_team_logo VARCHAR(500),
+  home_score INTEGER,
+
+  -- Away team (denormalized)
+  away_team_id INTEGER NOT NULL,
+  away_team_name VARCHAR(200) NOT NULL,
+  away_team_short VARCHAR(10),
+  away_team_logo VARCHAR(500),
+  away_score INTEGER,
+
+  -- Metadata
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Unique constraint: one entry per API match ID and sport
+  UNIQUE(api_id, sport_type)
+);
+
+-- Indexes for fast queries
+CREATE INDEX IF NOT EXISTS idx_fixtures_cache_date ON fixtures_cache(match_date);
+CREATE INDEX IF NOT EXISTS idx_fixtures_cache_sport_date ON fixtures_cache(sport_type, match_date);
+CREATE INDEX IF NOT EXISTS idx_fixtures_cache_status ON fixtures_cache(status);
+CREATE INDEX IF NOT EXISTS idx_fixtures_cache_kickoff ON fixtures_cache(kickoff);
+
+-- Enable RLS
+ALTER TABLE fixtures_cache ENABLE ROW LEVEL SECURITY;
+
+-- Public read access (this is cached public data)
+CREATE POLICY "Public read fixtures cache" ON fixtures_cache FOR SELECT USING (true);
+
+-- Trigger for updated_at
+CREATE TRIGGER update_fixtures_cache_updated_at
+  BEFORE UPDATE ON fixtures_cache
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================
+-- SYNC LOG (Track sync operations)
+-- ============================================
+CREATE TABLE IF NOT EXISTS sync_log (
+  id SERIAL PRIMARY KEY,
+  sync_type VARCHAR(50) NOT NULL,
+  sport_type VARCHAR(20) NOT NULL DEFAULT 'soccer',
+  records_synced INTEGER DEFAULT 0,
+  status VARCHAR(20) NOT NULL DEFAULT 'success',
+  error_message TEXT,
+  started_at TIMESTAMPTZ DEFAULT NOW(),
+  completed_at TIMESTAMPTZ
+);
+
+-- Index for recent syncs
+CREATE INDEX IF NOT EXISTS idx_sync_log_type_time ON sync_log(sync_type, started_at DESC);

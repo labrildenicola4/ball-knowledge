@@ -1,6 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
+// Client for authenticated user operations (uses cookies)
 export function createClient() {
     const cookieStore = cookies()
 
@@ -30,6 +32,26 @@ export function createClient() {
                         // user sessions.
                     }
                 },
+            },
+        }
+    )
+}
+
+// Service role client for admin operations (bypasses RLS)
+// Use this for sync/cron jobs that need write access
+export function createServiceClient() {
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!serviceRoleKey) {
+        throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set')
+    }
+
+    return createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
             },
         }
     )
