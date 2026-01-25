@@ -8,23 +8,10 @@ import useSWR from 'swr';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 
-const fetcher = async (url: string) => {
-  // Extract team ID from URL
-  const teamId = url.split('/').pop();
-
-  // Try cached endpoint first for faster response
-  try {
-    const cachedRes = await fetch(`/api/team/cached/${teamId}`);
-    if (cachedRes.ok) {
-      return cachedRes.json();
-    }
-  } catch {}
-
-  // Fall back to direct API
-  const res = await fetch(url);
+const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 429 ? 'Rate limited' : 'Failed to fetch');
   return res.json();
-};
+});
 
 interface MatchTeam {
   id: number;
@@ -150,16 +137,31 @@ export default function TeamPage() {
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const teamId = params.id;
 
-  // Use SWR for data fetching with caching
-  const { data: team, error: swrError, isLoading: loading } = useSWR<TeamData>(
+  // STEP 1: Get cached data instantly (basic team info + matches)
+  const { data: cachedTeam, isLoading: cachedLoading } = useSWR<TeamData>(
+    teamId ? `/api/team/cached/${teamId}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000,
+    }
+  );
+
+  // STEP 2: Load full team data in background (squad, competitions, full stats)
+  const { data: fullTeam, error: swrError } = useSWR<TeamData>(
     teamId ? `/api/team/${teamId}` : null,
     fetcher,
     {
       revalidateOnFocus: false,
-      dedupingInterval: 60000, // Don't refetch within 1 minute
+      dedupingInterval: 60000,
     }
   );
 
+  // Use full data if available, otherwise cached data
+  const team = fullTeam || cachedTeam;
+
+  // Only show loading if we have no data at all
+  const loading = cachedLoading && !cachedTeam && !fullTeam;
   const error = swrError?.message || null;
 
   // Tab state
