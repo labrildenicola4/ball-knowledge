@@ -8,6 +8,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { MatchCard } from '@/components/MatchCard';
 import { useTheme } from '@/lib/theme';
 import { NATIONS, getNationsForMatch, type Nation } from '@/lib/nations';
+import { useFixtures } from '@/lib/use-fixtures';
 
 interface Match {
   id: number;
@@ -24,8 +25,9 @@ interface Match {
   awayLogo: string;
   status: string;
   time: string;
-  date: string;
+  date?: string;
   fullDate?: string;
+  timestamp?: number;
 }
 
 interface NationGroup {
@@ -49,12 +51,24 @@ export default function CalendarPage() {
   // Initialize with null, will be set from localStorage or default to today
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedNation, setSelectedNation] = useState('all');
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [rateLimited, setRateLimited] = useState(false);
   const [collapsedNations, setCollapsedNations] = useState<Set<string>>(new Set());
   const [initialized, setInitialized] = useState(false);
   const [lastViewedMatch, setLastViewedMatch] = useState<string | null>(null);
+
+  // Use SWR hook for data fetching
+  const { matches: allMatches, isLoading, isError } = useFixtures(selectedDate || undefined);
+
+  // Filter matches by selected nation
+  const matches = selectedNation === 'all'
+    ? allMatches
+    : allMatches.filter((match) => {
+        const matchNations = getNationsForMatch(
+          match.leagueCode || '',
+          match.homeId || 0,
+          match.awayId || 0
+        );
+        return matchNations.includes(selectedNation);
+      });
 
   // Load saved date and last match from localStorage on mount
   useEffect(() => {
@@ -150,88 +164,9 @@ export default function CalendarPage() {
     return days;
   };
 
-  const formatDateForApi = (date: Date) => {
-    // Format as YYYY-MM-DD in local time (not UTC)
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   const isSameDay = (date1: Date, date2: Date) => {
     return date1.toDateString() === date2.toDateString();
   };
-
-  // Fetch fixtures for the selected date range
-  useEffect(() => {
-    if (!selectedDate) return; // Wait for initialization
-
-    async function fetchFixtures() {
-      setLoading(true);
-      setRateLimited(false);
-      try {
-        const dateStr = formatDateForApi(selectedDate!);
-
-        // All leagues to fetch
-        const allLeagueIds = [
-          'laliga', 'premier', 'seriea', 'bundesliga', 'ligue1',
-          'brasileirao', 'eredivisie', 'primeiraliga', 'championship',
-          'championsleague', 'copalibertadores'
-        ];
-
-        // If a specific nation is selected, only fetch relevant leagues
-        let leagueIds = allLeagueIds;
-        if (selectedNation !== 'all') {
-          const nation = NATIONS.find(n => n.id === selectedNation);
-          if (nation) {
-            // Get league IDs for this nation's competitions
-            const nationLeagueCodes = [...nation.domesticLeagues, ...nation.internationalCompetitions];
-            leagueIds = allLeagueIds.filter(id => {
-              const codeMapping: Record<string, string> = {
-                'laliga': 'PD', 'premier': 'PL', 'seriea': 'SA', 'bundesliga': 'BL1',
-                'ligue1': 'FL1', 'brasileirao': 'BSA', 'eredivisie': 'DED',
-                'primeiraliga': 'PPL', 'championship': 'ELC',
-                'championsleague': 'CL', 'copalibertadores': 'CLI'
-              };
-              return nationLeagueCodes.includes(codeMapping[id] || '');
-            });
-          }
-        }
-
-        const allMatches: Match[] = [];
-        let wasRateLimited = false;
-
-        for (const league of leagueIds) {
-          try {
-            const res = await fetch(`/api/fixtures?league=${league}&date=${dateStr}`);
-            const data = await res.json();
-            if (res.status === 429) {
-              wasRateLimited = true;
-            }
-            if (data.matches) {
-              allMatches.push(...data.matches);
-            }
-          } catch {
-            // Continue with other leagues
-          }
-        }
-
-        if (wasRateLimited && allMatches.length === 0) {
-          setRateLimited(true);
-        }
-
-        // Sort by time
-        allMatches.sort((a, b) => a.time.localeCompare(b.time));
-        setMatches(allMatches);
-      } catch (err) {
-        console.error('Error fetching fixtures:', err);
-        setMatches([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchFixtures();
-  }, [selectedDate, selectedNation]);
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     if (!selectedDate) return;
@@ -436,7 +371,7 @@ export default function CalendarPage() {
           </span>
         </div>
 
-        {loading ? (
+        {isLoading && matches.length === 0 ? (
           <div className="py-8 text-center">
             <div
               className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
@@ -446,24 +381,17 @@ export default function CalendarPage() {
               Loading fixtures...
             </p>
           </div>
-        ) : rateLimited ? (
+        ) : isError ? (
           <div
             className="rounded-lg py-8 text-center"
             style={{ backgroundColor: theme.bgSecondary }}
           >
-            <p className="text-sm font-medium" style={{ color: theme.accent }}>
-              API rate limit reached
+            <p className="text-sm font-medium" style={{ color: theme.red }}>
+              Failed to load fixtures
             </p>
             <p className="mt-2 text-sm" style={{ color: theme.textSecondary }}>
-              The free tier allows 10 requests/minute. Please wait a moment and try again.
+              Please try again in a moment.
             </p>
-            <button
-              onClick={() => setSelectedDate(new Date(selectedDate))}
-              className="mt-3 rounded-lg px-4 py-2 text-sm font-medium"
-              style={{ backgroundColor: theme.accent, color: '#fff' }}
-            >
-              Retry
-            </button>
           </div>
         ) : matches.length === 0 ? (
           <div

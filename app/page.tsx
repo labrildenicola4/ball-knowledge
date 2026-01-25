@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchCard } from '@/components/MatchCard';
 import { useTheme } from '@/lib/theme';
 import { NATIONS, getNationsForMatch, type Nation } from '@/lib/nations';
+import { useLiveFixtures } from '@/lib/use-fixtures';
 
 interface Match {
   id: number;
@@ -32,13 +33,12 @@ interface NationGroup {
 }
 
 export default function HomePage() {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [collapsedNations, setCollapsedNations] = useState<Set<string>>(new Set());
   const [liveCollapsed, setLiveCollapsed] = useState(false);
   const { theme } = useTheme();
+
+  // Use SWR hook for data fetching with caching
+  const { matches, isLoading, isRefreshing, isError, refresh } = useLiveFixtures();
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', {
@@ -46,66 +46,6 @@ export default function HomePage() {
     month: 'long',
     day: 'numeric',
   });
-
-  // Format date for API
-  const formatDateForApi = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const fetchMatches = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const todayStr = formatDateForApi(today);
-      // Fetch from all competitions: domestic leagues + international
-      const leagueIds = [
-        'laliga', 'premier', 'seriea', 'bundesliga', 'ligue1',
-        'brasileirao', 'eredivisie', 'primeiraliga', 'championship',
-        'championsleague', 'copalibertadores'
-      ];
-      const allMatches: Match[] = [];
-
-      // Fetch sequentially to avoid rate limits
-      for (const league of leagueIds) {
-        try {
-          const res = await fetch(`/api/fixtures?league=${league}&date=${todayStr}`);
-          const data = await res.json();
-          if (data.matches) {
-            allMatches.push(...data.matches);
-          }
-        } catch {
-          // Continue with other leagues
-        }
-      }
-
-      // Sort: Live matches first, then by time
-      allMatches.sort((a, b) => {
-        const aIsLive = ['LIVE', '1H', '2H', 'HT'].includes(a.status);
-        const bIsLive = ['LIVE', '1H', '2H', 'HT'].includes(b.status);
-        if (aIsLive && !bIsLive) return -1;
-        if (!aIsLive && bIsLive) return 1;
-        return (a.timestamp || 0) - (b.timestamp || 0);
-      });
-
-      setMatches(allMatches);
-      setLastUpdated(new Date());
-    } catch (err) {
-      console.error('Error fetching matches:', err);
-      setError('Failed to load matches');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMatches();
-    // Refresh every 60 seconds for live updates
-    const interval = setInterval(fetchMatches, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Toggle nation collapse
   const toggleNation = (nationId: string) => {
@@ -177,8 +117,8 @@ export default function HomePage() {
             </p>
           </div>
           <button
-            onClick={fetchMatches}
-            disabled={loading}
+            onClick={() => refresh()}
+            disabled={isLoading}
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm"
             style={{
               backgroundColor: theme.bgSecondary,
@@ -186,19 +126,19 @@ export default function HomePage() {
               color: theme.textSecondary,
             }}
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
             Refresh
           </button>
         </div>
-        {lastUpdated && (
+        {isRefreshing && (
           <p className="mt-1 text-sm" style={{ color: theme.textSecondary }}>
-            Updated {lastUpdated.toLocaleTimeString()}
+            Updating...
           </p>
         )}
       </div>
 
       <main className="flex-1 overflow-y-auto px-4 py-4">
-        {loading && matches.length === 0 ? (
+        {isLoading && matches.length === 0 ? (
           <div className="py-8 text-center">
             <div
               className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
@@ -208,16 +148,16 @@ export default function HomePage() {
               Loading today's matches...
             </p>
           </div>
-        ) : error ? (
+        ) : isError ? (
           <div
             className="rounded-lg py-8 text-center"
             style={{ backgroundColor: theme.bgSecondary }}
           >
             <p className="text-sm" style={{ color: theme.red }}>
-              {error}
+              Failed to load matches
             </p>
             <button
-              onClick={fetchMatches}
+              onClick={() => refresh()}
               className="mt-3 rounded-lg px-4 py-2 text-sm"
               style={{ backgroundColor: theme.accent, color: '#fff' }}
             >

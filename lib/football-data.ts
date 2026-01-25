@@ -9,9 +9,31 @@ const cache = new Map<string, { data: unknown; timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for general data
 const LIVE_CACHE_TTL = 30 * 1000; // 30 seconds cache for live match data
 
-// Rate limit tracking
+// Request queue for rate limiting
+let requestQueue: Promise<void> = Promise.resolve();
 let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 6500; // 6.5 seconds between requests (safe for 10/min limit)
+
+// Queue a request to ensure rate limiting across parallel calls
+function queueRequest(): Promise<void> {
+  const previousQueue = requestQueue;
+  let resolveThis: () => void;
+
+  requestQueue = new Promise<void>((resolve) => {
+    resolveThis = resolve;
+  });
+
+  return previousQueue.then(async () => {
+    const now = Date.now();
+    const timeSinceLastRequest = now - lastRequestTime;
+    if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+      const waitTime = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+      await new Promise(r => setTimeout(r, waitTime));
+    }
+    lastRequestTime = Date.now();
+    resolveThis!();
+  });
+}
 
 // Competition codes for leagues and international competitions
 export const COMPETITION_CODES = {
@@ -138,22 +160,15 @@ async function fetchApi<T>(endpoint: string, retries = 2, customCacheTTL?: numbe
   const cacheKey = endpoint;
   const cacheTTL = customCacheTTL ?? CACHE_TTL;
 
-  // Check cache first
+  // Check cache first - this happens immediately without waiting
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < cacheTTL) {
     console.log(`[Football-Data] Cache hit: ${endpoint}`);
     return cached.data as T;
   }
 
-  // Rate limiting - wait if needed
-  const now = Date.now();
-  const timeSinceLastRequest = now - lastRequestTime;
-  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
-    const waitTime = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
-    console.log(`[Football-Data] Rate limiting, waiting ${waitTime}ms`);
-    await new Promise(resolve => setTimeout(resolve, waitTime));
-  }
-  lastRequestTime = Date.now();
+  // Queue the request to ensure rate limiting across parallel calls
+  await queueRequest();
 
   console.log(`[Football-Data] Fetching: ${url}`);
 
