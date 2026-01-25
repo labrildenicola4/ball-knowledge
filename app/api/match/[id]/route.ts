@@ -10,6 +10,81 @@ const CODE_TO_LEAGUE: Record<string, string> = Object.fromEntries(
   Object.entries(COMPETITION_CODES).map(([key, code]) => [code, key])
 );
 
+// Sport-specific stat generators
+// TODO: Add generators for other sports (basketball, american football, etc.)
+// Each sport will have its own stat structure and period breakdowns
+
+interface MatchStat {
+  label: string;
+  home: number;
+  away: number;
+  type?: 'decimal';
+}
+
+interface MatchStats {
+  all: MatchStat[];
+  firstHalf?: MatchStat[];
+  secondHalf?: MatchStat[];
+}
+
+function generateSoccerStats(status: string): MatchStats {
+  // Mock data - in production this would come from a real stats API
+  // First half stats (typically lower numbers)
+  const firstHalf: MatchStat[] = [
+    { label: 'Expected goals (xG)', home: 0.5, away: 0.3, type: 'decimal' },
+    { label: 'Possession %', home: 52, away: 48 },
+    { label: 'Total shots', home: 5, away: 4 },
+    { label: 'Shots on target', home: 2, away: 1 },
+    { label: 'Corner kicks', home: 3, away: 2 },
+    { label: 'Fouls', home: 5, away: 6 },
+  ];
+
+  // Second half stats (only if match is in 2H or finished)
+  const showSecondHalf = ['2H', 'HT', 'FT'].includes(status);
+  const secondHalf: MatchStat[] = showSecondHalf ? [
+    { label: 'Expected goals (xG)', home: 0.7, away: 0.5, type: 'decimal' },
+    { label: 'Possession %', home: 58, away: 42 },
+    { label: 'Total shots', home: 7, away: 4 },
+    { label: 'Shots on target', home: 3, away: 2 },
+    { label: 'Corner kicks', home: 3, away: 2 },
+    { label: 'Fouls', home: 5, away: 6 },
+  ] : [];
+
+  // Combined stats (sum of both halves, or just first half if still in 1H)
+  const all: MatchStat[] = firstHalf.map((stat, i) => {
+    const secondHalfStat = secondHalf[i];
+    if (stat.type === 'decimal') {
+      return {
+        ...stat,
+        home: parseFloat((stat.home + (secondHalfStat?.home || 0)).toFixed(2)),
+        away: parseFloat((stat.away + (secondHalfStat?.away || 0)).toFixed(2)),
+      };
+    }
+    // For possession, average instead of sum
+    if (stat.label === 'Possession %') {
+      if (secondHalfStat) {
+        return {
+          ...stat,
+          home: Math.round((stat.home + secondHalfStat.home) / 2),
+          away: Math.round((stat.away + secondHalfStat.away) / 2),
+        };
+      }
+      return stat;
+    }
+    return {
+      ...stat,
+      home: stat.home + (secondHalfStat?.home || 0),
+      away: stat.away + (secondHalfStat?.away || 0),
+    };
+  });
+
+  return {
+    all,
+    firstHalf,
+    secondHalf: showSecondHalf ? secondHalf : undefined,
+  };
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -70,16 +145,10 @@ export async function GET(
     const leagueKey = CODE_TO_LEAGUE[match.competition.code] || null;
 
     // Mock stats for live/finished matches (football-data.org free tier doesn't provide stats)
-    const mockStats = (isLive || statusInfo.status === 'FT') ? {
-      all: [
-        { label: 'Expected goals (xG)', home: 1.2, away: 0.8, type: 'decimal' as const },
-        { label: 'Possession %', home: 55, away: 45 },
-        { label: 'Total shots', home: 12, away: 8 },
-        { label: 'Shots on target', home: 5, away: 3 },
-        { label: 'Corner kicks', home: 6, away: 4 },
-        { label: 'Fouls', home: 10, away: 12 },
-      ],
-    } : null;
+    // TODO: When adding new sports, create sport-specific stat generators
+    // e.g., basketball: points by quarter, rebounds, assists
+    // e.g., american football: yards, touchdowns, turnovers by quarter
+    const mockStats = (isLive || statusInfo.status === 'FT') ? generateSoccerStats(statusInfo.status) : null;
 
     const matchDetails = {
       id: match.id,
