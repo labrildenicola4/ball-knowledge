@@ -25,13 +25,15 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createServiceClient();
 
-    // Get date range: today + 7 days
+    // Get date range: 60 days ago to 6 months ahead (covers most of season)
     const today = new Date();
-    const weekAhead = new Date(today);
-    weekAhead.setDate(today.getDate() + 7);
+    const pastDate = new Date(today);
+    pastDate.setDate(today.getDate() - 60); // 60 days of past results
+    const futureDate = new Date(today);
+    futureDate.setMonth(today.getMonth() + 6); // 6 months ahead
 
-    const dateFrom = today.toISOString().split('T')[0];
-    const dateTo = weekAhead.toISOString().split('T')[0];
+    const dateFrom = pastDate.toISOString().split('T')[0];
+    const dateTo = futureDate.toISOString().split('T')[0];
 
     console.log(`[Sync] Fetching fixtures from ${dateFrom} to ${dateTo}`);
 
