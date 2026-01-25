@@ -243,6 +243,12 @@ export default function MatchPage() {
         <div className="flex items-center justify-between">
           {/* Home Team */}
           <Link href={`/team/${match.home.id}`} className="flex-1 text-center transition-opacity hover:opacity-80">
+            <span
+              className="inline-block mb-2 rounded px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
+              style={{ backgroundColor: theme.red, color: '#fff' }}
+            >
+              Home
+            </span>
             <div className="mx-auto mb-3 h-20 w-20">
               <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain" />
             </div>
@@ -316,6 +322,12 @@ export default function MatchPage() {
 
           {/* Away Team */}
           <Link href={`/team/${match.away.id}`} className="flex-1 text-center transition-opacity hover:opacity-80">
+            <span
+              className="inline-block mb-2 rounded px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
+              style={{ backgroundColor: theme.blue, color: '#fff' }}
+            >
+              Away
+            </span>
             <div className="mx-auto mb-3 h-20 w-20">
               <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain" />
             </div>
