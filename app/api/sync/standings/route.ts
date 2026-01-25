@@ -12,9 +12,14 @@ const STANDINGS_LEAGUES: LeagueId[] = [
 ];
 
 export async function GET(request: NextRequest) {
-  // Verify authorization
+  // Verify authorization (header or query param)
   const authHeader = request.headers.get('authorization');
-  if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
+  const secretParam = request.nextUrl.searchParams.get('secret');
+  const isAuthorized = !CRON_SECRET ||
+    authHeader === `Bearer ${CRON_SECRET}` ||
+    secretParam === CRON_SECRET;
+
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
