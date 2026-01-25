@@ -1,6 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
+import { supabase } from './supabase';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Match {
   id: number;
@@ -96,28 +99,87 @@ export function useFixtures(date?: Date) {
   };
 }
 
-// Hook for live-focused updates (shorter refresh interval)
+// Hook for live-focused updates with realtime subscriptions
 export function useLiveFixtures(date?: Date) {
   const dateStr = date ? formatDate(date) : formatDate(new Date());
+  const [realtimeUpdates, setRealtimeUpdates] = useState<Map<number, Partial<Match>>>(new Map());
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
 
   const { data, error, isLoading, mutate } = useSWR<FixturesResponse>(
     `/api/fixtures/all?date=${dateStr}`,
     fetcher,
     {
-      // Refresh every 30 seconds for live matches
-      refreshInterval: 30000,
+      // Slower polling since realtime handles live updates
+      refreshInterval: 60000,
       revalidateOnFocus: true,
       keepPreviousData: true,
       dedupingInterval: 2000,
     }
   );
 
+  // Subscribe to realtime updates for today's matches
+  useEffect(() => {
+    let channel: RealtimeChannel | null = null;
+
+    channel = supabase
+      .channel('fixtures-live')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'fixtures_cache',
+          filter: `match_date=eq.${dateStr}`,
+        },
+        (payload) => {
+          const updated = payload.new as any;
+          console.log('[Fixtures] Realtime update:', updated.api_id, updated.status, `${updated.home_score}-${updated.away_score}`);
+
+          setRealtimeUpdates(prev => {
+            const next = new Map(prev);
+            next.set(updated.api_id, {
+              status: updated.status,
+              homeScore: updated.home_score,
+              awayScore: updated.away_score,
+              time: updated.minute ? `${updated.minute}'` : '',
+            });
+            return next;
+          });
+        }
+      )
+      .subscribe((status) => {
+        setIsRealtimeConnected(status === 'SUBSCRIBED');
+      });
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [dateStr]);
+
+  // Merge API data with realtime updates
+  const matches = (data?.matches || []).map(match => {
+    const realtimeData = realtimeUpdates.get(match.id);
+    if (realtimeData) {
+      return {
+        ...match,
+        status: realtimeData.status || match.status,
+        homeScore: realtimeData.homeScore ?? match.homeScore,
+        awayScore: realtimeData.awayScore ?? match.awayScore,
+        time: realtimeData.time || match.time,
+      };
+    }
+    return match;
+  });
+
   return {
-    matches: data?.matches || [],
+    matches,
     isLoading: isLoading && !data,
     isRefreshing: isLoading && !!data,
     isError: !!error,
     error,
     refresh: mutate,
+    isRealtimeConnected,
   };
 }

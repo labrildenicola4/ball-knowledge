@@ -9,6 +9,7 @@ import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchStandings } from '@/components/MatchStandings';
 import { LiveStats, LiveStatsData } from '@/components/LiveStats';
+import { useLiveMatch } from '@/lib/use-live-scores';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'Match not found' : 'Failed to fetch');
@@ -59,21 +60,41 @@ export default function MatchPage() {
   const router = useRouter();
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const matchId = params.id;
+  const numericMatchId = matchId ? parseInt(String(matchId)) : null;
 
-  // Use SWR for match data with auto-refresh for live matches
-  const { data: match, error: swrError, isLoading: loading } = useSWR<MatchDetails>(
+  // Use SWR for full match data (stats, H2H, etc.)
+  const { data: apiMatch, error: swrError, isLoading: loading } = useSWR<MatchDetails>(
     matchId ? `/api/match/${matchId}` : null,
     fetcher,
     {
       revalidateOnFocus: false,
       dedupingInterval: 30000,
+      // Reduced polling since realtime handles live updates
       refreshInterval: (data) => {
-        // Auto-refresh every 30s for live matches
         const isLive = data && ['LIVE', '1H', '2H', 'HT'].includes(data.status);
-        return isLive ? 30000 : 0;
+        return isLive ? 60000 : 0; // Slower polling, realtime handles scores
       },
     }
   );
+
+  // Subscribe to realtime score updates from Supabase
+  const { match: liveMatch, isConnected: realtimeConnected } = useLiveMatch(numericMatchId);
+
+  // Merge API data with realtime scores (realtime takes priority for scores)
+  const match = apiMatch ? {
+    ...apiMatch,
+    // Override with realtime data if available
+    status: liveMatch?.status || apiMatch.status,
+    minute: liveMatch?.minute ?? apiMatch.minute,
+    home: {
+      ...apiMatch.home,
+      score: liveMatch?.home_score ?? apiMatch.home.score,
+    },
+    away: {
+      ...apiMatch.away,
+      score: liveMatch?.away_score ?? apiMatch.away.score,
+    },
+  } : null;
 
   const error = swrError?.message || null;
 
@@ -176,8 +197,12 @@ export default function MatchPage() {
             >
               LIVE
             </span>
-            <span className="text-[9px]" style={{ color: theme.textSecondary }}>
-              Auto-updating
+            <span className="text-[9px] flex items-center gap-1" style={{ color: theme.textSecondary }}>
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: realtimeConnected ? theme.green : theme.gold }}
+              />
+              {realtimeConnected ? 'Realtime' : 'Polling'}
             </span>
           </div>
         )}
