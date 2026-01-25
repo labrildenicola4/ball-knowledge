@@ -173,7 +173,7 @@ function StatRow({ stat, homeShortName, awayShortName }: StatRowProps) {
               className="h-2 rounded-full ml-auto transition-all duration-500"
               style={{
                 width: `${homeBarWidth}%`,
-                backgroundColor: theme.green,
+                backgroundColor: theme.red,
               }}
             />
           </div>
@@ -189,7 +189,7 @@ function StatRow({ stat, homeShortName, awayShortName }: StatRowProps) {
               className="h-2 rounded-full transition-all duration-500"
               style={{
                 width: `${awayBarWidth}%`,
-                backgroundColor: theme.accent,
+                backgroundColor: theme.blue,
               }}
             />
           </div>

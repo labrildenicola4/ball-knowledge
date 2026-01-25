@@ -22,6 +22,7 @@ interface Theme {
   pitchLines: string;
   red: string;
   green: string;
+  blue: string;
 }
 
 const darkTheme: Theme = {
@@ -38,6 +39,7 @@ const darkTheme: Theme = {
   pitchLines: '#2a3a2a',
   red: '#c45a5a',
   green: '#5a8c5a',
+  blue: '#5a7a9c',
 };
 
 const lightTheme: Theme = {
@@ -54,6 +56,7 @@ const lightTheme: Theme = {
   pitchLines: '#4a6c4a',
   red: '#a83030',            // Darker red for contrast
   green: '#3d7a3d',          // Darker green
+  blue: '#4a6a8a',           // Muted blue for light mode
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
