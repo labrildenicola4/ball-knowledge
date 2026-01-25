@@ -4,27 +4,71 @@
 const API_BASE = 'https://v3.football.api-sports.io';
 const API_KEY = process.env.API_FOOTBALL_KEY!;
 
+// Simple in-memory cache
+const cache = new Map<string, { data: unknown; timestamp: number }>();
+const CACHE_TTL = 60 * 1000; // 1 minute for general data
+const LIVE_CACHE_TTL = 15 * 1000; // 15 seconds for live data
+
+// League IDs in API-Football
+export const LEAGUE_IDS: Record<string, number> = {
+  // Top 5 European leagues
+  premier: 39,
+  laliga: 140,
+  seriea: 135,
+  bundesliga: 78,
+  ligue1: 61,
+  // Additional leagues
+  primeiraliga: 94,
+  eredivisie: 88,
+  championship: 40,
+  brasileirao: 71,
+  // International
+  championsleague: 2,
+  europaleague: 3,
+  copalibertadores: 13,
+};
+
+// Reverse mapping
+export const LEAGUE_ID_TO_KEY: Record<number, string> = Object.fromEntries(
+  Object.entries(LEAGUE_IDS).map(([key, id]) => [id, key])
+);
+
 interface ApiResponse<T> {
   get: string;
   parameters: Record<string, string>;
-  errors: string[];
+  errors: Record<string, string> | string[];
   results: number;
-  response: T;
+  paging: { current: number; total: number };
+  response: T[];
 }
 
-async function fetchApi<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
-  const url = new URL(`${API_BASE}${endpoint}`);
-  Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.append(key, value);
-  });
+async function fetchApi<T>(
+  endpoint: string,
+  params: Record<string, string | number> = {},
+  isLive = false
+): Promise<T[]> {
+  const queryString = new URLSearchParams(
+    Object.entries(params).map(([k, v]) => [k, String(v)])
+  ).toString();
 
-  console.log(`[API-Football] Fetching: ${url.toString()}`);
+  const url = `${API_BASE}${endpoint}${queryString ? `?${queryString}` : ''}`;
+  const cacheKey = url;
+  const cacheTTL = isLive ? LIVE_CACHE_TTL : CACHE_TTL;
 
-  const response = await fetch(url.toString(), {
+  // Check cache
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < cacheTTL) {
+    console.log(`[API-Football] Cache hit: ${endpoint}`);
+    return cached.data as T[];
+  }
+
+  console.log(`[API-Football] Fetching: ${endpoint}`);
+
+  const response = await fetch(url, {
     headers: {
       'x-apisports-key': API_KEY,
     },
-    next: { revalidate: 60 }, // Cache for 60 seconds
+    cache: isLive ? 'no-store' : 'default',
   });
 
   if (!response.ok) {
@@ -34,44 +78,48 @@ async function fetchApi<T>(endpoint: string, params: Record<string, string> = {}
 
   const data: ApiResponse<T> = await response.json();
 
-  console.log(`[API-Football] Results: ${data.results}, Errors: ${JSON.stringify(data.errors)}`);
+  // Check for API errors
+  const hasErrors = Array.isArray(data.errors)
+    ? data.errors.length > 0
+    : Object.keys(data.errors || {}).length > 0;
 
-  if (data.errors && Object.keys(data.errors).length > 0) {
-    console.error(`[API-Football] API Errors: ${JSON.stringify(data.errors)}`);
-    throw new Error(`API Error: ${JSON.stringify(data.errors)}`);
+  if (hasErrors) {
+    console.error('[API-Football] API Error:', data.errors);
+    throw new Error('API returned errors');
   }
+
+  // Cache the response
+  cache.set(cacheKey, { data: data.response, timestamp: Date.now() });
 
   return data.response;
 }
 
-// League IDs for top 5 European leagues
-export const LEAGUE_IDS = {
-  laliga: 140,
-  premier: 39,
-  seriea: 135,
-  bundesliga: 78,
-  ligue1: 61,
-} as const;
-
-// Current season (free plan supports 2022-2024)
-export const CURRENT_SEASON = 2024;
-
-// Types from API-Football
-export interface ApiTeam {
+// Types
+export interface Team {
   id: number;
   name: string;
   logo: string;
 }
 
-export interface ApiFixture {
+export interface Goals {
+  home: number | null;
+  away: number | null;
+}
+
+export interface Fixture {
   fixture: {
     id: number;
+    referee: string | null;
+    timezone: string;
     date: string;
+    timestamp: number;
     venue: {
-      name: string;
-      city: string;
+      id: number | null;
+      name: string | null;
+      city: string | null;
     };
     status: {
+      long: string;
       short: string;
       elapsed: number | null;
     };
@@ -81,29 +129,40 @@ export interface ApiFixture {
     name: string;
     country: string;
     logo: string;
-    flag: string;
+    flag: string | null;
+    season: number;
     round: string;
   };
   teams: {
-    home: ApiTeam & { winner: boolean | null };
-    away: ApiTeam & { winner: boolean | null };
+    home: Team & { winner: boolean | null };
+    away: Team & { winner: boolean | null };
   };
-  goals: {
-    home: number | null;
-    away: number | null;
-  };
+  goals: Goals;
   score: {
-    halftime: { home: number | null; away: number | null };
-    fulltime: { home: number | null; away: number | null };
+    halftime: Goals;
+    fulltime: Goals;
+    extratime: Goals;
+    penalty: Goals;
   };
 }
 
-export interface ApiStanding {
+export interface FixtureStatistic {
+  team: Team;
+  statistics: Array<{
+    type: string;
+    value: number | string | null;
+  }>;
+}
+
+export interface Standing {
   rank: number;
-  team: ApiTeam;
+  team: Team;
   points: number;
   goalsDiff: number;
+  group: string;
   form: string;
+  status: string;
+  description: string | null;
   all: {
     played: number;
     win: number;
@@ -113,103 +172,190 @@ export interface ApiStanding {
   };
 }
 
-export interface ApiEvent {
-  time: { elapsed: number; extra: number | null };
-  team: ApiTeam;
-  player: { id: number; name: string };
-  assist: { id: number | null; name: string | null };
-  type: string;
-  detail: string;
+export interface StandingsResponse {
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+    standings: Standing[][];
+  };
 }
 
-export interface ApiLineup {
-  team: ApiTeam;
-  formation: string;
-  startXI: Array<{
-    player: { id: number; name: string; number: number; pos: string };
-  }>;
-  substitutes: Array<{
-    player: { id: number; name: string; number: number; pos: string };
-  }>;
-  coach: { id: number; name: string };
+// Helper to get current season year
+function getSeason(): number {
+  const now = new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+  // If before August, use previous year as season start
+  return month < 7 ? year - 1 : year;
 }
 
 // API Functions
 
-export async function getFixtures(leagueId: number) {
-  // Note: Free API plan doesn't allow date filtering, so we fetch all fixtures
-  // and filter on the server side
-  const params: Record<string, string> = {
-    league: leagueId.toString(),
-    season: CURRENT_SEASON.toString(),
+export async function getFixturesByDate(date: string, leagueId?: number): Promise<Fixture[]> {
+  const params: Record<string, string | number> = { date };
+  if (leagueId) {
+    params.league = leagueId;
+    params.season = getSeason();
+  }
+  return fetchApi<Fixture>('/fixtures', params);
+}
+
+export async function getLiveFixtures(leagueId?: number): Promise<Fixture[]> {
+  const params: Record<string, string | number> = { live: 'all' };
+  if (leagueId) {
+    params.league = leagueId;
+  }
+  return fetchApi<Fixture>('/fixtures', params, true);
+}
+
+export async function getFixture(fixtureId: number): Promise<Fixture | null> {
+  const fixtures = await fetchApi<Fixture>('/fixtures', { id: fixtureId }, true);
+  return fixtures[0] || null;
+}
+
+export async function getFixtureStatistics(fixtureId: number): Promise<FixtureStatistic[]> {
+  return fetchApi<FixtureStatistic>('/fixtures/statistics', { fixture: fixtureId }, true);
+}
+
+export async function getHeadToHead(
+  team1Id: number,
+  team2Id: number,
+  last: number = 10
+): Promise<Fixture[]> {
+  return fetchApi<Fixture>('/fixtures/headtohead', {
+    h2h: `${team1Id}-${team2Id}`,
+    last,
+  });
+}
+
+export async function getStandings(leagueId: number, season?: number): Promise<Standing[]> {
+  const response = await fetchApi<StandingsResponse>('/standings', {
+    league: leagueId,
+    season: season || getSeason(),
+  });
+  return response[0]?.league?.standings?.[0] || [];
+}
+
+export async function getTeamForm(teamId: number, last: number = 5): Promise<string[]> {
+  const fixtures = await fetchApi<Fixture>('/fixtures', {
+    team: teamId,
+    last,
+    status: 'FT',
+  });
+
+  return fixtures
+    .map((f) => {
+      const isHome = f.teams.home.id === teamId;
+      const teamGoals = isHome ? f.goals.home : f.goals.away;
+      const oppGoals = isHome ? f.goals.away : f.goals.home;
+
+      if (teamGoals === null || oppGoals === null) return 'D';
+      if (teamGoals > oppGoals) return 'W';
+      if (teamGoals < oppGoals) return 'L';
+      return 'D';
+    })
+    .reverse();
+}
+
+// Map API-Football status to our display format
+export function mapStatus(
+  status: string,
+  elapsed: number | null
+): { status: string; time: string } {
+  switch (status) {
+    case 'TBD':
+    case 'NS':
+      return { status: 'NS', time: 'NS' };
+    case '1H':
+      return { status: '1H', time: elapsed ? `${elapsed}'` : '1H' };
+    case 'HT':
+      return { status: 'HT', time: 'HT' };
+    case '2H':
+      return { status: '2H', time: elapsed ? `${elapsed}'` : '2H' };
+    case 'ET':
+      return { status: 'ET', time: elapsed ? `${elapsed}'` : 'ET' };
+    case 'P':
+      return { status: 'PEN', time: 'PEN' };
+    case 'FT':
+    case 'AET':
+    case 'PEN':
+      return { status: 'FT', time: 'FT' };
+    case 'BT':
+      return { status: 'BT', time: 'Break' };
+    case 'SUSP':
+      return { status: 'SUSP', time: 'SUSP' };
+    case 'INT':
+      return { status: 'INT', time: 'INT' };
+    case 'PST':
+      return { status: 'PST', time: 'PST' };
+    case 'CANC':
+      return { status: 'CAN', time: 'CAN' };
+    case 'ABD':
+      return { status: 'ABD', time: 'ABD' };
+    case 'LIVE':
+      return { status: 'LIVE', time: elapsed ? `${elapsed}'` : 'LIVE' };
+    default:
+      return { status, time: status };
+  }
+}
+
+// Map fixture statistics to our LiveStats format
+export function mapStatistics(
+  stats: FixtureStatistic[]
+): { all: Array<{ label: string; home: number; away: number; type?: 'decimal' }> } | null {
+  if (!stats || stats.length < 2) return null;
+
+  const homeStats = stats[0]?.statistics || [];
+  const awayStats = stats[1]?.statistics || [];
+
+  const getStatValue = (
+    statistics: typeof homeStats,
+    type: string
+  ): number => {
+    const stat = statistics.find((s) => s.type === type);
+    if (!stat || stat.value === null) return 0;
+    if (typeof stat.value === 'string') {
+      return parseFloat(stat.value.replace('%', '')) || 0;
+    }
+    return stat.value;
   };
 
-  return fetchApi<ApiFixture[]>('/fixtures', params);
+  const statMappings = [
+    { apiType: 'expected_goals', label: 'Expected goals (xG)', type: 'decimal' as const },
+    { apiType: 'Ball Possession', label: 'Possession %' },
+    { apiType: 'Total Shots', label: 'Total shots' },
+    { apiType: 'Shots on Goal', label: 'Shots on target' },
+    { apiType: 'Shots off Goal', label: 'Shots off target' },
+    { apiType: 'Corner Kicks', label: 'Corner kicks' },
+    { apiType: 'Fouls', label: 'Fouls' },
+    { apiType: 'Yellow Cards', label: 'Yellow cards' },
+    { apiType: 'Red Cards', label: 'Red cards' },
+    { apiType: 'Offsides', label: 'Offsides' },
+    { apiType: 'Goalkeeper Saves', label: 'Saves' },
+    { apiType: 'Total passes', label: 'Passes' },
+    { apiType: 'Passes accurate', label: 'Accurate passes' },
+  ];
+
+  const mappedStats = statMappings
+    .map((mapping) => ({
+      label: mapping.label,
+      home: getStatValue(homeStats, mapping.apiType),
+      away: getStatValue(awayStats, mapping.apiType),
+      ...(mapping.type && { type: mapping.type }),
+    }))
+    .filter((s) => s.home !== 0 || s.away !== 0);
+
+  if (mappedStats.length === 0) return null;
+
+  return { all: mappedStats };
 }
 
-export async function getFixturesByRound(leagueId: number, round: string) {
-  return fetchApi<ApiFixture[]>('/fixtures', {
-    league: leagueId.toString(),
-    season: CURRENT_SEASON.toString(),
-    round,
-  });
-}
-
-export async function getLiveFixtures(leagueId?: number) {
-  const params: Record<string, string> = { live: 'all' };
-  if (leagueId) {
-    params.league = leagueId.toString();
-  }
-  return fetchApi<ApiFixture[]>('/fixtures', params);
-}
-
-export async function getStandings(leagueId: number) {
-  const data = await fetchApi<Array<{ league: { standings: ApiStanding[][] } }>>('/standings', {
-    league: leagueId.toString(),
-    season: CURRENT_SEASON.toString(),
-  });
-  
-  return data[0]?.league?.standings[0] || [];
-}
-
-export async function getFixtureEvents(fixtureId: number) {
-  return fetchApi<ApiEvent[]>('/fixtures/events', {
-    fixture: fixtureId.toString(),
-  });
-}
-
-export async function getFixtureLineups(fixtureId: number) {
-  return fetchApi<ApiLineup[]>('/fixtures/lineups', {
-    fixture: fixtureId.toString(),
-  });
-}
-
-export async function getFixtureStats(fixtureId: number) {
-  return fetchApi<Array<{
-    team: ApiTeam;
-    statistics: Array<{ type: string; value: number | string | null }>;
-  }>>('/fixtures/statistics', {
-    fixture: fixtureId.toString(),
-  });
-}
-
-export async function getHeadToHead(team1Id: number, team2Id: number, last: number = 10) {
-  return fetchApi<ApiFixture[]>('/fixtures/headtohead', {
-    h2h: `${team1Id}-${team2Id}`,
-    last: last.toString(),
-  });
-}
-
-export async function getTeam(teamId: number) {
-  const data = await fetchApi<Array<{ team: ApiTeam }>>('/teams', {
-    id: teamId.toString(),
-  });
-  return data[0]?.team;
-}
-
-export async function getFixtureById(fixtureId: number) {
-  const fixtures = await fetchApi<ApiFixture[]>('/fixtures', {
-    id: fixtureId.toString(),
-  });
-  return fixtures[0] || null;
+// Extract matchday/round number from round string
+export function parseRound(round: string): number {
+  const match = round.match(/\d+/);
+  return match ? parseInt(match[0]) : 1;
 }
