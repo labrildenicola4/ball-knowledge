@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon, Sun, Moon, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchStandings } from '@/components/MatchStandings';
+import { LiveStats, LiveStatsData } from '@/components/LiveStats';
 
 interface Team {
   id: number;
@@ -38,11 +39,13 @@ interface MatchDetails {
   date: string;
   venue: string;
   status: string;
+  minute: number | null;
   matchday: number;
   home: Team;
   away: Team;
   h2h: { total: number; homeWins: number; draws: number; awayWins: number };
   halfTimeScore: { home: number | null; away: number | null };
+  stats: LiveStatsData | null;
 }
 
 export default function MatchPage() {
@@ -54,6 +57,7 @@ export default function MatchPage() {
   const [standingsLoading, setStandingsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const matchId = params.id;
 
@@ -64,33 +68,57 @@ export default function MatchPage() {
     }
   }, [matchId]);
 
-  useEffect(() => {
-    async function fetchMatch() {
+  // Fetch match data
+  const fetchMatch = useCallback(async (showLoading = true) => {
+    if (!matchId) return;
+
+    if (showLoading) {
       setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/match/${matchId}`);
-        if (!res.ok) {
-          if (res.status === 404) {
-            setError('Match not found');
-          } else {
-            throw new Error('Failed to fetch match');
-          }
-          return;
+    }
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/match/${matchId}`);
+      if (!res.ok) {
+        if (res.status === 404) {
+          setError('Match not found');
+        } else {
+          throw new Error('Failed to fetch match');
         }
-        const data = await res.json();
-        setMatch(data);
-      } catch (err) {
-        console.error('Error fetching match:', err);
+        return;
+      }
+      const data = await res.json();
+      setMatch(data);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Error fetching match:', err);
+      if (showLoading) {
         setError('Failed to load match details');
-      } finally {
+      }
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
     }
-    if (matchId) {
-      fetchMatch();
-    }
   }, [matchId]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchMatch(true);
+  }, [fetchMatch]);
+
+  // Auto-refresh for live matches (every 30 seconds)
+  useEffect(() => {
+    const isLive = match && ['LIVE', '1H', '2H', 'HT'].includes(match.status);
+
+    if (!isLive) return;
+
+    const interval = setInterval(() => {
+      fetchMatch(false); // Don't show loading spinner on refresh
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [match?.status, fetchMatch]);
 
   // Fetch standings when match is loaded and has a league code
   useEffect(() => {
@@ -187,12 +215,19 @@ export default function MatchPage() {
           <p className="text-[13px]" style={{ color: theme.textSecondary }}>Matchday {match.matchday}</p>
         </div>
         {isLive && (
-          <span
-            className="rounded-full px-3 py-1 text-[10px] font-medium"
-            style={{ backgroundColor: theme.red, color: '#fff' }}
-          >
-            LIVE
-          </span>
+          <div className="flex flex-col items-end gap-1">
+            <span
+              className="rounded-full px-3 py-1 text-[10px] font-medium"
+              style={{ backgroundColor: theme.red, color: '#fff' }}
+            >
+              LIVE
+            </span>
+            {lastUpdated && (
+              <span className="text-[9px]" style={{ color: theme.textSecondary }}>
+                Auto-updating
+              </span>
+            )}
+          </div>
         )}
         <button
           onClick={toggleDarkMode}
@@ -232,15 +267,43 @@ export default function MatchPage() {
                   <span className="text-2xl" style={{ color: theme.textSecondary }}>-</span>
                   <span className="font-mono text-5xl font-light" style={{ color: theme.text }}>{match.away.score ?? 0}</span>
                 </div>
-                <span
-                  className="mt-3 inline-block rounded-full px-4 py-1 text-[10px] font-medium"
-                  style={{
-                    backgroundColor: isLive ? theme.red : theme.bgTertiary,
-                    color: isLive ? '#fff' : theme.textSecondary,
-                  }}
-                >
-                  {match.status}
-                </span>
+                {/* Live minute or status badge */}
+                {isLive ? (
+                  <div className="mt-3 flex flex-col items-center gap-1">
+                    {match.minute !== null ? (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full px-4 py-1 text-[12px] font-semibold"
+                        style={{ backgroundColor: theme.red, color: '#fff' }}
+                      >
+                        <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                        {match.minute}&apos;
+                      </span>
+                    ) : (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full px-4 py-1 text-[10px] font-medium"
+                        style={{ backgroundColor: theme.red, color: '#fff' }}
+                      >
+                        <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                        LIVE
+                      </span>
+                    )}
+                    {match.status === 'HT' && (
+                      <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                        Half Time
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <span
+                    className="mt-3 inline-block rounded-full px-4 py-1 text-[10px] font-medium"
+                    style={{
+                      backgroundColor: theme.bgTertiary,
+                      color: theme.textSecondary,
+                    }}
+                  >
+                    {match.status}
+                  </span>
+                )}
                 {/* Half-time score */}
                 {isFinished && match.halfTimeScore.home !== null && (
                   <p className="mt-2 text-[10px]" style={{ color: theme.textSecondary }}>
@@ -276,6 +339,23 @@ export default function MatchPage() {
           </div>
         </div>
       </section>
+
+      {/* Live Stats - show for live or finished matches */}
+      {(isLive || isFinished) && (
+        <section className="px-4 py-6" style={{ borderBottom: `1px solid ${theme.border}` }}>
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 size={14} style={{ color: theme.accent }} />
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+              Match Stats
+            </h3>
+          </div>
+          <LiveStats
+            stats={match.stats}
+            homeShortName={match.home.shortName}
+            awayShortName={match.away.shortName}
+          />
+        </section>
+      )}
 
       {/* Head to Head */}
       {match.h2h.total > 0 && (

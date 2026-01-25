@@ -1,6 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
 
+// Generate realistic mock stats for demo purposes
+// In production, replace with API-Football or similar
+function generateMockStats(isLive: boolean, isFinished: boolean, minute: number | null) {
+  if (!isLive && !isFinished) return null;
+
+  // Scale stats based on match progress
+  const progress = minute ? Math.min(minute / 90, 1) : (isFinished ? 1 : 0.5);
+
+  const generateStat = (baseHome: number, baseAway: number) => ({
+    home: Math.round(baseHome * progress + Math.random() * baseHome * 0.3),
+    away: Math.round(baseAway * progress + Math.random() * baseAway * 0.3),
+  });
+
+  const allStats = [
+    { label: 'Expected goals (xG)', ...generateDecimalStat(0.8, 0.6, progress), type: 'decimal' as const },
+    { label: 'Big chances', home: Math.round(2 * progress), away: Math.round(1 * progress) },
+    { label: 'Total shots', ...generateStat(12, 10) },
+    { label: 'Shots on target', ...generateStat(5, 4) },
+    { label: 'Corner kicks', ...generateStat(6, 5) },
+    { label: 'Fouls', ...generateStat(10, 12) },
+    { label: 'Passes', ...generateStat(450, 420) },
+    { label: 'Tackles', ...generateStat(18, 16) },
+    { label: 'Free kicks', ...generateStat(12, 14) },
+    { label: 'Yellow cards', home: Math.round(1.5 * progress), away: Math.round(2 * progress) },
+    { label: 'Red cards', home: 0, away: 0 },
+  ];
+
+  // First half stats (roughly half the values)
+  const firstHalfStats = allStats.map(stat => ({
+    ...stat,
+    home: Math.round(stat.home * 0.45),
+    away: Math.round(stat.away * 0.45),
+  }));
+
+  // Second half is the difference
+  const secondHalfStats = minute && minute > 45 ? allStats.map((stat, i) => ({
+    ...stat,
+    home: stat.home - firstHalfStats[i].home,
+    away: stat.away - firstHalfStats[i].away,
+  })) : [];
+
+  return {
+    all: allStats,
+    firstHalf: firstHalfStats,
+    secondHalf: secondHalfStats.length > 0 ? secondHalfStats : undefined,
+  };
+}
+
+function generateDecimalStat(baseHome: number, baseAway: number, progress: number) {
+  return {
+    home: Math.round((baseHome * progress + Math.random() * 0.3) * 100) / 100,
+    away: Math.round((baseAway * progress + Math.random() * 0.3) * 100) / 100,
+  };
+}
+
 // Reverse mapping: competition code (PD) -> league ID (laliga)
 const CODE_TO_LEAGUE: Record<string, string> = Object.fromEntries(
   Object.entries(COMPETITION_CODES).map(([leagueId, code]) => [code, leagueId])
@@ -71,6 +126,7 @@ export async function GET(
       venue: match.venue || 'TBD',
       attendance: null,
       status: displayStatus,
+      minute: match.minute,
       matchday: match.matchday,
       home: {
         id: match.homeTeam.id,
@@ -94,6 +150,13 @@ export async function GET(
         home: match.score.halfTime.home,
         away: match.score.halfTime.away,
       },
+      // Live stats - using mock data for demo
+      // TODO: Replace with API-Football integration for real stats
+      stats: generateMockStats(
+        ['LIVE', '1H', '2H', 'HT'].includes(displayStatus),
+        displayStatus === 'FT',
+        match.minute
+      ),
     };
 
     return NextResponse.json(matchDetails);
