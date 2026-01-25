@@ -311,11 +311,13 @@ export default function MatchPage() {
                 <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain" />
               </div>
             </Link>
-            <div className="flex items-center justify-center gap-1">
-              <p className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</p>
-              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5">
-                <Heart size={14} fill={homeFavorite ? '#ec4899' : 'none'} style={{ color: '#ec4899' }} />
-              </button>
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-1">
+                <p className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</p>
+                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5">
+                  <Heart size={12} fill={homeFavorite ? theme.accent : 'none'} style={{ color: theme.accent }} />
+                </button>
+              </div>
             </div>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.home.shortName}</p>
             {homeForm.length > 0 && <FormIndicator form={homeForm} />}
@@ -397,11 +399,13 @@ export default function MatchPage() {
                 <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain" />
               </div>
             </Link>
-            <div className="flex items-center justify-center gap-1">
-              <p className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</p>
-              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5">
-                <Heart size={14} fill={awayFavorite ? '#ec4899' : 'none'} style={{ color: '#ec4899' }} />
-              </button>
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-1">
+                <p className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</p>
+                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5">
+                  <Heart size={12} fill={awayFavorite ? theme.accent : 'none'} style={{ color: theme.accent }} />
+                </button>
+              </div>
             </div>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.away.shortName}</p>
             {awayForm.length > 0 && <FormIndicator form={awayForm} />}

@@ -460,15 +460,17 @@ export default function TeamPage() {
           </div>
 
           {/* Name with favorite button */}
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
-            <button onClick={toggleFavorite} className="p-1">
-              <Heart
-                size={20}
-                fill={isFavorite ? '#ec4899' : 'none'}
-                style={{ color: '#ec4899' }}
-              />
-            </button>
+          <div className="flex flex-col items-center">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
+              <button onClick={toggleFavorite} className="p-1">
+                <Heart
+                  size={18}
+                  fill={isFavorite ? theme.accent : 'none'}
+                  style={{ color: theme.accent }}
+                />
+              </button>
+            </div>
           </div>
 
           {/* Form */}
