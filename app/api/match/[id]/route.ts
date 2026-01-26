@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
 import { getMatchDataForFixture, mapStatistics, FixtureLineup } from '@/lib/api-football';
+import { supabase } from '@/lib/supabase';
 
 // Force dynamic rendering - no caching at Vercel edge
 export const dynamic = 'force-dynamic';
@@ -22,6 +23,21 @@ export async function GET(
   }
 
   try {
+    // CHECK CACHE FIRST: For finished matches, return cached data if available
+    const { data: cachedMatch } = await supabase
+      .from('fixtures_cache')
+      .select('match_details, status')
+      .eq('api_id', matchId)
+      .single();
+
+    // If we have cached full match details AND match is finished, return immediately
+    if (cachedMatch?.match_details && cachedMatch.status === 'FT') {
+      console.log(`[Match API] Returning cached data for match ${matchId}`);
+      return NextResponse.json(cachedMatch.match_details, {
+        headers: { 'Cache-Control': 'public, max-age=3600' },
+      });
+    }
+
     // Fetch match details from football-data.org
     const match = await getMatch(matchId);
 
@@ -170,9 +186,24 @@ export async function GET(
       stats: matchStats,
     };
 
+    // CACHE FINISHED MATCHES: Save full details to Supabase for instant future loads
+    if (isFinished) {
+      supabase
+        .from('fixtures_cache')
+        .update({ match_details: matchDetails })
+        .eq('api_id', matchId)
+        .then(({ error }) => {
+          if (error) {
+            console.error(`[Match API] Failed to cache match ${matchId}:`, error);
+          } else {
+            console.log(`[Match API] Cached full details for match ${matchId}`);
+          }
+        });
+    }
+
     return NextResponse.json(matchDetails, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Cache-Control': isFinished ? 'public, max-age=3600' : 'no-store, no-cache, must-revalidate, max-age=0',
       },
     });
   } catch (error) {
