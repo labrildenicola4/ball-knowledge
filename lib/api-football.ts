@@ -68,7 +68,8 @@ async function fetchApi<T>(
     return cached.data as T[];
   }
 
-  console.log(`[API-Football] Fetching: ${endpoint}`);
+  console.log(`[API-Football] Fetching: ${url}`);
+  console.log(`[API-Football] Using API key: ${API_KEY ? API_KEY.substring(0, 8) + '...' : 'NOT SET'}`);
 
   const response = await fetch(url, {
     headers: {
@@ -84,15 +85,17 @@ async function fetchApi<T>(
 
   const data: ApiResponse<T> = await response.json();
 
+  console.log(`[API-Football] Response results: ${data.results}, errors: ${JSON.stringify(data.errors)}`);
+
   // Check for API errors
   const hasErrors = Array.isArray(data.errors)
     ? data.errors.length > 0
     : Object.keys(data.errors || {}).length > 0;
 
   if (hasErrors) {
-    console.error('[API-Football] API Error:', JSON.stringify(data.errors));
-    console.error('[API-Football] Full response:', JSON.stringify(data));
-    throw new Error(`API returned errors: ${JSON.stringify(data.errors)}`);
+    const errorMsg = JSON.stringify(data.errors);
+    console.error(`[API-Football] API Error: ${errorMsg}`);
+    throw new Error(`API returned errors: ${errorMsg}`);
   }
 
   // Cache the response
