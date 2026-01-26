@@ -235,6 +235,9 @@ export default function MatchPage() {
   const isLive = ['LIVE', '1H', '2H', 'HT'].includes(match.status);
   const isUpcoming = match.status === 'NS';
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'stats' | 'lineups' | 'h2h' | 'table'>('stats');
+
   // Get team form from match data (fetched from API)
   const homeForm = match.home.form || [];
   const awayForm = match.away.form || [];
@@ -419,7 +422,7 @@ export default function MatchPage() {
       </section>
 
       {/* Match Info */}
-      <section className="px-4 py-4" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <section className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
         <div className="flex justify-center gap-6">
           <div className="flex items-center gap-2">
             <Calendar size={14} style={{ color: theme.textSecondary }} />
@@ -432,104 +435,114 @@ export default function MatchPage() {
         </div>
       </section>
 
-      {/* Live Stats - show for live or finished matches */}
-      {(isLive || isFinished) && (
-        <section className="px-4 py-6" style={{ borderBottom: `1px solid ${theme.border}` }}>
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 size={14} style={{ color: theme.accent }} />
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
-              Match Stats
-            </h3>
-          </div>
-          <LiveStats
-            stats={match.stats}
-            homeShortName={match.home.shortName}
-            awayShortName={match.away.shortName}
-            matchStatus={match.status}
-          />
-        </section>
-      )}
+      {/* Tabs */}
+      <div className="flex" style={{ borderBottom: `1px solid ${theme.border}` }}>
+        {[
+          { key: 'stats', label: 'Stats', icon: BarChart3 },
+          { key: 'lineups', label: 'Lineups', icon: Users },
+          { key: 'h2h', label: 'H2H', icon: Trophy },
+          { key: 'table', label: 'Table', icon: TableIcon },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[12px] font-medium transition-colors"
+              style={{
+                color: activeTab === tab.key ? theme.accent : theme.textSecondary,
+                borderBottom: activeTab === tab.key ? `2px solid ${theme.accent}` : '2px solid transparent',
+              }}
+            >
+              <Icon size={14} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
 
-      {/* Lineups */}
-      <section className="px-4 py-6" style={{ borderBottom: `1px solid ${theme.border}` }}>
-        <div className="flex items-center gap-2 mb-4">
-          <Users size={14} style={{ color: theme.accent }} />
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
-            Lineups
-          </h3>
-        </div>
-        <MatchLineup
-          home={{
-            lineup: match.home.lineup || [],
-            bench: match.home.bench || [],
-            formation: match.home.formation,
-            coach: match.home.coach,
-          }}
-          away={{
-            lineup: match.away.lineup || [],
-            bench: match.away.bench || [],
-            formation: match.away.formation,
-            coach: match.away.coach,
-          }}
-          homeShortName={match.home.shortName}
-          awayShortName={match.away.shortName}
-          matchStatus={match.status}
-        />
-      </section>
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Stats Tab */}
+        {activeTab === 'stats' && (
+          <section className="px-4 py-6">
+            <LiveStats
+              stats={match.stats}
+              homeShortName={match.home.shortName}
+              awayShortName={match.away.shortName}
+              matchStatus={match.status}
+            />
+          </section>
+        )}
 
-      {/* Head to Head */}
-      {match.h2h.total > 0 && (
-        <section className="px-4 py-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Trophy size={14} style={{ color: theme.accent }} />
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
-              Head to Head
-            </h3>
-            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-              (Last {match.h2h.total} meetings)
-            </span>
-          </div>
+        {/* Lineups Tab */}
+        {activeTab === 'lineups' && (
+          <section className="px-4 py-6">
+            <MatchLineup
+              home={{
+                lineup: match.home.lineup || [],
+                bench: match.home.bench || [],
+                formation: match.home.formation,
+                coach: match.home.coach,
+              }}
+              away={{
+                lineup: match.away.lineup || [],
+                bench: match.away.bench || [],
+                formation: match.away.formation,
+                coach: match.away.coach,
+              }}
+              homeShortName={match.home.shortName}
+              awayShortName={match.away.shortName}
+              matchStatus={match.status}
+            />
+          </section>
+        )}
 
-          <div
-            className="rounded-xl p-5"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-          >
-            <div className="flex justify-between items-center">
-              {/* Home wins */}
-              <div className="flex-1 text-center">
-                <p className="font-mono text-4xl font-light" style={{ color: theme.green }}>
-                  {match.h2h.homeWins}
+        {/* H2H Tab */}
+        {activeTab === 'h2h' && (
+          <section className="px-4 py-6">
+            {match.h2h.total > 0 ? (
+              <div
+                className="rounded-xl p-5"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <p className="text-center text-[11px] mb-4" style={{ color: theme.textSecondary }}>
+                  Last {match.h2h.total} meetings
                 </p>
-                <p className="mt-1 text-[11px]" style={{ color: theme.text }}>
-                  {match.home.shortName}
-                </p>
-              </div>
+                <div className="flex justify-between items-center">
+                  {/* Home wins */}
+                  <div className="flex-1 text-center">
+                    <p className="font-mono text-4xl font-light" style={{ color: theme.green }}>
+                      {match.h2h.homeWins}
+                    </p>
+                    <p className="mt-1 text-[11px]" style={{ color: theme.text }}>
+                      {match.home.shortName}
+                    </p>
+                  </div>
 
-              {/* Draws */}
-              <div className="flex-1 text-center">
-                <p className="font-mono text-4xl font-light" style={{ color: theme.gold }}>
-                  {match.h2h.draws}
-                </p>
-                <p className="mt-1 text-[11px]" style={{ color: theme.text }}>
-                  Draws
-                </p>
-              </div>
+                  {/* Draws */}
+                  <div className="flex-1 text-center">
+                    <p className="font-mono text-4xl font-light" style={{ color: theme.gold }}>
+                      {match.h2h.draws}
+                    </p>
+                    <p className="mt-1 text-[11px]" style={{ color: theme.text }}>
+                      Draws
+                    </p>
+                  </div>
 
-              {/* Away wins */}
-              <div className="flex-1 text-center">
-                <p className="font-mono text-4xl font-light" style={{ color: theme.red }}>
-                  {match.h2h.awayWins}
-                </p>
-                <p className="mt-1 text-[11px]" style={{ color: theme.text }}>
-                  {match.away.shortName}
-                </p>
-              </div>
-            </div>
+                  {/* Away wins */}
+                  <div className="flex-1 text-center">
+                    <p className="font-mono text-4xl font-light" style={{ color: theme.red }}>
+                      {match.h2h.awayWins}
+                    </p>
+                    <p className="mt-1 text-[11px]" style={{ color: theme.text }}>
+                      {match.away.shortName}
+                    </p>
+                  </div>
+                </div>
 
-            {/* Visual bar */}
-            <div className="mt-4 flex h-2 overflow-hidden rounded-full" style={{ backgroundColor: theme.bgTertiary }}>
-              {match.h2h.total > 0 && (
-                <>
+                {/* Visual bar */}
+                <div className="mt-4 flex h-2 overflow-hidden rounded-full" style={{ backgroundColor: theme.bgTertiary }}>
                   <div
                     style={{
                       width: `${(match.h2h.homeWins / match.h2h.total) * 100}%`,
@@ -548,53 +561,51 @@ export default function MatchPage() {
                       backgroundColor: theme.red,
                     }}
                   />
-                </>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
+                </div>
+              </div>
+            ) : (
+              <div
+                className="rounded-xl p-6 text-center"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <p className="text-[12px]" style={{ color: theme.textSecondary }}>
+                  No head-to-head data available
+                </p>
+              </div>
+            )}
+          </section>
+        )}
 
-      {/* League Standings */}
-      {match.leagueCode && standings.length > 0 && (
-        <section className="px-4 py-6">
-          <div className="flex items-center gap-2 mb-4">
-            <TableIcon size={14} style={{ color: theme.accent }} />
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
-              League Table
-            </h3>
-          </div>
-          <MatchStandings
-            standings={standings}
-            homeTeamId={match.home.id}
-            awayTeamId={match.away.id}
-            leagueName={match.league}
-          />
-        </section>
-      )}
-
-      {/* Standings loading */}
-      {match.leagueCode && standingsLoading && (
-        <section className="px-4 py-6">
-          <div className="flex justify-center">
-            <div
-              className="h-5 w-5 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-              style={{ color: theme.accent }}
-            />
-          </div>
-        </section>
-      )}
-
-      {/* Placeholder for no data */}
-      {!match.h2h.total && !match.leagueCode && (
-        <section className="flex-1 flex items-center justify-center px-4">
-          <div className="text-center">
-            <p className="text-[12px]" style={{ color: theme.textSecondary }}>
-              {isUpcoming ? 'Match details will be available after kickoff' : 'No additional data available'}
-            </p>
-          </div>
-        </section>
-      )}
+        {/* Table Tab */}
+        {activeTab === 'table' && (
+          <section className="px-4 py-6">
+            {standingsLoading ? (
+              <div className="flex justify-center py-8">
+                <div
+                  className="h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                  style={{ color: theme.accent }}
+                />
+              </div>
+            ) : standings.length > 0 ? (
+              <MatchStandings
+                standings={standings}
+                homeTeamId={match.home.id}
+                awayTeamId={match.away.id}
+                leagueName={match.league}
+              />
+            ) : (
+              <div
+                className="rounded-xl p-6 text-center"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <p className="text-[12px]" style={{ color: theme.textSecondary }}>
+                  League table not available
+                </p>
+              </div>
+            )}
+          </section>
+        )}
+      </div>
 
       <BottomNav />
     </div>
