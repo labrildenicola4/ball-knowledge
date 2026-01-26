@@ -90,8 +90,9 @@ async function fetchApi<T>(
     : Object.keys(data.errors || {}).length > 0;
 
   if (hasErrors) {
-    console.error('[API-Football] API Error:', data.errors);
-    throw new Error('API returned errors');
+    console.error('[API-Football] API Error:', JSON.stringify(data.errors));
+    console.error('[API-Football] Full response:', JSON.stringify(data));
+    throw new Error(`API returned errors: ${JSON.stringify(data.errors)}`);
   }
 
   // Cache the response
