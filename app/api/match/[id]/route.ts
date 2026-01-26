@@ -161,8 +161,8 @@ export async function GET(
     let homeCoach: string | null = null;
     let awayCoach: string | null = null;
 
-    // Only fetch lineups for live or finished matches (lineups aren't available for future matches)
-    if (leagueKey && (isLive || statusInfo.status === 'FT')) {
+    // Fetch lineups if we have a valid league (lineups available ~1hr before kickoff)
+    if (leagueKey) {
       try {
         const matchDateStr = matchDate.toISOString().split('T')[0]; // YYYY-MM-DD format
         const lineups = await getLineupsForMatch(
