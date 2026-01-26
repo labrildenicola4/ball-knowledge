@@ -33,7 +33,11 @@ export async function GET(request: NextRequest) {
 
     if (fetchError) {
       console.error('[Sync/Live] Error fetching potential live matches:', fetchError);
-      return NextResponse.json({ error: 'Failed to fetch matches' }, { status: 500 });
+      return NextResponse.json({
+        error: 'Failed to fetch matches',
+        details: fetchError.message,
+        code: fetchError.code
+      }, { status: 500 });
     }
 
     if (!potentialLiveMatches || potentialLiveMatches.length === 0) {
