@@ -100,7 +100,8 @@ export default function MatchPage() {
   const baseMatch = fullMatch || cachedMatch;
 
   // Merge with realtime scores (realtime takes priority)
-  const match = baseMatch ? {
+  // Add safety checks for home/away being undefined
+  const match = baseMatch && baseMatch.home && baseMatch.away ? {
     ...baseMatch,
     status: liveMatch?.status || baseMatch.status,
     minute: liveMatch?.minute ?? baseMatch.minute,
@@ -166,7 +167,7 @@ export default function MatchPage() {
     };
 
     if (match) checkAuth();
-  }, [match?.home.id, match?.away.id]);
+  }, [match?.home?.id, match?.away?.id]);
 
   // Toggle favorite for a team
   const toggleFavorite = async (teamId: number, isHome: boolean) => {
@@ -239,24 +240,8 @@ export default function MatchPage() {
   const isUpcoming = match.status === 'NS';
 
   // Get team form from match data (fetched from API)
-  const homeForm = match.home?.form || [];
-  const awayForm = match.away?.form || [];
-
-  // Safety check for match data
-  if (!match.home || !match.away) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center transition-theme" style={{ backgroundColor: theme.bg }}>
-        <p className="text-[14px]" style={{ color: theme.red }}>Invalid match data</p>
-        <button
-          onClick={() => router.back()}
-          className="mt-4 rounded-lg px-4 py-2 text-[12px]"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-        >
-          Go back
-        </button>
-      </div>
-    );
-  }
+  const homeForm = match.home.form || [];
+  const awayForm = match.away.form || [];
 
   // Form indicator component
   const FormIndicator = ({ form }: { form: string[] }) => (
