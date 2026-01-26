@@ -23,12 +23,13 @@ export async function GET(request: NextRequest) {
 
     // Get matches that are either:
     // 1. Already marked as live
-    // 2. Scheduled to start within the window (might have started)
+    // 2. Scheduled to start within the time window (might have started)
+    // Using simpler query: get all today's matches that are live OR scheduled
     const { data: potentialLiveMatches, error: fetchError } = await supabase
       .from('fixtures_cache')
       .select('api_id, status, kickoff')
       .eq('match_date', today)
-      .or(`status.in.(${LIVE_STATUSES.join(',')}),and(status.eq.NS,kickoff.gte.${twoHoursAgo.toISOString()},kickoff.lte.${threeHoursAhead.toISOString()})`);
+      .in('status', [...LIVE_STATUSES, 'NS']);
 
     if (fetchError) {
       console.error('[Sync/Live] Error fetching potential live matches:', fetchError);
@@ -36,22 +37,46 @@ export async function GET(request: NextRequest) {
     }
 
     if (!potentialLiveMatches || potentialLiveMatches.length === 0) {
-      console.log('[Sync/Live] No live matches found');
+      console.log('[Sync/Live] No matches found for today');
       return NextResponse.json({
         success: true,
         updated: 0,
-        message: 'No live matches',
+        message: 'No matches today',
         duration: `${Date.now() - startTime}ms`,
       });
     }
 
-    console.log(`[Sync/Live] Found ${potentialLiveMatches.length} potential live matches`);
+    // Filter to only matches that are live OR scheduled within our time window
+    const matchesToCheck = potentialLiveMatches.filter(match => {
+      // If already live, always check
+      if (LIVE_STATUSES.includes(match.status)) return true;
+
+      // For scheduled matches, only check if kickoff is within our window
+      if (match.status === 'NS' && match.kickoff) {
+        const kickoffTime = new Date(match.kickoff).getTime();
+        return kickoffTime >= twoHoursAgo.getTime() && kickoffTime <= threeHoursAhead.getTime();
+      }
+
+      return false;
+    });
+
+    if (matchesToCheck.length === 0) {
+      console.log('[Sync/Live] No matches in the active time window');
+      return NextResponse.json({
+        success: true,
+        updated: 0,
+        message: 'No matches in active window',
+        duration: `${Date.now() - startTime}ms`,
+      });
+    }
+
+    console.log(`[Sync/Live] Found ${matchesToCheck.length} matches to check (${potentialLiveMatches.length} total today)`);
 
     let updated = 0;
     const errors: string[] = [];
 
     // Update each match
-    for (const match of potentialLiveMatches) {
+    for (const match of matchesToCheck) {
       try {
         const details = await getMatch(match.api_id);
 
@@ -94,12 +119,12 @@ export async function GET(request: NextRequest) {
     }
 
     const duration = Date.now() - startTime;
-    console.log(`[Sync/Live] Completed in ${duration}ms. Updated ${updated}/${potentialLiveMatches.length} matches.`);
+    console.log(`[Sync/Live] Completed in ${duration}ms. Updated ${updated}/${matchesToCheck.length} matches.`);
 
     return NextResponse.json({
       success: true,
       updated,
-      total: potentialLiveMatches.length,
+      total: matchesToCheck.length,
       errors: errors.length > 0 ? errors : undefined,
       duration: `${duration}ms`,
     });
