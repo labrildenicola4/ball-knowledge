@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { getStandings, COMPETITION_CODES, type LeagueId } from '@/lib/football-data';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 // All domestic leagues to sync standings for
 const STANDINGS_LEAGUES: LeagueId[] = [

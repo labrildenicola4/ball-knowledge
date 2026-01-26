@@ -3,6 +3,8 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
 import { getMatchDataForFixture, mapStatistics } from '@/lib/api-football';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 // Reverse mapping from competition code to league key
 const CODE_TO_LEAGUE: Record<string, string> = Object.fromEntries(

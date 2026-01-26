@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { getMatch } from '@/lib/football-data';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 // Status codes that indicate a live match
 const LIVE_STATUSES = ['IN_PLAY', 'PAUSED', 'LIVE', '1H', '2H', 'HT', 'ET', 'P'];
 

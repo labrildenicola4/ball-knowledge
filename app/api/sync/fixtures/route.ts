@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { getMatches, COMPETITION_CODES, type LeagueId } from '@/lib/football-data';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 // All leagues to sync
 const ALL_LEAGUES: LeagueId[] = [
   'laliga', 'premier', 'seriea', 'bundesliga', 'ligue1',
