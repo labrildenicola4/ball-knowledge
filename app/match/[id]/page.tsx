@@ -445,6 +445,7 @@ export default function MatchPage() {
             stats={match.stats}
             homeShortName={match.home.shortName}
             awayShortName={match.away.shortName}
+            matchStatus={match.status}
           />
         </section>
       )}

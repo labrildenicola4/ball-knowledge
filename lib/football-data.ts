@@ -48,6 +48,9 @@ export const COMPETITION_CODES = {
   eredivisie: 'DED',
   primeiraliga: 'PPL',
   championship: 'ELC',
+  // Domestic cups
+  copadelrey: 'CDR',
+  facup: 'FAC',
   // International competitions
   championsleague: 'CL',
   copalibertadores: 'CLI',

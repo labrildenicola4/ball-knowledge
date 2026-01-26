@@ -20,22 +20,28 @@ interface LiveStatsProps {
   stats: LiveStatsData | null;
   homeShortName: string;
   awayShortName: string;
+  matchStatus?: string;
 }
 
 type TabType = 'all' | '1st' | '2nd';
 
-export function LiveStats({ stats, homeShortName, awayShortName }: LiveStatsProps) {
+export function LiveStats({ stats, homeShortName, awayShortName, matchStatus }: LiveStatsProps) {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('all');
 
   if (!stats || stats.all.length === 0) {
+    const isFinished = matchStatus === 'FT';
+    const message = isFinished
+      ? 'Match stats not available'
+      : 'Live stats will appear here during the match';
+
     return (
       <div
         className="rounded-xl p-6 text-center"
         style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <p className="text-[12px]" style={{ color: theme.textSecondary }}>
-          Live stats will appear here during the match
+          {message}
         </p>
       </div>
     );

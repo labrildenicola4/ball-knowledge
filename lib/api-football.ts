@@ -22,6 +22,12 @@ export const LEAGUE_IDS: Record<string, number> = {
   eredivisie: 88,
   championship: 40,
   brasileirao: 71,
+  // Domestic cups
+  copadelrey: 143,
+  facup: 45,
+  coupdefrance: 66,
+  coppadeitalia: 137,
+  dfbpokal: 81,
   // International
   championsleague: 2,
   europaleague: 3,
@@ -247,6 +253,20 @@ export async function getFixtureLineups(fixtureId: number): Promise<FixtureLineu
   return fetchApi<FixtureLineup>('/fixtures/lineups', { fixture: fixtureId });
 }
 
+// Common team name aliases for better matching
+const TEAM_ALIASES: Record<string, string[]> = {
+  'barcelona': ['barca', 'fcbarcelona', 'fcb'],
+  'realmadrid': ['madrid', 'rmadrid', 'real'],
+  'atleticomadrid': ['atletico', 'atleti', 'atm'],
+  'manchesterunited': ['manutd', 'manunited', 'mufc'],
+  'manchestercity': ['mancity', 'mcfc'],
+  'bayern': ['bayernmunich', 'bayernmunchen', 'fcbayern'],
+  'psg': ['parissaintgermain', 'paris'],
+  'juventus': ['juve'],
+  'inter': ['intermilan', 'internazionale'],
+  'milan': ['acmilan'],
+};
+
 // Find API-Football fixture ID by searching for a match on a specific date
 // between two teams (using team names to match)
 export async function findFixtureByTeams(
@@ -265,20 +285,52 @@ export async function findFixtureByTeams(
     // Normalize team name for comparison
     const normalize = (name: string) => name.toLowerCase().replace(/[^a-z]/g, '');
 
-    const homeNorm = normalize(homeTeamName);
-    const awayNorm = normalize(awayTeamName);
+    // Get all possible names for a team (including aliases)
+    const getTeamVariants = (name: string): string[] => {
+      const norm = normalize(name);
+      const variants = [norm];
+
+      // Add aliases
+      for (const [key, aliases] of Object.entries(TEAM_ALIASES)) {
+        if (norm.includes(key) || aliases.some(a => norm.includes(a))) {
+          variants.push(key, ...aliases);
+        }
+      }
+
+      // Add first word (common for teams like "Real Oviedo" -> "oviedo")
+      const words = name.toLowerCase().split(/\s+/);
+      if (words.length > 1) {
+        variants.push(normalize(words[words.length - 1])); // Last word
+        variants.push(normalize(words[0])); // First word
+      }
+
+      return Array.from(new Set(variants));
+    };
+
+    const homeVariants = getTeamVariants(homeTeamName);
+    const awayVariants = getTeamVariants(awayTeamName);
 
     // Find matching fixture
     const match = fixtures.find((f) => {
       const fHome = normalize(f.teams.home.name);
       const fAway = normalize(f.teams.away.name);
+      const fHomeVariants = getTeamVariants(f.teams.home.name);
+      const fAwayVariants = getTeamVariants(f.teams.away.name);
 
-      // Check if names match (allow partial match for abbreviated names)
-      return (
-        (fHome.includes(homeNorm) || homeNorm.includes(fHome)) &&
-        (fAway.includes(awayNorm) || awayNorm.includes(fAway))
+      // Check if any variant matches
+      const homeMatch = homeVariants.some(h =>
+        fHomeVariants.some(fh => fh.includes(h) || h.includes(fh))
       );
+      const awayMatch = awayVariants.some(a =>
+        fAwayVariants.some(fa => fa.includes(a) || a.includes(fa))
+      );
+
+      return homeMatch && awayMatch;
     });
+
+    if (match) {
+      console.log(`[API-Football] Found fixture: ${match.teams.home.name} vs ${match.teams.away.name}`);
+    }
 
     return match?.fixture.id || null;
   } catch (error) {
