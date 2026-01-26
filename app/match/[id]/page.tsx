@@ -239,8 +239,24 @@ export default function MatchPage() {
   const [activeTab, setActiveTab] = useState<'stats' | 'lineups' | 'h2h' | 'table'>('stats');
 
   // Get team form from match data (fetched from API)
-  const homeForm = match.home.form || [];
-  const awayForm = match.away.form || [];
+  const homeForm = match.home?.form || [];
+  const awayForm = match.away?.form || [];
+
+  // Safety check for match data
+  if (!match.home || !match.away) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center transition-theme" style={{ backgroundColor: theme.bg }}>
+        <p className="text-[14px]" style={{ color: theme.red }}>Invalid match data</p>
+        <button
+          onClick={() => router.back()}
+          className="mt-4 rounded-lg px-4 py-2 text-[12px]"
+          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        >
+          Go back
+        </button>
+      </div>
+    );
+  }
 
   // Form indicator component
   const FormIndicator = ({ form }: { form: string[] }) => (
@@ -501,7 +517,7 @@ export default function MatchPage() {
         {/* H2H Tab */}
         {activeTab === 'h2h' && (
           <section className="px-4 py-6">
-            {match.h2h.total > 0 ? (
+            {match.h2h && match.h2h.total > 0 ? (
               <div
                 className="rounded-xl p-5"
                 style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
