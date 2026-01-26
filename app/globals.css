@@ -184,22 +184,3 @@ a {
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
 }
-
-/* Desktop container styling - makes it look like a phone app */
-@media (min-width: 640px) {
-  body {
-    background-color: #050805;
-  }
-
-  body > div > div {
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-    background-color: var(--bg);
-  }
-}
-
-/* Light mode desktop background */
-@media (min-width: 640px) {
-  body:not(.dark) {
-    background-color: #d5d0c5;
-  }
-}

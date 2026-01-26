@@ -76,12 +76,7 @@ export default function RootLayout({
         />
       </head>
       <body className="dark">
-        <ThemeProvider>
-          {/* Responsive container - mobile width on desktop, full width on mobile */}
-          <div className="mx-auto w-full max-w-lg min-h-screen">
-            {children}
-          </div>
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
