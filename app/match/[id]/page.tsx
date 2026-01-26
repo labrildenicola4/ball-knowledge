@@ -130,6 +130,9 @@ export default function MatchPage() {
 
   const standings = standingsData?.standings || [];
 
+  // Tab state - must be at top level with other hooks (before any early returns)
+  const [activeTab, setActiveTab] = useState<'stats' | 'lineups' | 'h2h' | 'table'>('stats');
+
   // Favorites state for both teams
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [homeFavorite, setHomeFavorite] = useState(false);
@@ -234,9 +237,6 @@ export default function MatchPage() {
   const isFinished = match.status === 'FT';
   const isLive = ['LIVE', '1H', '2H', 'HT'].includes(match.status);
   const isUpcoming = match.status === 'NS';
-
-  // Tab state
-  const [activeTab, setActiveTab] = useState<'stats' | 'lineups' | 'h2h' | 'table'>('stats');
 
   // Get team form from match data (fetched from API)
   const homeForm = match.home?.form || [];
