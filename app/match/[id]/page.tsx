@@ -19,6 +19,12 @@ const fetcher = (url: string) => fetch(url).then(res => {
   return res.json();
 });
 
+// Create Supabase client outside component to avoid recreation
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 interface Team {
   id: number;
   name: string;
@@ -139,11 +145,6 @@ export default function MatchPage() {
   const [homeFavorite, setHomeFavorite] = useState(false);
   const [awayFavorite, setAwayFavorite] = useState(false);
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   // Check auth and load favorites
   useEffect(() => {
     const checkAuth = async () => {
@@ -243,8 +244,8 @@ export default function MatchPage() {
   const homeForm = match.home.form || [];
   const awayForm = match.away.form || [];
 
-  // Form indicator component
-  const FormIndicator = ({ form }: { form: string[] }) => (
+  // Helper to render form indicators inline
+  const renderForm = (form: string[]) => (
     <div className="flex justify-center gap-1 mt-2">
       {form.map((result, i) => (
         <span
@@ -329,7 +330,7 @@ export default function MatchPage() {
               </div>
             </div>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.home.shortName}</p>
-            {homeForm.length > 0 && <FormIndicator form={homeForm} />}
+            {homeForm.length > 0 && renderForm(homeForm)}
           </div>
 
           {/* Score */}
@@ -417,7 +418,7 @@ export default function MatchPage() {
               </div>
             </div>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.away.shortName}</p>
-            {awayForm.length > 0 && <FormIndicator form={awayForm} />}
+            {awayForm.length > 0 && renderForm(awayForm)}
           </div>
         </div>
       </section>
