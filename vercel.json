@@ -1,1 +1,16 @@
-{}
+{
+  "crons": [
+    {
+      "path": "/api/sync/match-details",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/sync/standings",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/sync/fixtures",
+      "schedule": "0 * * * *"
+    }
+  ]
+}
