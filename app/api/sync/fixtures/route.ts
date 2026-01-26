@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { getMatches, COMPETITION_CODES, type LeagueId } from '@/lib/football-data';
 
-// Verify cron secret to prevent unauthorized access
-const CRON_SECRET = process.env.CRON_SECRET;
-
 // All leagues to sync
 const ALL_LEAGUES: LeagueId[] = [
   'laliga', 'premier', 'seriea', 'bundesliga', 'ligue1',
@@ -13,17 +10,6 @@ const ALL_LEAGUES: LeagueId[] = [
 ];
 
 export async function GET(request: NextRequest) {
-  // Verify authorization (header or query param)
-  const authHeader = request.headers.get('authorization');
-  const secretParam = request.nextUrl.searchParams.get('secret');
-  const isAuthorized = !CRON_SECRET ||
-    authHeader === `Bearer ${CRON_SECRET}` ||
-    secretParam === CRON_SECRET;
-
-  if (!isAuthorized) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   const startTime = Date.now();
   console.log('[Sync] Starting fixtures sync...');
 

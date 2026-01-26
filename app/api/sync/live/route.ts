@@ -2,24 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { getMatch } from '@/lib/football-data';
 
-// Verify cron secret to prevent unauthorized access
-const CRON_SECRET = process.env.CRON_SECRET;
-
 // Status codes that indicate a live match
 const LIVE_STATUSES = ['IN_PLAY', 'PAUSED', 'LIVE', '1H', '2H', 'HT', 'ET', 'P'];
 
 export async function GET(request: NextRequest) {
-  // Verify authorization (header or query param)
-  const authHeader = request.headers.get('authorization');
-  const secretParam = request.nextUrl.searchParams.get('secret');
-  const isAuthorized = !CRON_SECRET ||
-    authHeader === `Bearer ${CRON_SECRET}` ||
-    secretParam === CRON_SECRET;
-
-  if (!isAuthorized) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   const startTime = Date.now();
   console.log('[Sync/Live] Starting live match sync...');
 

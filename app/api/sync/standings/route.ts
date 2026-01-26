@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { getStandings, COMPETITION_CODES, type LeagueId } from '@/lib/football-data';
 
-// Verify cron secret to prevent unauthorized access
-const CRON_SECRET = process.env.CRON_SECRET;
 
 // All domestic leagues to sync standings for
 const STANDINGS_LEAGUES: LeagueId[] = [
@@ -12,17 +10,6 @@ const STANDINGS_LEAGUES: LeagueId[] = [
 ];
 
 export async function GET(request: NextRequest) {
-  // Verify authorization (header or query param)
-  const authHeader = request.headers.get('authorization');
-  const secretParam = request.nextUrl.searchParams.get('secret');
-  const isAuthorized = !CRON_SECRET ||
-    authHeader === `Bearer ${CRON_SECRET}` ||
-    secretParam === CRON_SECRET;
-
-  if (!isAuthorized) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   const startTime = Date.now();
   console.log('[Sync] Starting standings sync...');
 

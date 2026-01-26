@@ -3,8 +3,6 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
 import { getMatchDataForFixture, mapStatistics } from '@/lib/api-football';
 
-// Verify cron secret to prevent unauthorized access
-const CRON_SECRET = process.env.CRON_SECRET;
 
 // Reverse mapping from competition code to league key
 const CODE_TO_LEAGUE: Record<string, string> = Object.fromEntries(
@@ -22,17 +20,6 @@ function delay(ms: number) {
 }
 
 export async function GET(request: NextRequest) {
-  // Verify authorization
-  const authHeader = request.headers.get('authorization');
-  const secretParam = request.nextUrl.searchParams.get('secret');
-  const isAuthorized = !CRON_SECRET ||
-    authHeader === `Bearer ${CRON_SECRET}` ||
-    secretParam === CRON_SECRET;
-
-  if (!isAuthorized) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   const startTime = Date.now();
   console.log('[Sync Match Details] Starting...');
 
