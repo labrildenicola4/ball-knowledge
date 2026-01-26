@@ -165,12 +165,17 @@ export async function GET(
     if (leagueKey) {
       try {
         const matchDateStr = matchDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+        console.log(`[Match API] Fetching lineups for ${match.homeTeam.name} vs ${match.awayTeam.name}`);
+        console.log(`[Match API] League: ${leagueKey}, Date: ${matchDateStr}, Competition: ${match.competition.code}`);
+
         const lineups = await getLineupsForMatch(
           leagueKey,
           matchDateStr,
           match.homeTeam.name,
           match.awayTeam.name
         );
+
+        console.log(`[Match API] Received ${lineups.length} team lineups`);
 
         // Map API-Football lineup to our format
         const mapLineupPlayer = (p: { player: { id: number; name: string; number: number; pos: string } }) => ({
@@ -200,6 +205,9 @@ export async function GET(
           awayBench = awayLineupData.substitutes.map(mapLineupPlayer);
           awayFormation = awayLineupData.formation || null;
           awayCoach = awayLineupData.coach?.name || null;
+          console.log(`[Match API] Lineups loaded: ${homeLineup.length} starters + ${homeBench.length} bench for home`);
+        } else {
+          console.log(`[Match API] Not enough lineups returned (got ${lineups.length}, need 2)`);
         }
       } catch (lineupError) {
         console.error('[Match API] Error fetching lineups:', lineupError);
