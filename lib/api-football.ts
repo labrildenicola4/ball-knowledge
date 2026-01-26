@@ -255,9 +255,10 @@ export async function getFixtureLineups(fixtureId: number): Promise<FixtureLineu
 
 // Common team name aliases for better matching
 const TEAM_ALIASES: Record<string, string[]> = {
-  'barcelona': ['barca', 'fcbarcelona', 'fcb'],
+  'barcelona': ['barca', 'fcbarcelona', 'fcb', 'barça'],
   'realmadrid': ['madrid', 'rmadrid', 'real'],
-  'atleticomadrid': ['atletico', 'atleti', 'atm'],
+  'atleticomadrid': ['atletico', 'atleti', 'atm', 'atleticodemadrid', 'atléticomadrid', 'atlético'],
+  'mallorca': ['realmallorca', 'rcdmallorca'],
   'manchesterunited': ['manutd', 'manunited', 'mufc'],
   'manchestercity': ['mancity', 'mcfc'],
   'bayern': ['bayernmunich', 'bayernmunchen', 'fcbayern'],
@@ -265,6 +266,13 @@ const TEAM_ALIASES: Record<string, string[]> = {
   'juventus': ['juve'],
   'inter': ['intermilan', 'internazionale'],
   'milan': ['acmilan'],
+  'realoviedo': ['oviedo'],
+  'realsociedad': ['sociedad', 'lasreal'],
+  'realbetis': ['betis'],
+  'athleticbilbao': ['athletic', 'bilbao'],
+  'villarreal': ['villarrealcf', 'yellowsubmarine'],
+  'sevilla': ['sevillafc'],
+  'valencia': ['valenciacf'],
 };
 
 // Find API-Football fixture ID by searching for a match on a specific date
@@ -352,14 +360,41 @@ export async function getLineupsForMatch(
     return [];
   }
 
-  const fixtureId = await findFixtureByTeams(leagueId, date, homeTeamName, awayTeamName);
+  console.log(`[API-Football] Looking for ${homeTeamName} vs ${awayTeamName} in league ${leagueKey} (${leagueId}) on ${date}`);
+
+  // Try the exact date first
+  let fixtureId = await findFixtureByTeams(leagueId, date, homeTeamName, awayTeamName);
+
+  // If not found, try day before and after (timezone issues)
   if (!fixtureId) {
-    console.log(`[API-Football] Fixture not found for ${homeTeamName} vs ${awayTeamName} on ${date}`);
+    const dateObj = new Date(date);
+
+    // Try day before
+    const dayBefore = new Date(dateObj);
+    dayBefore.setDate(dayBefore.getDate() - 1);
+    const dayBeforeStr = dayBefore.toISOString().split('T')[0];
+    console.log(`[API-Football] Not found on ${date}, trying ${dayBeforeStr}...`);
+    fixtureId = await findFixtureByTeams(leagueId, dayBeforeStr, homeTeamName, awayTeamName);
+
+    // Try day after
+    if (!fixtureId) {
+      const dayAfter = new Date(dateObj);
+      dayAfter.setDate(dayAfter.getDate() + 1);
+      const dayAfterStr = dayAfter.toISOString().split('T')[0];
+      console.log(`[API-Football] Not found on ${dayBeforeStr}, trying ${dayAfterStr}...`);
+      fixtureId = await findFixtureByTeams(leagueId, dayAfterStr, homeTeamName, awayTeamName);
+    }
+  }
+
+  if (!fixtureId) {
+    console.log(`[API-Football] Fixture not found for ${homeTeamName} vs ${awayTeamName} around ${date}`);
     return [];
   }
 
   console.log(`[API-Football] Found fixture ${fixtureId}, fetching lineups...`);
-  return getFixtureLineups(fixtureId);
+  const lineups = await getFixtureLineups(fixtureId);
+  console.log(`[API-Football] Got ${lineups.length} team lineups`);
+  return lineups;
 }
 
 export async function getHeadToHead(
