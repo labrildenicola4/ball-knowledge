@@ -108,11 +108,41 @@ export async function GET(
 
     const isLive = ['1H', '2H', 'HT', 'LIVE'].includes(statusInfo.status);
 
-    // Fetch H2H and team forms in parallel
-    const [h2hData, homeForm, awayForm] = await Promise.all([
+    // Format date
+    const matchDate = new Date(match.utcDate);
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const displayDate = `${monthNames[matchDate.getMonth()]} ${matchDate.getDate()}`;
+
+    // Get league key for standings lookup
+    const leagueKey = CODE_TO_LEAGUE[match.competition.code] || null;
+
+    // Mock stats for live/finished matches (football-data.org free tier doesn't provide stats)
+    const mockStats = (isLive || statusInfo.status === 'FT') ? generateSoccerStats(statusInfo.status) : null;
+
+    // Initialize lineup data
+    let homeLineup: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
+    let homeBench: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
+    let awayLineup: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
+    let awayBench: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
+    let homeFormation: string | null = null;
+    let awayFormation: string | null = null;
+    let homeCoach: string | null = null;
+    let awayCoach: string | null = null;
+
+    // Fetch H2H, team forms, AND lineups all in parallel
+    const matchDateStr = matchDate.toISOString().split('T')[0];
+
+    const [h2hData, homeForm, awayForm, lineupResult] = await Promise.all([
       getHeadToHead(matchId, 10).catch(() => []),
       getTeamForm(match.homeTeam.id, 5).catch(() => []),
       getTeamForm(match.awayTeam.id, 5).catch(() => []),
+      // Fetch lineups from API-Football (separate API, no rate limiting conflict)
+      leagueKey
+        ? getLineupsForMatch(leagueKey, matchDateStr, match.homeTeam.name, match.awayTeam.name).catch((err) => {
+            console.error('[Match API] Error fetching lineups:', err);
+            return [];
+          })
+        : Promise.resolve([]),
     ]);
 
     // Calculate H2H stats
@@ -137,82 +167,34 @@ export async function GET(
       });
     }
 
-    // Format date
-    const matchDate = new Date(match.utcDate);
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const displayDate = `${monthNames[matchDate.getMonth()]} ${matchDate.getDate()}`;
+    // Process lineup data
+    if (lineupResult.length >= 2) {
+      const mapLineupPlayer = (p: { player: { id: number; name: string; number: number; pos: string } }) => ({
+        id: p.player.id,
+        name: p.player.name,
+        position: p.player.pos || 'Unknown',
+        shirtNumber: p.player.number || null,
+      });
 
-    // Get league key for standings lookup
-    const leagueKey = CODE_TO_LEAGUE[match.competition.code] || null;
+      const homeLineupData = lineupResult.find(l =>
+        l.team.name.toLowerCase().includes(match.homeTeam.name.toLowerCase().split(' ')[0]) ||
+        match.homeTeam.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
+      ) || lineupResult[0];
 
-    // Mock stats for live/finished matches (football-data.org free tier doesn't provide stats)
-    // TODO: When adding new sports, create sport-specific stat generators
-    // e.g., basketball: points by quarter, rebounds, assists
-    // e.g., american football: yards, touchdowns, turnovers by quarter
-    const mockStats = (isLive || statusInfo.status === 'FT') ? generateSoccerStats(statusInfo.status) : null;
+      const awayLineupData = lineupResult.find(l =>
+        l.team.name.toLowerCase().includes(match.awayTeam.name.toLowerCase().split(' ')[0]) ||
+        match.awayTeam.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
+      ) || lineupResult[1];
 
-    // Fetch lineups from API-Football (they have lineup data, football-data.org free tier doesn't)
-    let homeLineup: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
-    let homeBench: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
-    let awayLineup: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
-    let awayBench: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
-    let homeFormation: string | null = null;
-    let awayFormation: string | null = null;
-    let homeCoach: string | null = null;
-    let awayCoach: string | null = null;
+      homeLineup = homeLineupData.startXI.map(mapLineupPlayer);
+      homeBench = homeLineupData.substitutes.map(mapLineupPlayer);
+      homeFormation = homeLineupData.formation || null;
+      homeCoach = homeLineupData.coach?.name || null;
 
-    // Fetch lineups if we have a valid league (lineups available ~1hr before kickoff)
-    if (leagueKey) {
-      try {
-        const matchDateStr = matchDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-        console.log(`[Match API] Fetching lineups for ${match.homeTeam.name} vs ${match.awayTeam.name}`);
-        console.log(`[Match API] League: ${leagueKey}, Date: ${matchDateStr}, Competition: ${match.competition.code}`);
-
-        const lineups = await getLineupsForMatch(
-          leagueKey,
-          matchDateStr,
-          match.homeTeam.name,
-          match.awayTeam.name
-        );
-
-        console.log(`[Match API] Received ${lineups.length} team lineups`);
-
-        // Map API-Football lineup to our format
-        const mapLineupPlayer = (p: { player: { id: number; name: string; number: number; pos: string } }) => ({
-          id: p.player.id,
-          name: p.player.name,
-          position: p.player.pos || 'Unknown',
-          shirtNumber: p.player.number || null,
-        });
-
-        if (lineups.length >= 2) {
-          const homeLineupData = lineups.find(l =>
-            l.team.name.toLowerCase().includes(match.homeTeam.name.toLowerCase().split(' ')[0]) ||
-            match.homeTeam.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
-          ) || lineups[0];
-
-          const awayLineupData = lineups.find(l =>
-            l.team.name.toLowerCase().includes(match.awayTeam.name.toLowerCase().split(' ')[0]) ||
-            match.awayTeam.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
-          ) || lineups[1];
-
-          homeLineup = homeLineupData.startXI.map(mapLineupPlayer);
-          homeBench = homeLineupData.substitutes.map(mapLineupPlayer);
-          homeFormation = homeLineupData.formation || null;
-          homeCoach = homeLineupData.coach?.name || null;
-
-          awayLineup = awayLineupData.startXI.map(mapLineupPlayer);
-          awayBench = awayLineupData.substitutes.map(mapLineupPlayer);
-          awayFormation = awayLineupData.formation || null;
-          awayCoach = awayLineupData.coach?.name || null;
-          console.log(`[Match API] Lineups loaded: ${homeLineup.length} starters + ${homeBench.length} bench for home`);
-        } else {
-          console.log(`[Match API] Not enough lineups returned (got ${lineups.length}, need 2)`);
-        }
-      } catch (lineupError) {
-        console.error('[Match API] Error fetching lineups:', lineupError);
-        // Continue without lineups - they're optional
-      }
+      awayLineup = awayLineupData.startXI.map(mapLineupPlayer);
+      awayBench = awayLineupData.substitutes.map(mapLineupPlayer);
+      awayFormation = awayLineupData.formation || null;
+      awayCoach = awayLineupData.coach?.name || null;
     }
 
     const matchDetails = {

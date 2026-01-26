@@ -51,6 +51,10 @@ export async function GET(
         logo: match.home_team_logo,
         score: match.home_score,
         form: [], // Will be loaded from full API
+        lineup: [], // Will be loaded from full API
+        bench: [],
+        formation: null,
+        coach: null,
       },
       away: {
         id: match.away_team_id,
@@ -59,6 +63,10 @@ export async function GET(
         logo: match.away_team_logo,
         score: match.away_score,
         form: [], // Will be loaded from full API
+        lineup: [], // Will be loaded from full API
+        bench: [],
+        formation: null,
+        coach: null,
       },
       // Placeholders - will be loaded from full API
       h2h: { total: 0, homeWins: 0, draws: 0, awayWins: 0 },

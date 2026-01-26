@@ -12,7 +12,7 @@ const LIVE_CACHE_TTL = 30 * 1000; // 30 seconds cache for live match data
 // Request queue for rate limiting
 let requestQueue: Promise<void> = Promise.resolve();
 let lastRequestTime = 0;
-const MIN_REQUEST_INTERVAL = 6500; // 6.5 seconds between requests (safe for 10/min limit)
+const MIN_REQUEST_INTERVAL = 2000; // 2 seconds between requests (with caching, we rarely hit limit)
 
 // Queue a request to ensure rate limiting across parallel calls
 function queueRequest(): Promise<void> {
