@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
-import { getLineupsForMatch, FixtureLineup } from '@/lib/api-football';
+import { getMatchDataForFixture, mapStatistics, FixtureLineup } from '@/lib/api-football';
 
 // Force dynamic rendering - no caching at Vercel edge
 export const dynamic = 'force-dynamic';
@@ -10,81 +10,6 @@ export const revalidate = 0;
 const CODE_TO_LEAGUE: Record<string, string> = Object.fromEntries(
   Object.entries(COMPETITION_CODES).map(([key, code]) => [code, key])
 );
-
-// Sport-specific stat generators
-// TODO: Add generators for other sports (basketball, american football, etc.)
-// Each sport will have its own stat structure and period breakdowns
-
-interface MatchStat {
-  label: string;
-  home: number;
-  away: number;
-  type?: 'decimal';
-}
-
-interface MatchStats {
-  all: MatchStat[];
-  firstHalf?: MatchStat[];
-  secondHalf?: MatchStat[];
-}
-
-function generateSoccerStats(status: string): MatchStats {
-  // Mock data - in production this would come from a real stats API
-  // First half stats (typically lower numbers)
-  const firstHalf: MatchStat[] = [
-    { label: 'Expected goals (xG)', home: 0.5, away: 0.3, type: 'decimal' },
-    { label: 'Possession %', home: 52, away: 48 },
-    { label: 'Total shots', home: 5, away: 4 },
-    { label: 'Shots on target', home: 2, away: 1 },
-    { label: 'Corner kicks', home: 3, away: 2 },
-    { label: 'Fouls', home: 5, away: 6 },
-  ];
-
-  // Second half stats (only if match is in 2H or finished)
-  const showSecondHalf = ['2H', 'HT', 'FT'].includes(status);
-  const secondHalf: MatchStat[] = showSecondHalf ? [
-    { label: 'Expected goals (xG)', home: 0.7, away: 0.5, type: 'decimal' },
-    { label: 'Possession %', home: 58, away: 42 },
-    { label: 'Total shots', home: 7, away: 4 },
-    { label: 'Shots on target', home: 3, away: 2 },
-    { label: 'Corner kicks', home: 3, away: 2 },
-    { label: 'Fouls', home: 5, away: 6 },
-  ] : [];
-
-  // Combined stats (sum of both halves, or just first half if still in 1H)
-  const all: MatchStat[] = firstHalf.map((stat, i) => {
-    const secondHalfStat = secondHalf[i];
-    if (stat.type === 'decimal') {
-      return {
-        ...stat,
-        home: parseFloat((stat.home + (secondHalfStat?.home || 0)).toFixed(2)),
-        away: parseFloat((stat.away + (secondHalfStat?.away || 0)).toFixed(2)),
-      };
-    }
-    // For possession, average instead of sum
-    if (stat.label === 'Possession %') {
-      if (secondHalfStat) {
-        return {
-          ...stat,
-          home: Math.round((stat.home + secondHalfStat.home) / 2),
-          away: Math.round((stat.away + secondHalfStat.away) / 2),
-        };
-      }
-      return stat;
-    }
-    return {
-      ...stat,
-      home: stat.home + (secondHalfStat?.home || 0),
-      away: stat.away + (secondHalfStat?.away || 0),
-    };
-  });
-
-  return {
-    all,
-    firstHalf,
-    secondHalf: showSecondHalf ? secondHalf : undefined,
-  };
-}
 
 export async function GET(
   request: NextRequest,
@@ -107,6 +32,7 @@ export async function GET(
     const statusInfo = mapStatus(match.status, match.minute);
 
     const isLive = ['1H', '2H', 'HT', 'LIVE'].includes(statusInfo.status);
+    const isFinished = statusInfo.status === 'FT';
 
     // Format date
     const matchDate = new Date(match.utcDate);
@@ -116,10 +42,7 @@ export async function GET(
     // Get league key for standings lookup
     const leagueKey = CODE_TO_LEAGUE[match.competition.code] || null;
 
-    // Mock stats for live/finished matches (football-data.org free tier doesn't provide stats)
-    const mockStats = (isLive || statusInfo.status === 'FT') ? generateSoccerStats(statusInfo.status) : null;
-
-    // Initialize lineup data
+    // Initialize lineup and stats data
     let homeLineup: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
     let homeBench: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
     let awayLineup: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
@@ -128,21 +51,22 @@ export async function GET(
     let awayFormation: string | null = null;
     let homeCoach: string | null = null;
     let awayCoach: string | null = null;
+    let matchStats: { all: Array<{ label: string; home: number; away: number; type?: 'decimal' }> } | null = null;
 
-    // Fetch H2H, team forms, AND lineups all in parallel
+    // Fetch H2H, team forms, AND lineups+stats all in parallel
     const matchDateStr = matchDate.toISOString().split('T')[0];
 
-    const [h2hData, homeForm, awayForm, lineupResult] = await Promise.all([
+    const [h2hData, homeForm, awayForm, apiFootballData] = await Promise.all([
       getHeadToHead(matchId, 10).catch(() => []),
       getTeamForm(match.homeTeam.id, 5).catch(() => []),
       getTeamForm(match.awayTeam.id, 5).catch(() => []),
-      // Fetch lineups from API-Football (separate API, no rate limiting conflict)
+      // Fetch lineups AND statistics from API-Football
       leagueKey
-        ? getLineupsForMatch(leagueKey, matchDateStr, match.homeTeam.name, match.awayTeam.name).catch((err) => {
-            console.error('[Match API] Error fetching lineups:', err);
-            return [];
+        ? getMatchDataForFixture(leagueKey, matchDateStr, match.homeTeam.name, match.awayTeam.name).catch((err) => {
+            console.error('[Match API] Error fetching API-Football data:', err);
+            return { lineups: [], statistics: [], fixtureId: null };
           })
-        : Promise.resolve([]),
+        : Promise.resolve({ lineups: [], statistics: [], fixtureId: null }),
     ]);
 
     // Calculate H2H stats
@@ -167,7 +91,8 @@ export async function GET(
       });
     }
 
-    // Process lineup data
+    // Process lineup data from API-Football
+    const lineupResult = apiFootballData.lineups;
     if (lineupResult.length >= 2) {
       const mapLineupPlayer = (p: { player: { id: number; name: string; number: number; pos: string } }) => ({
         id: p.player.id,
@@ -195,6 +120,12 @@ export async function GET(
       awayBench = awayLineupData.substitutes.map(mapLineupPlayer);
       awayFormation = awayLineupData.formation || null;
       awayCoach = awayLineupData.coach?.name || null;
+    }
+
+    // Process real statistics from API-Football (for live or finished matches)
+    if ((isLive || isFinished) && apiFootballData.statistics.length > 0) {
+      matchStats = mapStatistics(apiFootballData.statistics);
+      console.log(`[Match API] Real stats loaded: ${matchStats?.all?.length || 0} stat types`);
     }
 
     const matchDetails = {
@@ -236,7 +167,7 @@ export async function GET(
         home: match.score.halfTime.home,
         away: match.score.halfTime.away,
       },
-      stats: mockStats,
+      stats: matchStats,
     };
 
     return NextResponse.json(matchDetails, {

@@ -351,21 +351,13 @@ export async function findFixtureByTeams(
   }
 }
 
-// Get lineups by looking up the fixture first
-export async function getLineupsForMatch(
-  leagueKey: string,
+// Find fixture ID with date fallback
+async function findFixtureWithFallback(
+  leagueId: number,
   date: string,
   homeTeamName: string,
   awayTeamName: string
-): Promise<FixtureLineup[]> {
-  const leagueId = LEAGUE_IDS[leagueKey];
-  if (!leagueId) {
-    console.log(`[API-Football] Unknown league: ${leagueKey}`);
-    return [];
-  }
-
-  console.log(`[API-Football] Looking for ${homeTeamName} vs ${awayTeamName} in league ${leagueKey} (${leagueId}) on ${date}`);
-
+): Promise<number | null> {
   // Try the exact date first
   let fixtureId = await findFixtureByTeams(leagueId, date, homeTeamName, awayTeamName);
 
@@ -390,6 +382,26 @@ export async function getLineupsForMatch(
     }
   }
 
+  return fixtureId;
+}
+
+// Get lineups by looking up the fixture first
+export async function getLineupsForMatch(
+  leagueKey: string,
+  date: string,
+  homeTeamName: string,
+  awayTeamName: string
+): Promise<FixtureLineup[]> {
+  const leagueId = LEAGUE_IDS[leagueKey];
+  if (!leagueId) {
+    console.log(`[API-Football] Unknown league: ${leagueKey}`);
+    return [];
+  }
+
+  console.log(`[API-Football] Looking for ${homeTeamName} vs ${awayTeamName} in league ${leagueKey} (${leagueId}) on ${date}`);
+
+  const fixtureId = await findFixtureWithFallback(leagueId, date, homeTeamName, awayTeamName);
+
   if (!fixtureId) {
     console.log(`[API-Football] Fixture not found for ${homeTeamName} vs ${awayTeamName} around ${date}`);
     return [];
@@ -399,6 +411,53 @@ export async function getLineupsForMatch(
   const lineups = await getFixtureLineups(fixtureId);
   console.log(`[API-Football] Got ${lineups.length} team lineups`);
   return lineups;
+}
+
+// Combined data response type
+export interface MatchDataFromApiFootball {
+  lineups: FixtureLineup[];
+  statistics: FixtureStatistic[];
+  fixtureId: number | null;
+}
+
+// Get both lineups and statistics in one call (more efficient)
+export async function getMatchDataForFixture(
+  leagueKey: string,
+  date: string,
+  homeTeamName: string,
+  awayTeamName: string
+): Promise<MatchDataFromApiFootball> {
+  const leagueId = LEAGUE_IDS[leagueKey];
+  if (!leagueId) {
+    console.log(`[API-Football] Unknown league: ${leagueKey}`);
+    return { lineups: [], statistics: [], fixtureId: null };
+  }
+
+  console.log(`[API-Football] Looking for ${homeTeamName} vs ${awayTeamName} in league ${leagueKey} (${leagueId}) on ${date}`);
+
+  const fixtureId = await findFixtureWithFallback(leagueId, date, homeTeamName, awayTeamName);
+
+  if (!fixtureId) {
+    console.log(`[API-Football] Fixture not found for ${homeTeamName} vs ${awayTeamName} around ${date}`);
+    return { lineups: [], statistics: [], fixtureId: null };
+  }
+
+  console.log(`[API-Football] Found fixture ${fixtureId}, fetching lineups and statistics...`);
+
+  // Fetch lineups and statistics in parallel
+  const [lineups, statistics] = await Promise.all([
+    getFixtureLineups(fixtureId).catch((err) => {
+      console.error('[API-Football] Error fetching lineups:', err);
+      return [];
+    }),
+    getFixtureStatistics(fixtureId).catch((err) => {
+      console.error('[API-Football] Error fetching statistics:', err);
+      return [];
+    }),
+  ]);
+
+  console.log(`[API-Football] Got ${lineups.length} team lineups, ${statistics.length} team stats`);
+  return { lineups, statistics, fixtureId };
 }
 
 export async function getHeadToHead(
