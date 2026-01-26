@@ -157,80 +157,75 @@ export function MatchLineup({ home, away, homeShortName, awayShortName, matchSta
         </div>
       )}
 
-      {/* Soccer Pitch */}
+      {/* Soccer Pitch - Compact half-pitch view */}
       <div
         className="relative rounded-xl overflow-hidden mb-4"
         style={{
           backgroundColor: '#2d8a4e',
-          aspectRatio: '3/4',
+          height: '220px',
           border: `1px solid ${theme.border}`,
         }}
       >
-        {/* Pitch markings */}
+        {/* Pitch markings - half pitch */}
         <svg
           className="absolute inset-0 w-full h-full"
-          viewBox="0 0 300 400"
+          viewBox="0 0 400 220"
           preserveAspectRatio="none"
         >
           {/* Pitch outline */}
-          <rect x="10" y="10" width="280" height="380" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+          <rect x="8" y="8" width="384" height="204" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2" />
 
-          {/* Center line */}
-          <line x1="10" y1="200" x2="290" y2="200" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+          {/* Goal area at bottom */}
+          <rect x="130" y="170" width="140" height="42" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2" />
+          <rect x="160" y="195" width="80" height="17" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2" />
 
-          {/* Center circle */}
-          <circle cx="150" cy="200" r="40" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
-          <circle cx="150" cy="200" r="3" fill="rgba(255,255,255,0.4)" />
+          {/* Penalty arc */}
+          <path d="M 160 170 Q 200 145 240 170" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2" />
 
-          {/* Top penalty area */}
-          <rect x="60" y="10" width="180" height="70" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
-          <rect x="100" y="10" width="100" height="30" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
-          <circle cx="150" cy="60" r="3" fill="rgba(255,255,255,0.4)" />
+          {/* Penalty spot */}
+          <circle cx="200" cy="155" r="2" fill="rgba(255,255,255,0.35)" />
 
-          {/* Bottom penalty area */}
-          <rect x="60" y="320" width="180" height="70" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
-          <rect x="100" y="360" width="100" height="30" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
-          <circle cx="150" cy="340" r="3" fill="rgba(255,255,255,0.4)" />
+          {/* Center line at top */}
+          <line x1="8" y1="8" x2="392" y2="8" stroke="rgba(255,255,255,0.35)" strokeWidth="2" />
         </svg>
 
-        {/* Player positions - distributed vertically from bottom to top */}
-        <div className="absolute inset-0 flex flex-col justify-between py-4 px-2">
+        {/* Player positions - distributed vertically */}
+        <div className="absolute inset-0 flex flex-col justify-between py-2 px-3">
           {playerRows.map((row, rowIndex) => {
-            // Calculate vertical position - goalkeeper at bottom, attackers at top
             const isGoalkeeper = rowIndex === 0;
 
             return (
               <div
                 key={rowIndex}
-                className="flex justify-center items-center gap-1"
+                className="flex justify-center items-center gap-2"
                 style={{
-                  order: playerRows.length - rowIndex, // Reverse order so GK is at bottom
+                  order: playerRows.length - rowIndex,
                 }}
               >
                 {row.map((player) => (
                   <div
                     key={player.id}
                     className="flex flex-col items-center"
-                    style={{ minWidth: '50px', maxWidth: '70px' }}
+                    style={{ minWidth: '32px' }}
                   >
                     {/* Player circle with number */}
                     <div
-                      className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-[13px] shadow-md"
+                      className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] shadow-sm"
                       style={{
                         backgroundColor: isGoalkeeper ? '#f59e0b' : '#ffffff',
                         color: isGoalkeeper ? '#ffffff' : '#1a1a1a',
-                        border: '2px solid rgba(0,0,0,0.2)',
+                        border: '2px solid rgba(0,0,0,0.15)',
                       }}
                     >
                       {player.shirtNumber ?? '?'}
                     </div>
                     {/* Player name */}
                     <span
-                      className="mt-1 text-[9px] font-semibold text-center leading-tight px-1 py-0.5 rounded"
+                      className="mt-0.5 text-[8px] font-medium text-center leading-tight px-1 rounded"
                       style={{
                         color: '#ffffff',
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        maxWidth: '65px',
+                        backgroundColor: 'rgba(0,0,0,0.4)',
+                        maxWidth: '55px',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
