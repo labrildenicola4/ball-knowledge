@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES, LineupPlayer } from '@/lib/football-data';
+import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
+import { getLineupsForMatch, FixtureLineup } from '@/lib/api-football';
 
 // Force dynamic rendering - no caching at Vercel edge
 export const dynamic = 'force-dynamic';
@@ -150,11 +151,61 @@ export async function GET(
     // e.g., american football: yards, touchdowns, turnovers by quarter
     const mockStats = (isLive || statusInfo.status === 'FT') ? generateSoccerStats(statusInfo.status) : null;
 
-    // Extract lineup data if available
-    const homeLineup: LineupPlayer[] = match.homeTeam.lineup || [];
-    const homeBench: LineupPlayer[] = match.homeTeam.bench || [];
-    const awayLineup: LineupPlayer[] = match.awayTeam.lineup || [];
-    const awayBench: LineupPlayer[] = match.awayTeam.bench || [];
+    // Fetch lineups from API-Football (they have lineup data, football-data.org free tier doesn't)
+    let homeLineup: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
+    let homeBench: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
+    let awayLineup: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
+    let awayBench: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
+    let homeFormation: string | null = null;
+    let awayFormation: string | null = null;
+    let homeCoach: string | null = null;
+    let awayCoach: string | null = null;
+
+    // Only fetch lineups for live or finished matches (lineups aren't available for future matches)
+    if (leagueKey && (isLive || statusInfo.status === 'FT')) {
+      try {
+        const matchDateStr = matchDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+        const lineups = await getLineupsForMatch(
+          leagueKey,
+          matchDateStr,
+          match.homeTeam.name,
+          match.awayTeam.name
+        );
+
+        // Map API-Football lineup to our format
+        const mapLineupPlayer = (p: { player: { id: number; name: string; number: number; pos: string } }) => ({
+          id: p.player.id,
+          name: p.player.name,
+          position: p.player.pos || 'Unknown',
+          shirtNumber: p.player.number || null,
+        });
+
+        if (lineups.length >= 2) {
+          const homeLineupData = lineups.find(l =>
+            l.team.name.toLowerCase().includes(match.homeTeam.name.toLowerCase().split(' ')[0]) ||
+            match.homeTeam.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
+          ) || lineups[0];
+
+          const awayLineupData = lineups.find(l =>
+            l.team.name.toLowerCase().includes(match.awayTeam.name.toLowerCase().split(' ')[0]) ||
+            match.awayTeam.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
+          ) || lineups[1];
+
+          homeLineup = homeLineupData.startXI.map(mapLineupPlayer);
+          homeBench = homeLineupData.substitutes.map(mapLineupPlayer);
+          homeFormation = homeLineupData.formation || null;
+          homeCoach = homeLineupData.coach?.name || null;
+
+          awayLineup = awayLineupData.startXI.map(mapLineupPlayer);
+          awayBench = awayLineupData.substitutes.map(mapLineupPlayer);
+          awayFormation = awayLineupData.formation || null;
+          awayCoach = awayLineupData.coach?.name || null;
+        }
+      } catch (lineupError) {
+        console.error('[Match API] Error fetching lineups:', lineupError);
+        // Continue without lineups - they're optional
+      }
+    }
 
     const matchDetails = {
       id: match.id,
@@ -175,8 +226,8 @@ export async function GET(
         form: homeForm,
         lineup: homeLineup,
         bench: homeBench,
-        formation: match.homeTeam.formation || null,
-        coach: match.homeTeam.coach?.name || null,
+        formation: homeFormation,
+        coach: homeCoach,
       },
       away: {
         id: match.awayTeam.id,
@@ -187,8 +238,8 @@ export async function GET(
         form: awayForm,
         lineup: awayLineup,
         bench: awayBench,
-        formation: match.awayTeam.formation || null,
-        coach: match.awayTeam.coach?.name || null,
+        formation: awayFormation,
+        coach: awayCoach,
       },
       h2h: h2hStats,
       halfTimeScore: {

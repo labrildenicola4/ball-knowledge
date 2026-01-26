@@ -172,6 +172,28 @@ export interface Standing {
   };
 }
 
+export interface LineupPlayer {
+  id: number;
+  name: string;
+  number: number;
+  pos: string;
+  grid: string | null;
+}
+
+export interface LineupCoach {
+  id: number;
+  name: string;
+  photo: string;
+}
+
+export interface FixtureLineup {
+  team: Team;
+  formation: string;
+  startXI: Array<{ player: LineupPlayer }>;
+  substitutes: Array<{ player: LineupPlayer }>;
+  coach: LineupCoach;
+}
+
 export interface StandingsResponse {
   league: {
     id: number;
@@ -219,6 +241,73 @@ export async function getFixture(fixtureId: number): Promise<Fixture | null> {
 
 export async function getFixtureStatistics(fixtureId: number): Promise<FixtureStatistic[]> {
   return fetchApi<FixtureStatistic>('/fixtures/statistics', { fixture: fixtureId }, true);
+}
+
+export async function getFixtureLineups(fixtureId: number): Promise<FixtureLineup[]> {
+  return fetchApi<FixtureLineup>('/fixtures/lineups', { fixture: fixtureId });
+}
+
+// Find API-Football fixture ID by searching for a match on a specific date
+// between two teams (using team names to match)
+export async function findFixtureByTeams(
+  leagueId: number,
+  date: string, // YYYY-MM-DD format
+  homeTeamName: string,
+  awayTeamName: string
+): Promise<number | null> {
+  try {
+    const fixtures = await fetchApi<Fixture>('/fixtures', {
+      league: leagueId,
+      date,
+      season: getSeason(),
+    });
+
+    // Normalize team name for comparison
+    const normalize = (name: string) => name.toLowerCase().replace(/[^a-z]/g, '');
+
+    const homeNorm = normalize(homeTeamName);
+    const awayNorm = normalize(awayTeamName);
+
+    // Find matching fixture
+    const match = fixtures.find((f) => {
+      const fHome = normalize(f.teams.home.name);
+      const fAway = normalize(f.teams.away.name);
+
+      // Check if names match (allow partial match for abbreviated names)
+      return (
+        (fHome.includes(homeNorm) || homeNorm.includes(fHome)) &&
+        (fAway.includes(awayNorm) || awayNorm.includes(fAway))
+      );
+    });
+
+    return match?.fixture.id || null;
+  } catch (error) {
+    console.error('[API-Football] Error finding fixture:', error);
+    return null;
+  }
+}
+
+// Get lineups by looking up the fixture first
+export async function getLineupsForMatch(
+  leagueKey: string,
+  date: string,
+  homeTeamName: string,
+  awayTeamName: string
+): Promise<FixtureLineup[]> {
+  const leagueId = LEAGUE_IDS[leagueKey];
+  if (!leagueId) {
+    console.log(`[API-Football] Unknown league: ${leagueKey}`);
+    return [];
+  }
+
+  const fixtureId = await findFixtureByTeams(leagueId, date, homeTeamName, awayTeamName);
+  if (!fixtureId) {
+    console.log(`[API-Football] Fixture not found for ${homeTeamName} vs ${awayTeamName} on ${date}`);
+    return [];
+  }
+
+  console.log(`[API-Football] Found fixture ${fixtureId}, fetching lineups...`);
+  return getFixtureLineups(fixtureId);
 }
 
 export async function getHeadToHead(
