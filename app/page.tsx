@@ -215,9 +215,9 @@ export default function HomePage() {
                   )}
                 </button>
 
-                {/* Live Matches */}
+                {/* Live Matches - grid on desktop */}
                 {!liveCollapsed && (
-                  <div className="flex flex-col gap-3 p-3">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
                     {liveMatches.map((match) => (
                       <MatchCard key={match.id} match={match} />
                     ))}
@@ -260,9 +260,9 @@ export default function HomePage() {
                     )}
                   </button>
 
-                  {/* Nation Matches */}
+                  {/* Nation Matches - grid on desktop */}
                   {!isCollapsed && (
-                    <div className="flex flex-col gap-3 p-3">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
                       {nationMatches.map((match) => (
                         <MatchCard key={`${nation.id}-${match.id}`} match={match} />
                       ))}

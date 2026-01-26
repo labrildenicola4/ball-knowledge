@@ -451,17 +451,23 @@ export default function TeamPage() {
         </button>
       </header>
 
-      {/* Team Hero Section */}
-      <section className="px-4 py-5" style={{ backgroundColor: theme.bgSecondary }}>
-        <div className="flex flex-col items-center text-center">
+      {/* DESKTOP LAYOUT */}
+      <div className="hidden lg:flex flex-1">
+        {/* Sidebar - Team Info */}
+        <aside
+          className="w-72 flex-shrink-0 p-6"
+          style={{ backgroundColor: theme.bgSecondary, borderRight: `1px solid ${theme.border}` }}
+        >
           {/* Crest */}
-          <div className="mb-3 h-20 w-20">
-            <img src={team.crest} alt={team.name} className="h-full w-full object-contain" />
+          <div className="flex justify-center mb-4">
+            <div className="h-24 w-24">
+              <img src={team.crest} alt={team.name} className="h-full w-full object-contain" />
+            </div>
           </div>
 
-          {/* Name with favorite button */}
-          <div className="flex flex-col items-center">
-            <div className="flex items-center gap-2">
+          {/* Name with favorite */}
+          <div className="text-center mb-4">
+            <div className="flex items-center justify-center gap-2">
               <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
               <button onClick={toggleFavorite} className="p-1">
                 <Heart
@@ -471,52 +477,659 @@ export default function TeamPage() {
                 />
               </button>
             </div>
+            {team.tla && (
+              <p className="text-sm mt-1" style={{ color: theme.textSecondary }}>{team.tla}</p>
+            )}
           </div>
 
           {/* Form */}
           {team.form.length > 0 && (
-            <div className="mt-3">
+            <div className="flex justify-center mb-4">
               <FormIndicator form={team.form} />
             </div>
           )}
 
-          {/* Team Info Row */}
-          <div className="mt-3 flex flex-wrap justify-center gap-4 text-xs" style={{ color: theme.textSecondary }}>
+          {/* Team Details */}
+          <div className="space-y-3 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
             {team.venue && (
-              <div className="flex items-center gap-1">
-                <MapPin size={12} />
+              <div className="flex items-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
+                <MapPin size={14} />
                 <span>{team.venue}</span>
               </div>
             )}
             {team.coach && (
-              <div className="flex items-center gap-1">
-                <Trophy size={12} />
+              <div className="flex items-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
+                <Trophy size={14} />
                 <span>{team.coach}</span>
+              </div>
+            )}
+            {team.founded > 0 && (
+              <div className="text-sm" style={{ color: theme.textSecondary }}>
+                Founded: {team.founded}
+              </div>
+            )}
+          </div>
+
+          {/* Quick Stats */}
+          <div className="mt-6 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
+              Season Stats
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              <div
+                className="rounded-lg p-3 text-center"
+                style={{ backgroundColor: theme.bgTertiary }}
+              >
+                <p className="text-lg font-semibold" style={{ color: theme.text }}>{team.statistics.points}</p>
+                <p className="text-[10px]" style={{ color: theme.textSecondary }}>Points</p>
+              </div>
+              <div
+                className="rounded-lg p-3 text-center"
+                style={{ backgroundColor: theme.bgTertiary }}
+              >
+                <p className="text-lg font-semibold" style={{ color: theme.text }}>{team.statistics.winRate}%</p>
+                <p className="text-[10px]" style={{ color: theme.textSecondary }}>Win Rate</p>
+              </div>
+              <div
+                className="rounded-lg p-3 text-center"
+                style={{ backgroundColor: theme.bgTertiary }}
+              >
+                <p className="text-lg font-semibold" style={{ color: theme.text }}>{team.statistics.goalsFor}</p>
+                <p className="text-[10px]" style={{ color: theme.textSecondary }}>Goals For</p>
+              </div>
+              <div
+                className="rounded-lg p-3 text-center"
+                style={{ backgroundColor: theme.bgTertiary }}
+              >
+                <p className="text-lg font-semibold" style={{ color: theme.text }}>{team.statistics.goalsAgainst}</p>
+                <p className="text-[10px]" style={{ color: theme.textSecondary }}>Goals Against</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          {/* Tabs */}
+          <div className="flex" style={{ borderBottom: `1px solid ${theme.border}` }}>
+            {(['schedule', 'tables', 'squad', 'statistics'] as TabType[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className="px-6 py-4 text-sm font-medium transition-colors capitalize"
+                style={{
+                  color: activeTab === tab ? theme.accent : theme.textSecondary,
+                  borderBottom: activeTab === tab ? `2px solid ${theme.accent}` : '2px solid transparent',
+                }}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content - Desktop */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {/* Desktop tab content uses same content as mobile but in larger container */}
+            {activeTab === 'schedule' && (
+              <div>
+                {/* Filter buttons */}
+                <div className="flex gap-2 mb-4">
+                  {(['all', 'upcoming', 'results'] as const).map((filter) => (
+                    <button
+                      key={filter}
+                      onClick={() => setScheduleFilter(filter)}
+                      className="rounded-full px-4 py-1.5 text-xs font-medium capitalize"
+                      style={{
+                        backgroundColor: scheduleFilter === filter ? theme.accent : theme.bgSecondary,
+                        color: scheduleFilter === filter ? '#fff' : theme.textSecondary,
+                        border: `1px solid ${scheduleFilter === filter ? theme.accent : theme.border}`,
+                      }}
+                    >
+                      {filter}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Matches grid on desktop */}
+                {filteredMatches.length > 0 ? (
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                    {filteredMatches.map((match) => (
+                      <MatchRow
+                        key={match.id}
+                        match={match}
+                        showResult={match.status === 'FT'}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center">
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>
+                      No matches found
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'tables' && (
+              <div>
+                {/* Competition Dropdown */}
+                {team.competitions.length > 0 && (
+                  <div className="relative mb-4 max-w-md">
+                    <button
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="flex w-full items-center justify-between rounded-lg px-4 py-3"
+                      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    >
+                      <div className="flex items-center gap-3">
+                        {selectedCompetitionData && (
+                          <img
+                            src={selectedCompetitionData.logo}
+                            alt=""
+                            className="h-5 w-5 object-contain"
+                            style={{ filter: darkMode && !COLORED_LOGO_LEAGUES.includes(selectedCompetitionData.code) ? 'brightness(0) invert(1)' : 'none' }}
+                          />
+                        )}
+                        <span className="text-sm font-medium" style={{ color: theme.text }}>
+                          {selectedCompetitionData?.name || 'Select Competition'}
+                        </span>
+                      </div>
+                      <ChevronDown
+                        size={18}
+                        style={{
+                          color: theme.textSecondary,
+                          transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s',
+                        }}
+                      />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {dropdownOpen && (
+                      <div
+                        className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-lg shadow-lg"
+                        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                      >
+                        {team.competitions.map((comp) => (
+                          <button
+                            key={comp.code}
+                            onClick={() => {
+                              setSelectedCompetition(comp.code);
+                              setDropdownOpen(false);
+                            }}
+                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:opacity-80"
+                            style={{
+                              backgroundColor: comp.code === selectedCompetition ? `${theme.accent}20` : 'transparent',
+                              borderBottom: `1px solid ${theme.border}`,
+                            }}
+                          >
+                            <img
+                              src={comp.logo}
+                              alt=""
+                              className="h-5 w-5 object-contain"
+                              style={{ filter: darkMode && !COLORED_LOGO_LEAGUES.includes(comp.code) ? 'brightness(0) invert(1)' : 'none' }}
+                            />
+                            <span
+                              className="text-sm"
+                              style={{
+                                color: comp.code === selectedCompetition ? theme.accent : theme.text,
+                                fontWeight: comp.code === selectedCompetition ? 600 : 400,
+                              }}
+                            >
+                              {comp.name}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Standings Table - Desktop gets full width table */}
+                {standingsLoading ? (
+                  <div className="py-8 text-center">
+                    <div
+                      className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                      style={{ color: theme.accent }}
+                    />
+                  </div>
+                ) : standings.length > 0 ? (
+                  <div
+                    className="overflow-hidden rounded-xl"
+                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  >
+                    {/* Header - Full columns on desktop */}
+                    <div
+                      className="grid grid-cols-[40px_1fr_50px_50px_50px_50px_60px_60px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wider"
+                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    >
+                      <span>#</span>
+                      <span>Club</span>
+                      <span className="text-center">P</span>
+                      <span className="text-center">W</span>
+                      <span className="text-center">D</span>
+                      <span className="text-center">L</span>
+                      <span className="text-center">GD</span>
+                      <span className="text-center">Pts</span>
+                    </div>
+
+                    {/* Rows */}
+                    {standings.map((standing) => {
+                      const isCurrentTeam = standing.teamId === team.id;
+                      return (
+                        <Link
+                          key={standing.teamId}
+                          href={`/team/${standing.teamId}`}
+                          className="grid grid-cols-[40px_1fr_50px_50px_50px_50px_60px_60px] items-center px-4 py-3 transition-opacity hover:opacity-80"
+                          style={{
+                            borderTop: `1px solid ${theme.border}`,
+                            backgroundColor: isCurrentTeam ? `${theme.accent}30` : 'transparent',
+                            borderLeft: isCurrentTeam ? `3px solid ${theme.accent}` : '3px solid transparent',
+                          }}
+                        >
+                          <span
+                            className="font-mono text-sm"
+                            style={{
+                              color: standing.position <= 4 ? theme.accent : theme.textSecondary,
+                              fontWeight: standing.position <= 4 || isCurrentTeam ? 600 : 400,
+                            }}
+                          >
+                            {standing.position}
+                          </span>
+
+                          <span
+                            className="flex items-center gap-3 text-[14px]"
+                            style={{ fontWeight: isCurrentTeam ? 600 : 500, color: theme.text }}
+                          >
+                            {standing.logo && (
+                              <img src={standing.logo} alt={standing.team} className="h-6 w-6 object-contain" />
+                            )}
+                            <span className="truncate">{standing.team}</span>
+                          </span>
+
+                          <span
+                            className="font-mono text-center text-[13px]"
+                            style={{ color: theme.textSecondary }}
+                          >
+                            {standing.played}
+                          </span>
+
+                          <span
+                            className="font-mono text-center text-[13px]"
+                            style={{ color: theme.textSecondary }}
+                          >
+                            {standing.won}
+                          </span>
+
+                          <span
+                            className="font-mono text-center text-[13px]"
+                            style={{ color: theme.textSecondary }}
+                          >
+                            {standing.drawn}
+                          </span>
+
+                          <span
+                            className="font-mono text-center text-[13px]"
+                            style={{ color: theme.textSecondary }}
+                          >
+                            {standing.lost}
+                          </span>
+
+                          <span
+                            className="font-mono text-center text-[13px]"
+                            style={{
+                              color: standing.gd.startsWith('+') ? theme.accent : standing.gd.startsWith('-') ? theme.red : theme.textSecondary,
+                            }}
+                          >
+                            {standing.gd}
+                          </span>
+
+                          <span
+                            className="font-mono text-center text-[14px]"
+                            style={{ fontWeight: isCurrentTeam ? 700 : 600, color: theme.text }}
+                          >
+                            {standing.points}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div
+                    className="rounded-lg py-8 text-center"
+                    style={{ backgroundColor: theme.bgSecondary }}
+                  >
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>
+                      No standings available
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'squad' && (
+              <div>
+                {/* Coach */}
+                {team.coach && (
+                  <div className="mb-4">
+                    <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                      Manager
+                    </h3>
+                    <div
+                      className="rounded-xl px-4 py-3 max-w-md"
+                      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    >
+                      <p className="font-medium" style={{ color: theme.text }}>{team.coach}</p>
+                      {team.coachNationality && (
+                        <p className="text-xs mt-0.5" style={{ color: theme.textSecondary }}>{team.coachNationality}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Squad by position - use same rendering as mobile */}
+                {team.squad.length > 0 ? (
+                  <>
+                    {team.squad.map((group) => {
+                      const isGoalkeeper = group.position === 'Goalkeeper';
+                      return (
+                        <div key={group.position} className="mb-4">
+                          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                            {group.position}
+                          </h3>
+                          <div
+                            className="overflow-x-auto rounded-xl"
+                            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                          >
+                            {/* Table Header */}
+                            <div
+                              className="flex items-center justify-between px-3 py-2 text-[10px] font-semibold uppercase tracking-wider"
+                              style={{
+                                backgroundColor: theme.bgTertiary,
+                                color: theme.textSecondary,
+                              }}
+                            >
+                              {/* Left side - Player info */}
+                              <div className="flex items-center">
+                                <span className="w-8 text-center">#</span>
+                                <span className="w-48">Player</span>
+                                <span className="w-28">Nationality</span>
+                                <span className="w-12 text-center">AGE</span>
+                              </div>
+                              {/* Right side - Stats */}
+                              <div className="flex items-center">
+                                <span className="w-12 text-center">APP</span>
+                                <span className="w-12 text-center">SUB</span>
+                                {isGoalkeeper ? (
+                                  <>
+                                    <span className="w-12 text-center">SV</span>
+                                    <span className="w-12 text-center">GA</span>
+                                    <span className="w-12 text-center">YC</span>
+                                    <span className="w-12 text-center">RC</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="w-12 text-center">G</span>
+                                    <span className="w-12 text-center">A</span>
+                                    <span className="w-12 text-center">SH</span>
+                                    <span className="w-12 text-center">ST</span>
+                                    <span className="w-12 text-center">FC</span>
+                                    <span className="w-12 text-center">FA</span>
+                                    <span className="w-12 text-center">YC</span>
+                                    <span className="w-12 text-center">RC</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Players */}
+                            {group.players.map((player, idx) => (
+                              <div
+                                key={player.id}
+                                className="flex items-center justify-between px-3 py-2.5"
+                                style={{
+                                  borderTop: `1px solid ${theme.border}`,
+                                }}
+                              >
+                                {/* Left side - Player info */}
+                                <div className="flex items-center">
+                                  <span
+                                    className="w-8 text-center font-mono text-sm font-semibold"
+                                    style={{ color: theme.accent }}
+                                  >
+                                    {player.shirtNumber ?? '-'}
+                                  </span>
+                                  <span className="w-48 text-sm font-medium truncate" style={{ color: theme.text }}>
+                                    {player.name}
+                                  </span>
+                                  <span className="w-28 text-xs truncate" style={{ color: theme.textSecondary }}>
+                                    {player.nationality || '-'}
+                                  </span>
+                                  <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.age ?? '-'}
+                                  </span>
+                                </div>
+
+                                {/* Right side - Stats */}
+                                <div className="flex items-center">
+                                  <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.stats?.appearances ?? '-'}
+                                  </span>
+                                  <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                    {player.stats?.substitutions ?? '-'}
+                                  </span>
+
+                                  {isGoalkeeper ? (
+                                    <>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                        {player.stats?.saves ?? '-'}
+                                      </span>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                        {player.stats?.goalsAgainst ?? '-'}
+                                      </span>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.gold }}>
+                                        {player.stats?.yellowCards ?? '-'}
+                                      </span>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.red }}>
+                                        {player.stats?.redCards ?? '-'}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                        {player.stats?.goals ?? '-'}
+                                      </span>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                        {player.stats?.assists ?? '-'}
+                                      </span>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                        {player.stats?.shots ?? '-'}
+                                      </span>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                        {player.stats?.shotsOnTarget ?? '-'}
+                                      </span>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                        {player.stats?.foulsCommitted ?? '-'}
+                                      </span>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
+                                        {player.stats?.foulsSuffered ?? '-'}
+                                      </span>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.gold }}>
+                                        {player.stats?.yellowCards ?? '-'}
+                                      </span>
+                                      <span className="w-12 text-center text-xs font-mono" style={{ color: theme.red }}>
+                                        {player.stats?.redCards ?? '-'}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <div className="py-8 text-center">
+                    <p className="text-sm" style={{ color: theme.textSecondary }}>
+                      Squad data not available
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'statistics' && (
+              <div className="max-w-4xl">
+                {/* Overview Stats - larger grid on desktop */}
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                  <StatCard label="Played" value={team.statistics.played} />
+                  <StatCard label="Points" value={team.statistics.points} subValue={`${team.statistics.ppg} PPG`} />
+                  <StatCard label="Win Rate" value={`${team.statistics.winRate}%`} />
+                  <StatCard label="Clean Sheets" value={team.statistics.cleanSheets} />
+                </div>
+
+                {/* Record */}
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                  Record
+                </h3>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <StatCard label="Wins" value={team.statistics.wins} />
+                  <StatCard label="Draws" value={team.statistics.draws} />
+                  <StatCard label="Losses" value={team.statistics.losses} />
+                </div>
+
+                {/* Goals */}
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                  Goals
+                </h3>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <StatCard label="Scored" value={team.statistics.goalsFor} />
+                  <StatCard label="Conceded" value={team.statistics.goalsAgainst} />
+                  <StatCard
+                    label="Difference"
+                    value={team.statistics.goalDifference > 0 ? `+${team.statistics.goalDifference}` : team.statistics.goalDifference}
+                  />
+                </div>
+
+                {/* Home/Away side by side on desktop */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                      Home Record
+                    </h3>
+                    <div
+                      className="rounded-xl p-4"
+                      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    >
+                      <div className="flex justify-between text-sm">
+                        <span style={{ color: theme.green }}>{team.statistics.homeRecord.wins}W</span>
+                        <span style={{ color: theme.gold }}>{team.statistics.homeRecord.draws}D</span>
+                        <span style={{ color: theme.red }}>{team.statistics.homeRecord.losses}L</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                      Away Record
+                    </h3>
+                    <div
+                      className="rounded-xl p-4"
+                      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    >
+                      <div className="flex justify-between text-sm">
+                        <span style={{ color: theme.green }}>{team.statistics.awayRecord.wins}W</span>
+                        <span style={{ color: theme.gold }}>{team.statistics.awayRecord.draws}D</span>
+                        <span style={{ color: theme.red }}>{team.statistics.awayRecord.losses}L</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Other stats */}
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                  Other
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <StatCard label="Biggest Win" value={team.statistics.biggestWin} />
+                  <StatCard label="Biggest Loss" value={team.statistics.biggestLoss || '-'} />
+                </div>
               </div>
             )}
           </div>
         </div>
-      </section>
-
-      {/* Tabs */}
-      <div className="flex overflow-x-auto" style={{ borderBottom: `1px solid ${theme.border}` }}>
-        {(['schedule', 'tables', 'squad', 'statistics'] as TabType[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className="flex-1 min-w-[80px] py-3 text-sm font-medium transition-colors capitalize"
-            style={{
-              color: activeTab === tab ? theme.accent : theme.textSecondary,
-              borderBottom: activeTab === tab ? `2px solid ${theme.accent}` : '2px solid transparent',
-            }}
-          >
-            {tab}
-          </button>
-        ))}
       </div>
 
-      {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto">
+      {/* MOBILE LAYOUT */}
+      <div className="lg:hidden flex-1 flex flex-col">
+        {/* Team Hero Section */}
+        <section className="px-4 py-5" style={{ backgroundColor: theme.bgSecondary }}>
+          <div className="flex flex-col items-center text-center">
+            {/* Crest */}
+            <div className="mb-3 h-20 w-20">
+              <img src={team.crest} alt={team.name} className="h-full w-full object-contain" />
+            </div>
+
+            {/* Name with favorite button */}
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
+                <button onClick={toggleFavorite} className="p-1">
+                  <Heart
+                    size={18}
+                    fill={isFavorite ? '#d68b94' : 'none'}
+                    style={{ color: '#d68b94' }}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            {team.form.length > 0 && (
+              <div className="mt-3">
+                <FormIndicator form={team.form} />
+              </div>
+            )}
+
+            {/* Team Info Row */}
+            <div className="mt-3 flex flex-wrap justify-center gap-4 text-xs" style={{ color: theme.textSecondary }}>
+              {team.venue && (
+                <div className="flex items-center gap-1">
+                  <MapPin size={12} />
+                  <span>{team.venue}</span>
+                </div>
+              )}
+              {team.coach && (
+                <div className="flex items-center gap-1">
+                  <Trophy size={12} />
+                  <span>{team.coach}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Tabs */}
+        <div className="flex overflow-x-auto" style={{ borderBottom: `1px solid ${theme.border}` }}>
+          {(['schedule', 'tables', 'squad', 'statistics'] as TabType[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className="flex-1 min-w-[80px] py-3 text-sm font-medium transition-colors capitalize"
+              style={{
+                color: activeTab === tab ? theme.accent : theme.textSecondary,
+                borderBottom: activeTab === tab ? `2px solid ${theme.accent}` : '2px solid transparent',
+              }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div className="flex-1 overflow-y-auto">
         {/* Schedule Tab */}
         {activeTab === 'schedule' && (
           <div className="px-4 py-4">
@@ -1048,6 +1661,7 @@ export default function TeamPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       <BottomNav />
