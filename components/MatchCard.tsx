@@ -68,8 +68,9 @@ export function MatchCard({ match }: MatchCardProps) {
         </div>
 
         {/* Teams & Score */}
-        <div className="flex items-center justify-between">
-          <div className="flex flex-1 items-center gap-3 min-w-0">
+        <div className="flex items-center">
+          {/* Home Team */}
+          <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
             {match.homeLogo.startsWith('http') ? (
               <img src={match.homeLogo} alt={match.home} className="h-8 w-8 flex-shrink-0 object-contain" />
             ) : (
@@ -77,12 +78,13 @@ export function MatchCard({ match }: MatchCardProps) {
             )}
             <div className="flex flex-col min-w-0">
               <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Home</span>
-              <span className="text-lg font-medium truncate" style={{ color: theme.text }}>{match.home}</span>
+              <span className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px]" style={{ color: theme.text }}>{match.home}</span>
             </div>
           </div>
 
+          {/* Score */}
           <div
-            className="font-mono rounded-lg px-5 py-2 text-lg font-semibold flex-shrink-0 mx-2"
+            className="font-mono rounded-lg px-4 py-2 text-lg font-semibold flex-shrink-0"
             style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
           >
             {match.homeScore !== null
@@ -90,10 +92,11 @@ export function MatchCard({ match }: MatchCardProps) {
               : 'vs'}
           </div>
 
-          <div className="flex flex-1 items-center justify-end gap-3 min-w-0">
+          {/* Away Team */}
+          <div className="flex items-center gap-2 flex-1 min-w-0 pl-2 justify-end">
             <div className="flex flex-col items-end min-w-0">
               <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Away</span>
-              <span className="text-lg font-medium truncate" style={{ color: theme.text }}>{match.away}</span>
+              <span className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px] text-right" style={{ color: theme.text }}>{match.away}</span>
             </div>
             {match.awayLogo.startsWith('http') ? (
               <img src={match.awayLogo} alt={match.away} className="h-8 w-8 flex-shrink-0 object-contain" />
