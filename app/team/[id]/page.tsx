@@ -472,11 +472,10 @@ export default function TeamPage() {
           </div>
 
           {/* Name with favorite */}
-          <div className="flex justify-center mb-4">
-            <div className="flex items-center gap-2">
-              <span className="w-7" /> {/* Spacer to balance heart */}
+          <div className="text-center mb-4">
+            <div className="flex items-center justify-center gap-2">
               <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
-              <button onClick={toggleFavorite} className="p-1 w-7 flex justify-center">
+              <button onClick={toggleFavorite} className="p-1">
                 <Heart
                   size={18}
                   fill={isFavorite ? '#d68b94' : 'none'}
@@ -484,10 +483,10 @@ export default function TeamPage() {
                 />
               </button>
             </div>
+            {team.tla && (
+              <p className="text-sm mt-1" style={{ color: theme.textSecondary }}>{team.tla}</p>
+            )}
           </div>
-          {team.tla && (
-            <p className="text-sm text-center" style={{ color: theme.textSecondary }}>{team.tla}</p>
-          )}
 
           {/* Form */}
           {team.form.length > 0 && (
@@ -497,15 +496,15 @@ export default function TeamPage() {
           )}
 
           {/* Team Details */}
-          <div className="space-y-3 pt-4 text-center" style={{ borderTop: `1px solid ${theme.border}` }}>
+          <div className="space-y-3 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
             {team.venue && (
-              <div className="flex items-center justify-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
+              <div className="flex items-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
                 <MapPin size={14} />
                 <span>{team.venue}</span>
               </div>
             )}
             {team.coach && (
-              <div className="flex items-center justify-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
+              <div className="flex items-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
                 <Trophy size={14} />
                 <span>{team.coach}</span>
               </div>
@@ -1080,16 +1079,17 @@ export default function TeamPage() {
             </div>
 
             {/* Name with favorite button */}
-            <div className="flex items-center justify-center gap-2">
-              <span className="w-7" /> {/* Spacer to balance heart */}
-              <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
-              <button onClick={toggleFavorite} className="p-1 w-7 flex justify-center">
-                <Heart
-                  size={18}
-                  fill={isFavorite ? '#d68b94' : 'none'}
-                  style={{ color: '#d68b94' }}
-                />
-              </button>
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
+                <button onClick={toggleFavorite} className="p-1">
+                  <Heart
+                    size={18}
+                    fill={isFavorite ? '#d68b94' : 'none'}
+                    style={{ color: '#d68b94' }}
+                  />
+                </button>
+              </div>
             </div>
 
             {/* Form */}
