@@ -330,11 +330,13 @@ export default function MatchPage() {
                 <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain" />
               </div>
             </Link>
-            <div className="text-center">
-              <p className="text-sm font-medium inline" style={{ color: theme.text }}>{match.home.name}</p>
-              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5 inline-flex align-middle ml-1">
-                <Heart size={12} fill={homeFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
-              </button>
+            <div className="flex flex-col items-center w-full">
+              <span className="whitespace-nowrap">
+                <span className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</span>
+                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5 align-middle ml-1 inline-block">
+                  <Heart size={12} fill={homeFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
+                </button>
+              </span>
               <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.home.shortName}</p>
             </div>
             {homeForm.length > 0 && renderForm(homeForm)}
@@ -416,11 +418,13 @@ export default function MatchPage() {
                 <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain" />
               </div>
             </Link>
-            <div className="text-center">
-              <p className="text-sm font-medium inline" style={{ color: theme.text }}>{match.away.name}</p>
-              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5 inline-flex align-middle ml-1">
-                <Heart size={12} fill={awayFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
-              </button>
+            <div className="flex flex-col items-center w-full">
+              <span className="whitespace-nowrap">
+                <span className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</span>
+                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5 align-middle ml-1 inline-block">
+                  <Heart size={12} fill={awayFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
+                </button>
+              </span>
               <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.away.shortName}</p>
             </div>
             {awayForm.length > 0 && renderForm(awayForm)}
