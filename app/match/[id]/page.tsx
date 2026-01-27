@@ -330,9 +330,10 @@ export default function MatchPage() {
                 <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain" />
               </div>
             </Link>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center justify-center gap-1">
+              <span className="w-4" /> {/* Spacer to balance heart */}
               <p className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</p>
-              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5">
+              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5 w-4 flex justify-center">
                 <Heart size={12} fill={homeFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
               </button>
             </div>
@@ -416,9 +417,10 @@ export default function MatchPage() {
                 <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain" />
               </div>
             </Link>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center justify-center gap-1">
+              <span className="w-4" /> {/* Spacer to balance heart */}
               <p className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</p>
-              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5">
+              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5 w-4 flex justify-center">
                 <Heart size={12} fill={awayFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
               </button>
             </div>

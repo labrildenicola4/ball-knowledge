@@ -474,8 +474,9 @@ export default function TeamPage() {
           {/* Name with favorite */}
           <div className="flex justify-center mb-4">
             <div className="flex items-center gap-2">
+              <span className="w-7" /> {/* Spacer to balance heart */}
               <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
-              <button onClick={toggleFavorite} className="p-1">
+              <button onClick={toggleFavorite} className="p-1 w-7 flex justify-center">
                 <Heart
                   size={18}
                   fill={isFavorite ? '#d68b94' : 'none'}
@@ -1080,8 +1081,9 @@ export default function TeamPage() {
 
             {/* Name with favorite button */}
             <div className="flex items-center justify-center gap-2">
+              <span className="w-7" /> {/* Spacer to balance heart */}
               <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
-              <button onClick={toggleFavorite} className="p-1">
+              <button onClick={toggleFavorite} className="p-1 w-7 flex justify-center">
                 <Heart
                   size={18}
                   fill={isFavorite ? '#d68b94' : 'none'}
