@@ -472,8 +472,8 @@ export default function TeamPage() {
           </div>
 
           {/* Name with favorite */}
-          <div className="mb-4" style={{ display: 'grid', placeItems: 'center', width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="text-center mb-4">
+            <div className="flex items-center justify-center gap-2">
               <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
               <button onClick={toggleFavorite} className="p-1">
                 <Heart
@@ -1079,17 +1079,15 @@ export default function TeamPage() {
             </div>
 
             {/* Name with favorite button */}
-            <div style={{ display: 'grid', placeItems: 'center', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
-                <button onClick={toggleFavorite} className="p-1">
-                  <Heart
-                    size={18}
-                    fill={isFavorite ? '#d68b94' : 'none'}
-                    style={{ color: '#d68b94' }}
-                  />
-                </button>
-              </div>
+            <div className="flex items-center justify-center gap-2">
+              <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
+              <button onClick={toggleFavorite} className="p-1">
+                <Heart
+                  size={18}
+                  fill={isFavorite ? '#d68b94' : 'none'}
+                  style={{ color: '#d68b94' }}
+                />
+              </button>
             </div>
 
             {/* Form */}
