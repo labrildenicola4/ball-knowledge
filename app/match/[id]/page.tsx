@@ -316,29 +316,27 @@ export default function MatchPage() {
 
       {/* Main Score Section */}
       <section className="px-4 py-8" style={{ backgroundColor: theme.bgSecondary }}>
-        <div className="flex items-center justify-between">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'start', gap: '8px' }}>
           {/* Home Team */}
-          <div className="flex-1 text-center">
-            <Link href={`/team/${match.home.id}`} className="transition-opacity hover:opacity-80">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Link href={`/team/${match.home.id}`} className="transition-opacity hover:opacity-80" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <span
-                className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider"
+                className="mb-2 text-[9px] font-medium uppercase tracking-wider"
                 style={{ color: theme.textSecondary }}
               >
                 Home
               </span>
-              <div className="mx-auto mb-3 h-20 w-20">
+              <div className="mb-3 h-20 w-20">
                 <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain" />
               </div>
             </Link>
-            <div style={{ display: 'grid', placeItems: 'center', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</span>
-                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5">
-                  <Heart size={12} fill={homeFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
-                </button>
-              </div>
-              <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.home.shortName}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</span>
+              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5">
+                <Heart size={12} fill={homeFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
+              </button>
             </div>
+            <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.home.shortName}</p>
             {homeForm.length > 0 && renderForm(homeForm)}
           </div>
 
@@ -406,27 +404,25 @@ export default function MatchPage() {
           </div>
 
           {/* Away Team */}
-          <div className="flex-1 text-center">
-            <Link href={`/team/${match.away.id}`} className="transition-opacity hover:opacity-80">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Link href={`/team/${match.away.id}`} className="transition-opacity hover:opacity-80" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <span
-                className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider"
+                className="mb-2 text-[9px] font-medium uppercase tracking-wider"
                 style={{ color: theme.textSecondary }}
               >
                 Away
               </span>
-              <div className="mx-auto mb-3 h-20 w-20">
+              <div className="mb-3 h-20 w-20">
                 <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain" />
               </div>
             </Link>
-            <div style={{ display: 'grid', placeItems: 'center', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</span>
-                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5">
-                  <Heart size={12} fill={awayFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
-                </button>
-              </div>
-              <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.away.shortName}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</span>
+              <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5">
+                <Heart size={12} fill={awayFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
+              </button>
             </div>
+            <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.away.shortName}</p>
             {awayForm.length > 0 && renderForm(awayForm)}
           </div>
         </div>
