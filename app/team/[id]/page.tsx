@@ -472,15 +472,17 @@ export default function TeamPage() {
           </div>
 
           {/* Name with favorite */}
-          <div className="text-center mb-4">
-            <h1 className="text-xl font-semibold inline" style={{ color: theme.text }}>{team.name}</h1>
-            <button onClick={toggleFavorite} className="p-1 inline-flex align-middle ml-1">
-              <Heart
-                size={18}
-                fill={isFavorite ? '#d68b94' : 'none'}
-                style={{ color: '#d68b94' }}
-              />
-            </button>
+          <div className="mb-4" style={{ display: 'grid', placeItems: 'center', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
+              <button onClick={toggleFavorite} className="p-1">
+                <Heart
+                  size={18}
+                  fill={isFavorite ? '#d68b94' : 'none'}
+                  style={{ color: '#d68b94' }}
+                />
+              </button>
+            </div>
             {team.tla && (
               <p className="text-sm mt-1" style={{ color: theme.textSecondary }}>{team.tla}</p>
             )}
@@ -1077,15 +1079,17 @@ export default function TeamPage() {
             </div>
 
             {/* Name with favorite button */}
-            <div className="text-center">
-              <h1 className="text-xl font-semibold inline" style={{ color: theme.text }}>{team.name}</h1>
-              <button onClick={toggleFavorite} className="p-1 inline-flex align-middle ml-1">
-                <Heart
-                  size={18}
-                  fill={isFavorite ? '#d68b94' : 'none'}
-                  style={{ color: '#d68b94' }}
-                />
-              </button>
+            <div style={{ display: 'grid', placeItems: 'center', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
+                <button onClick={toggleFavorite} className="p-1">
+                  <Heart
+                    size={18}
+                    fill={isFavorite ? '#d68b94' : 'none'}
+                    style={{ color: '#d68b94' }}
+                  />
+                </button>
+              </div>
             </div>
 
             {/* Form */}
