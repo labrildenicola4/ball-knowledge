@@ -102,8 +102,14 @@ export default function MatchPage() {
   // Subscribe to realtime score updates from Supabase
   const { match: liveMatch, isConnected: realtimeConnected } = useLiveMatch(numericMatchId);
 
-  // Use full data if available, otherwise cached data
-  const baseMatch = fullMatch || cachedMatch;
+  // Check if cached response has actual match data (not just a "notCached" indicator)
+  // Also check if cache is stale (FT match with null scores)
+  const isCachedStale = cachedMatch && cachedMatch.status === 'FT' &&
+    (cachedMatch.home?.score === null || cachedMatch.away?.score === null);
+  const hasCachedMatchData = cachedMatch && 'home' in cachedMatch && !('notCached' in cachedMatch) && !isCachedStale;
+
+  // Use full data if available, otherwise cached data (only if it has actual fresh data)
+  const baseMatch = fullMatch || (hasCachedMatchData ? cachedMatch : null);
 
   // Merge with realtime scores (realtime takes priority)
   // Add safety checks for home/away being undefined
@@ -121,8 +127,11 @@ export default function MatchPage() {
     },
   } : null;
 
-  // Only show loading if we have no data at all
-  const loading = cachedLoading && !cachedMatch && !fullMatch;
+  // Show loading if:
+  // 1. Cached is still loading, OR
+  // 2. Cached has no real/fresh data AND full API is still loading
+  const isFullLoading = !fullMatch && !swrError;
+  const loading = cachedLoading || (!hasCachedMatchData && isFullLoading);
   const error = swrError?.message || null;
 
   // Use SWR for standings (with cached endpoint)

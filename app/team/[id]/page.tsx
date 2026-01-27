@@ -159,11 +159,17 @@ export default function TeamPage() {
     }
   );
 
-  // Use full data if available, otherwise cached data
-  const team = fullTeam || cachedTeam;
+  // Check if cached response has actual team data (not just a "notCached" indicator)
+  const hasCachedTeamData = cachedTeam && 'name' in cachedTeam && !('notCached' in cachedTeam);
 
-  // Only show loading if we have no data at all
-  const loading = cachedLoading && !cachedTeam && !fullTeam;
+  // Use full data if available, otherwise cached data (only if it has actual data)
+  const team = fullTeam || (hasCachedTeamData ? cachedTeam : null);
+
+  // Show loading if:
+  // 1. Cached is still loading, OR
+  // 2. Cached has no real data AND full API is still loading
+  const isFullLoading = !fullTeam && !swrError;
+  const loading = cachedLoading || (!hasCachedTeamData && isFullLoading);
   const error = swrError?.message || null;
 
   // Tab state

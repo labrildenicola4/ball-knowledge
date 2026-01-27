@@ -21,8 +21,13 @@ export async function GET(
       .eq('api_id', matchId)
       .single();
 
+    // If match not in cache, return empty response instead of 404
+    // This allows the frontend to wait for the full API instead of showing "not found"
     if (error || !match) {
-      return NextResponse.json({ error: 'Match not found in cache' }, { status: 404 });
+      return NextResponse.json({
+        notCached: true,
+        id: matchId,
+      });
     }
 
     // Format the cached data to match the expected format

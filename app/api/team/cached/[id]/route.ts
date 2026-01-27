@@ -33,8 +33,13 @@ export async function GET(
     const cachedTeam = cachedTeamResult.data;
     const cachedMatches = cachedMatchesResult.data || [];
 
+    // If team not in cache, return empty response instead of 404
+    // This allows the frontend to wait for the full API instead of showing "not found"
     if (!cachedTeam) {
-      return NextResponse.json({ error: 'Team not found in cache' }, { status: 404 });
+      return NextResponse.json({
+        notCached: true,
+        id: teamId,
+      });
     }
 
     // Transform cached matches

@@ -36,6 +36,28 @@ interface FixturesResponse {
   source?: string;
 }
 
+// Check if cached data appears stale (matches that should have scores but don't)
+function isCacheStale(matches: Match[]): boolean {
+  const now = Date.now();
+
+  for (const match of matches) {
+    // If match should have started (kickoff was > 2 hours ago) but status is still NS
+    if (match.timestamp && match.status === 'NS') {
+      const twoHoursAgo = now - 2 * 60 * 60 * 1000;
+      if (match.timestamp < twoHoursAgo) {
+        return true;
+      }
+    }
+
+    // If match is finished but scores are null - definitely stale
+    if (match.status === 'FT' && (match.homeScore === null || match.awayScore === null)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // Smart fetcher: tries Supabase cache first, falls back to direct API
 const fetcher = async (url: string): Promise<FixturesResponse> => {
   // Extract date from URL
@@ -47,9 +69,14 @@ const fetcher = async (url: string): Promise<FixturesResponse> => {
     const cachedRes = await fetch(`/api/fixtures/cached?date=${date}`);
     if (cachedRes.ok) {
       const cachedData = await cachedRes.json();
-      // If cache has data, use it
+      // If cache has data and it's not stale, use it
       if (cachedData.matches && cachedData.matches.length > 0) {
-        return cachedData;
+        // Check if cache appears stale
+        if (!isCacheStale(cachedData.matches)) {
+          return cachedData;
+        }
+        // Cache is stale, fall through to direct API
+        console.log('[Fixtures] Cache appears stale, fetching fresh data');
       }
     }
   } catch {
