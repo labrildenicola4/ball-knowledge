@@ -21,13 +21,32 @@ interface LiveStatsProps {
   homeShortName: string;
   awayShortName: string;
   matchStatus?: string;
+  isLoading?: boolean;
 }
 
 type TabType = 'all' | '1st' | '2nd';
 
-export function LiveStats({ stats, homeShortName, awayShortName, matchStatus }: LiveStatsProps) {
+export function LiveStats({ stats, homeShortName, awayShortName, matchStatus, isLoading }: LiveStatsProps) {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('all');
+
+  // Show loading spinner while data is being fetched
+  if (isLoading) {
+    return (
+      <div
+        className="rounded-xl p-8 text-center"
+        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      >
+        <div
+          className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+          style={{ color: theme.accent }}
+        />
+        <p className="mt-3 text-[12px]" style={{ color: theme.textSecondary }}>
+          Loading stats...
+        </p>
+      </div>
+    );
+  }
 
   if (!stats || stats.all.length === 0) {
     const isFinished = matchStatus === 'FT';
