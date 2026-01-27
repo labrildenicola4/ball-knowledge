@@ -496,15 +496,15 @@ export default function TeamPage() {
           )}
 
           {/* Team Details */}
-          <div className="space-y-3 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
+          <div className="space-y-3 pt-4 text-center" style={{ borderTop: `1px solid ${theme.border}` }}>
             {team.venue && (
-              <div className="flex items-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
+              <div className="flex items-center justify-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
                 <MapPin size={14} />
                 <span>{team.venue}</span>
               </div>
             )}
             {team.coach && (
-              <div className="flex items-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
+              <div className="flex items-center justify-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
                 <Trophy size={14} />
                 <span>{team.coach}</span>
               </div>
