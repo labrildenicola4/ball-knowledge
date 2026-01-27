@@ -472,8 +472,8 @@ export default function TeamPage() {
           </div>
 
           {/* Name with favorite */}
-          <div className="text-center mb-4">
-            <div className="flex items-center justify-center gap-2">
+          <div className="flex justify-center mb-4">
+            <div className="flex items-center gap-2">
               <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
               <button onClick={toggleFavorite} className="p-1">
                 <Heart
@@ -483,10 +483,10 @@ export default function TeamPage() {
                 />
               </button>
             </div>
-            {team.tla && (
-              <p className="text-sm mt-1" style={{ color: theme.textSecondary }}>{team.tla}</p>
-            )}
           </div>
+          {team.tla && (
+            <p className="text-sm text-center" style={{ color: theme.textSecondary }}>{team.tla}</p>
+          )}
 
           {/* Form */}
           {team.form.length > 0 && (
