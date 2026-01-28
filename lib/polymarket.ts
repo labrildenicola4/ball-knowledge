@@ -44,6 +44,7 @@ interface PolymarketEvent {
   title: string;
   slug: string;
   startDate: string;
+  endDate: string;
   markets: PolymarketMarket[];
 }
 
@@ -146,7 +147,8 @@ export async function getMatchOdds(
     const matchDateStr = matchDateObj.toISOString().split('T')[0];
 
     for (const event of events) {
-      const eventDate = new Date(event.startDate).toISOString().split('T')[0];
+      // endDate is the actual match date, startDate is when market was created
+      const eventDate = new Date(event.endDate).toISOString().split('T')[0];
 
       // Check if date matches (within 1 day tolerance for timezone issues)
       const dateDiff = Math.abs(new Date(eventDate).getTime() - new Date(matchDateStr).getTime());
