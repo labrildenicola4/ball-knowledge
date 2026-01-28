@@ -434,17 +434,22 @@ export default function MatchPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="mt-2 flex items-center justify-center gap-1">
-                      <span
-                        className="text-[11px] sm:text-[12px] font-bold"
-                        style={{ color: '#2E5CFF' }}
-                      >
-                        P
-                      </span>
+                    <a
+                      href="https://polymarket.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 flex items-center justify-center gap-1.5 opacity-70 hover:opacity-100 transition-opacity"
+                    >
                       <span className="text-[9px] sm:text-[10px]" style={{ color: theme.textSecondary }}>
-                        Powered by <span style={{ color: '#2E5CFF', fontWeight: 500 }}>Polymarket</span>
+                        Powered by
                       </span>
-                    </div>
+                      <img
+                        src="https://polymarket.com/images/logo-light.svg"
+                        alt="Polymarket"
+                        className="h-3 sm:h-3.5"
+                        style={{ filter: darkMode ? 'none' : 'invert(1)' }}
+                      />
+                    </a>
                   </div>
                 )}
               </div>
