@@ -306,6 +306,15 @@ CREATE TRIGGER update_fixtures_cache_updated_at
   BEFORE UPDATE ON fixtures_cache
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+-- Enable Realtime for live score updates
+-- This allows the frontend to receive instant updates when scores change
+ALTER TABLE fixtures_cache REPLICA IDENTITY FULL;
+
+-- IMPORTANT: You must also enable Realtime for this table in Supabase Dashboard:
+-- 1. Go to Database > Replication
+-- 2. Find 'fixtures_cache' table
+-- 3. Toggle ON the Realtime switch
+
 -- ============================================
 -- SYNC LOG (Track sync operations)
 -- ============================================
