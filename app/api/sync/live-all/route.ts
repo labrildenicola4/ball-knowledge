@@ -214,7 +214,14 @@ export async function GET() {
             });
 
             if (!match) {
-              return { success: false, error: `No match found for ${update.home_team_name} vs ${update.away_team_name}` };
+              const debugInfo = {
+                search: { home: homeNorm, away: awayNorm, league: update.league_code },
+                candidates: matchingFixtures?.slice(0, 3).map(f => ({
+                  home: normalize(f.home_team_name),
+                  away: normalize(f.away_team_name)
+                }))
+              };
+              return { success: false, error: `No match: ${update.home_team_name} vs ${update.away_team_name} | debug: ${JSON.stringify(debugInfo)}` };
             }
 
             // Update the fixture
