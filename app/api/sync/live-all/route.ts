@@ -185,12 +185,18 @@ export async function GET() {
 
             // Find best match by comparing team names
             const normalize = (name: string) => name.toLowerCase()
+              .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // Remove diacritics (ø→o, ç→c, etc.)
               .replace(/[^a-z0-9]/g, '')  // Remove all non-alphanumeric
               .replace(/^fc|fc$/g, '')     // Remove FC prefix/suffix
-              .replace(/^atletico/, 'atleti')  // Common alias
-              .replace(/^manchester/, 'man')   // Common alias
-              .replace(/parissg|parissaintgermain/, 'psg')  // PSG alias
-              .replace(/bodo/, 'bodo');        // Normalize ø to o
+              .replace(/atleticomadrid|atletico/, 'atleti')
+              .replace(/manchestercity|manchester/, 'mancity')
+              .replace(/manchesterunited/, 'manutd')
+              .replace(/parissaintgermain|parissaint|parisstgermain/, 'psg')
+              .replace(/fccopenhagen|copenhagen/, 'kobenhavn')
+              .replace(/barcelona/, 'barca')
+              .replace(/^pafos$/, 'paphosfc')
+              .replace(/bodoglimt/, 'bodoglimt')
+              .replace(/newcastleunited|newcastle/, 'newcastle');
 
             const homeNorm = normalize(update.home_team_name);
             const awayNorm = normalize(update.away_team_name);
@@ -198,11 +204,11 @@ export async function GET() {
             const match = matchingFixtures?.find(f => {
               const fHome = normalize(f.home_team_name);
               const fAway = normalize(f.away_team_name);
-              // Check if names share a significant prefix (4+ chars) or one contains the other
-              const homeMatch = fHome.slice(0, 4) === homeNorm.slice(0, 4) ||
+              // Check if names share a significant prefix (3+ chars) or one contains the other
+              const homeMatch = fHome.slice(0, 3) === homeNorm.slice(0, 3) ||
                                fHome.includes(homeNorm.slice(0, 4)) ||
                                homeNorm.includes(fHome.slice(0, 4));
-              const awayMatch = fAway.slice(0, 4) === awayNorm.slice(0, 4) ||
+              const awayMatch = fAway.slice(0, 3) === awayNorm.slice(0, 3) ||
                                fAway.includes(awayNorm.slice(0, 4)) ||
                                awayNorm.includes(fAway.slice(0, 4));
               return homeMatch && awayMatch;
