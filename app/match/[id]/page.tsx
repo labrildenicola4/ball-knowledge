@@ -395,60 +395,53 @@ export default function MatchPage() {
                 </p>
                 {/* Polymarket Odds */}
                 {odds && (
-                  <div className="mt-5">
+                  <div className="mt-5 w-[200px]">
                     <div
-                      className="grid grid-cols-3 gap-4 rounded-xl px-6 py-4"
+                      className="rounded-xl px-4 py-3"
                       style={{ backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
                     >
-                      <div className="text-center">
-                        <p className="text-[9px] uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
-                          Home
-                        </p>
-                        <p
-                          className="text-[20px] font-bold"
-                          style={{ color: theme.green }}
-                        >
-                          {Math.round(odds.homeWin * 100)}%
-                        </p>
+                      <div className="flex justify-between items-center gap-3">
+                        <div className="text-center flex-1">
+                          <p className="text-[8px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
+                            Home
+                          </p>
+                          <p className="text-[17px] font-bold" style={{ color: theme.green }}>
+                            {Math.round(odds.homeWin * 100)}%
+                          </p>
+                        </div>
+                        <div className="text-center flex-1">
+                          <p className="text-[8px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
+                            Draw
+                          </p>
+                          <p className="text-[17px] font-semibold" style={{ color: theme.gold }}>
+                            {Math.round(odds.draw * 100)}%
+                          </p>
+                        </div>
+                        <div className="text-center flex-1">
+                          <p className="text-[8px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
+                            Away
+                          </p>
+                          <p className="text-[17px] font-bold" style={{ color: theme.red }}>
+                            {Math.round(odds.awayWin * 100)}%
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <p className="text-[9px] uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
-                          Draw
-                        </p>
-                        <p
-                          className="text-[20px] font-semibold"
-                          style={{ color: theme.gold }}
-                        >
-                          {Math.round(odds.draw * 100)}%
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-[9px] uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
-                          Away
-                        </p>
-                        <p
-                          className="text-[20px] font-bold"
-                          style={{ color: theme.red }}
-                        >
-                          {Math.round(odds.awayWin * 100)}%
-                        </p>
-                      </div>
+                      <a
+                        href="https://polymarket.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 flex items-center justify-center gap-1.5 opacity-70 hover:opacity-100 transition-opacity"
+                      >
+                        <span className="text-[8px]" style={{ color: theme.textSecondary }}>
+                          Powered by
+                        </span>
+                        <img
+                          src={darkMode ? '/logo-white.svg' : '/logo-black.svg'}
+                          alt="Polymarket"
+                          className="h-3"
+                        />
+                      </a>
                     </div>
-                    <a
-                      href="https://polymarket.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 flex items-center justify-center gap-2 opacity-80 hover:opacity-100 transition-opacity"
-                    >
-                      <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                        Powered by
-                      </span>
-                      <img
-                        src={darkMode ? '/logo-white.svg' : '/logo-black.svg'}
-                        alt="Polymarket"
-                        className="h-4"
-                      />
-                    </a>
                   </div>
                 )}
               </div>
