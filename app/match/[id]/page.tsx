@@ -515,6 +515,7 @@ export default function MatchPage() {
         {activeTab === 'h2h' && (
           <section className="px-4 py-6">
             {match.h2h && match.h2h.total > 0 ? (
+              <>
               <div
                 className="rounded-xl p-5"
                 style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
@@ -647,6 +648,7 @@ export default function MatchPage() {
                   </div>
                 </div>
               )}
+              </>
             ) : (
               <div
                 className="rounded-xl p-6 text-center"
