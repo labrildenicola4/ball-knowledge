@@ -157,8 +157,11 @@ export default function MatchPage() {
 
   // Fetch Polymarket odds for upcoming matches
   const isMatchUpcoming = match?.status === 'NS';
+  const oddsUrl = isMatchUpcoming && matchId && match
+    ? `/api/odds/${matchId}?home=${encodeURIComponent(match.home.name)}&away=${encodeURIComponent(match.away.name)}&league=${encodeURIComponent(match.leagueCode || '')}`
+    : null;
   const { data: oddsData } = useSWR<{ odds: PolymarketOdds | null }>(
-    isMatchUpcoming && matchId ? `/api/odds/${matchId}` : null,
+    oddsUrl,
     fetcher,
     {
       revalidateOnFocus: false,
