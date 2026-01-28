@@ -443,12 +443,35 @@ export default function MatchPage() {
                       <span className="text-[10px]" style={{ color: theme.textSecondary }}>
                         Powered by
                       </span>
-                      <span
-                        className="text-[12px] font-bold tracking-tight"
-                        style={{ color: '#2E5CFF' }}
+                      <svg
+                        className="h-4"
+                        viewBox="0 0 140 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
                       >
-                        POLYMARKET
-                      </span>
+                        {/* Polymarket Icon */}
+                        <path
+                          d="M4 4L12 0L20 4V12L12 16L4 12V4Z"
+                          fill={darkMode ? '#FFFFFF' : '#1a1a1a'}
+                          fillOpacity="0.9"
+                        />
+                        <path
+                          d="M8 8L12 6L16 8V12L12 14L8 12V8Z"
+                          fill={darkMode ? '#FFFFFF' : '#1a1a1a'}
+                          fillOpacity="0.5"
+                        />
+                        {/* Polymarket Text */}
+                        <text
+                          x="26"
+                          y="15"
+                          fill={darkMode ? '#FFFFFF' : '#1a1a1a'}
+                          fontFamily="system-ui, -apple-system, sans-serif"
+                          fontSize="13"
+                          fontWeight="600"
+                        >
+                          Polymarket
+                        </text>
+                      </svg>
                     </a>
                   </div>
                 )}
