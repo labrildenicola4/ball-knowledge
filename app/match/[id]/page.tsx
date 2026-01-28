@@ -443,12 +443,12 @@ export default function MatchPage() {
                       <span className="text-[10px]" style={{ color: theme.textSecondary }}>
                         Powered by
                       </span>
-                      <img
-                        src="https://polymarket.com/images/pm-logo-white.svg"
-                        alt="Polymarket"
-                        className="h-4"
-                        style={{ filter: darkMode ? 'none' : 'invert(1)' }}
-                      />
+                      <span
+                        className="text-[12px] font-bold tracking-tight"
+                        style={{ color: '#2E5CFF' }}
+                      >
+                        POLYMARKET
+                      </span>
                     </a>
                   </div>
                 )}
