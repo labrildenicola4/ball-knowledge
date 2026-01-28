@@ -484,6 +484,7 @@ export default function MatchPage() {
               homeShortName={match.home.shortName}
               awayShortName={match.away.shortName}
               matchStatus={match.status}
+              isLoading={isFullLoading}
             />
           </section>
         )}
@@ -507,6 +508,7 @@ export default function MatchPage() {
               homeShortName={match.home.shortName}
               awayShortName={match.away.shortName}
               matchStatus={match.status}
+              isLoading={isFullLoading}
             />
           </section>
         )}
@@ -514,7 +516,14 @@ export default function MatchPage() {
         {/* H2H Tab */}
         {activeTab === 'h2h' && (
           <section className="px-4 py-6">
-            {match.h2h && match.h2h.total > 0 ? (
+            {isFullLoading ? (
+              <div className="flex justify-center py-8">
+                <div
+                  className="h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                  style={{ color: theme.accent }}
+                />
+              </div>
+            ) : match.h2h && match.h2h.total > 0 ? (
               <>
               <div
                 className="rounded-xl p-5"

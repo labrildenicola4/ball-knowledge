@@ -23,6 +23,7 @@ interface MatchLineupProps {
   homeShortName: string;
   awayShortName: string;
   matchStatus?: string;
+  isLoading?: boolean;
 }
 
 type TabType = 'home' | 'away';
@@ -303,9 +304,27 @@ function FullPitch({
   );
 }
 
-export function MatchLineup({ home, away, homeShortName, awayShortName, matchStatus }: MatchLineupProps) {
+export function MatchLineup({ home, away, homeShortName, awayShortName, matchStatus, isLoading }: MatchLineupProps) {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('home');
+
+  // Show loading spinner while data is being fetched
+  if (isLoading) {
+    return (
+      <div
+        className="rounded-xl p-8 text-center"
+        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      >
+        <div
+          className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+          style={{ color: theme.accent }}
+        />
+        <p className="mt-3 text-[12px]" style={{ color: theme.textSecondary }}>
+          Loading lineups...
+        </p>
+      </div>
+    );
+  }
 
   const hasLineups = home.lineup.length > 0 || away.lineup.length > 0;
 
