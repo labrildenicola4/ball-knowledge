@@ -438,17 +438,16 @@ export default function MatchPage() {
                       href="https://polymarket.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-3 flex items-center justify-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity"
+                      className="mt-3 flex items-center justify-center gap-2 opacity-80 hover:opacity-100 transition-opacity"
                     >
                       <span className="text-[10px]" style={{ color: theme.textSecondary }}>
                         Powered by
                       </span>
-                      <span
-                        className="text-[12px] font-semibold"
-                        style={{ color: darkMode ? '#FFFFFF' : '#1a1a1a' }}
-                      >
-                        Polymarket
-                      </span>
+                      <img
+                        src={darkMode ? '/logo-white.svg' : '/logo-black.svg'}
+                        alt="Polymarket"
+                        className="h-4"
+                      />
                     </a>
                   </div>
                 )}
