@@ -590,7 +590,7 @@ export default function MatchPage() {
                     Past Meetings
                   </p>
                   <div className="divide-y" style={{ borderColor: theme.border }}>
-                    {match.h2h.matches.map((pastMatch: { date: string; home: string; away: string; homeLogo?: string; awayLogo?: string; homeScore: number; awayScore: number; competition: string }, idx: number) => {
+                    {match.h2h.matches.map((pastMatch, idx) => {
                       const matchDate = new Date(pastMatch.date);
                       const dateStr = matchDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                       const isDraw = pastMatch.homeScore === pastMatch.awayScore;
