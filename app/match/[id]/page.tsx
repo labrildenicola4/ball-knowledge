@@ -63,7 +63,7 @@ interface MatchDetails {
   matchday: number;
   home: Team;
   away: Team;
-  h2h: { total: number; homeWins: number; draws: number; awayWins: number };
+  h2h: { total: number; homeWins: number; draws: number; awayWins: number; matches?: Array<{ date: string; home: string; away: string; homeLogo?: string; awayLogo?: string; homeScore: number; awayScore: number; competition: string }> };
   halfTimeScore: { home: number | null; away: number | null };
   stats: LiveStatsData | null;
 }
@@ -576,6 +576,77 @@ export default function MatchPage() {
                   />
                 </div>
               </div>
+
+              {/* Past Matches List */}
+              {match.h2h.matches && match.h2h.matches.length > 0 && (
+                <div
+                  className="mt-4 rounded-xl overflow-hidden"
+                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                >
+                  <p
+                    className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider"
+                    style={{ color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}
+                  >
+                    Past Meetings
+                  </p>
+                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                    {match.h2h.matches.map((pastMatch: { date: string; home: string; away: string; homeLogo?: string; awayLogo?: string; homeScore: number; awayScore: number; competition: string }, idx: number) => {
+                      const matchDate = new Date(pastMatch.date);
+                      const dateStr = matchDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                      const isDraw = pastMatch.homeScore === pastMatch.awayScore;
+                      const homeWon = pastMatch.homeScore > pastMatch.awayScore;
+
+                      return (
+                        <div
+                          key={idx}
+                          className="flex items-center px-4 py-3"
+                          style={{ borderColor: theme.border }}
+                        >
+                          {/* Date */}
+                          <div className="w-20">
+                            <p className="text-[10px]" style={{ color: theme.textSecondary }}>{dateStr}</p>
+                            <p className="text-[9px] truncate" style={{ color: theme.textSecondary }}>{pastMatch.competition}</p>
+                          </div>
+
+                          {/* Home Team */}
+                          <div className="flex-1 flex items-center justify-end gap-2">
+                            <span
+                              className="text-[12px] font-medium truncate"
+                              style={{ color: homeWon ? theme.green : isDraw ? theme.text : theme.textSecondary }}
+                            >
+                              {pastMatch.home}
+                            </span>
+                            {pastMatch.homeLogo && (
+                              <img src={pastMatch.homeLogo} alt="" className="w-5 h-5 object-contain" />
+                            )}
+                          </div>
+
+                          {/* Score */}
+                          <div
+                            className="mx-3 px-3 py-1 rounded text-[12px] font-mono font-medium"
+                            style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
+                          >
+                            {pastMatch.homeScore} - {pastMatch.awayScore}
+                          </div>
+
+                          {/* Away Team */}
+                          <div className="flex-1 flex items-center gap-2">
+                            {pastMatch.awayLogo && (
+                              <img src={pastMatch.awayLogo} alt="" className="w-5 h-5 object-contain" />
+                            )}
+                            <span
+                              className="text-[12px] font-medium truncate"
+                              style={{ color: !homeWon && !isDraw ? theme.green : isDraw ? theme.text : theme.textSecondary }}
+                            >
+                              {pastMatch.away}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             ) : (
               <div
                 className="rounded-xl p-6 text-center"

@@ -91,9 +91,23 @@ export async function GET(
     ]);
 
     // Use cached H2H or calculate from fetched data
-    let h2hStats = cachedH2H || { total: 0, homeWins: 0, draws: 0, awayWins: 0 };
+    let h2hStats = cachedH2H || { total: 0, homeWins: 0, draws: 0, awayWins: 0, matches: [] as Array<{date: string; home: string; away: string; homeScore: number; awayScore: number; competition: string}> };
+
     if (shouldFetchH2H && h2hData.length > 0) {
-      h2hStats = { total: h2hData.length, homeWins: 0, draws: 0, awayWins: 0 };
+      // Build list of past matches
+      const pastMatches = h2hData.map((m) => ({
+        date: m.utcDate,
+        home: m.homeTeam.shortName || m.homeTeam.name,
+        away: m.awayTeam.shortName || m.awayTeam.name,
+        homeLogo: m.homeTeam.crest,
+        awayLogo: m.awayTeam.crest,
+        homeScore: m.score.fullTime.home ?? 0,
+        awayScore: m.score.fullTime.away ?? 0,
+        competition: m.competition?.name || '',
+      }));
+
+      // Calculate stats
+      h2hStats = { total: h2hData.length, homeWins: 0, draws: 0, awayWins: 0, matches: pastMatches };
       h2hData.forEach((m) => {
         const homeGoals = m.score.fullTime.home ?? 0;
         const awayGoals = m.score.fullTime.away ?? 0;
