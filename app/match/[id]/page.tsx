@@ -156,16 +156,24 @@ export default function MatchPage() {
   const standings = standingsData?.standings || [];
 
   // Fetch Polymarket odds for upcoming matches
-  const isMatchUpcoming = match?.status === 'NS';
-  const oddsUrl = isMatchUpcoming && matchId && match
-    ? `/api/odds/${matchId}?home=${encodeURIComponent(match.home.name)}&away=${encodeURIComponent(match.away.name)}&league=${encodeURIComponent(match.leagueCode || '')}`
-    : null;
+  // Use state to persist odds URL once we have match data (prevents flickering on refetch)
+  const [stableOddsUrl, setStableOddsUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (match?.status === 'NS' && matchId && match.home?.name && match.away?.name && !stableOddsUrl) {
+      setStableOddsUrl(
+        `/api/odds/${matchId}?home=${encodeURIComponent(match.home.name)}&away=${encodeURIComponent(match.away.name)}&league=${encodeURIComponent(match.leagueCode || '')}`
+      );
+    }
+  }, [match, matchId, stableOddsUrl]);
+
   const { data: oddsData } = useSWR<{ odds: PolymarketOdds | null }>(
-    oddsUrl,
+    stableOddsUrl,
     fetcher,
     {
       revalidateOnFocus: false,
       dedupingInterval: 300000, // 5 min cache
+      revalidateOnReconnect: false,
     }
   );
   const odds = oddsData?.odds || null;
@@ -376,33 +384,40 @@ export default function MatchPage() {
                 </p>
                 {/* Polymarket Odds */}
                 {odds && (
-                  <div className="mt-3">
+                  <div className="mt-4">
                     <div
-                      className="flex items-center justify-center gap-2 rounded-lg px-3 py-2"
-                      style={{ backgroundColor: theme.bgTertiary }}
+                      className="flex items-center justify-center gap-4 rounded-xl px-5 py-3"
+                      style={{ backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
                     >
                       <span
-                        className="text-[13px] font-semibold"
+                        className="text-[18px] font-bold"
                         style={{ color: theme.green }}
                       >
                         {Math.round(odds.homeWin * 100)}%
                       </span>
                       <span
-                        className="text-[13px] font-medium"
+                        className="text-[18px] font-semibold"
                         style={{ color: theme.gold }}
                       >
                         {Math.round(odds.draw * 100)}%
                       </span>
                       <span
-                        className="text-[13px] font-semibold"
+                        className="text-[18px] font-bold"
                         style={{ color: theme.red }}
                       >
                         {Math.round(odds.awayWin * 100)}%
                       </span>
                     </div>
-                    <p className="mt-1 text-[8px]" style={{ color: theme.textSecondary }}>
-                      Win probabilities via Polymarket
-                    </p>
+                    <div className="mt-2 flex items-center justify-center gap-1.5">
+                      <img
+                        src="https://polymarket.com/icons/favicon.svg"
+                        alt="Polymarket"
+                        className="h-3.5 w-3.5"
+                      />
+                      <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                        Polymarket
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
