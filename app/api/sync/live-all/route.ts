@@ -170,14 +170,13 @@ export async function GET() {
       const results = await Promise.all(
         batch.map(async (update) => {
           try {
-            // Find and update the fixture by league code and team names
-            // Using ILIKE for case-insensitive partial matching
+            // Find and update the fixture by league code and date
+            // Then match team names in JS for flexibility with different naming conventions
             const { data: matchingFixtures, error: findError } = await supabase
               .from('fixtures_cache')
               .select('id, api_id, home_team_name, away_team_name')
               .eq('league_code', update.league_code)
-              .eq('match_date', today)
-              .or(`home_team_name.ilike.%${update.home_team_name.split(' ')[0]}%,home_team_name.ilike.%${update.home_team_name.split(' ').pop()}%`);
+              .eq('match_date', today);
 
             if (findError) {
               return { success: false, error: `Find error: ${findError.message}` };
