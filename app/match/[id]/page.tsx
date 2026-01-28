@@ -386,36 +386,51 @@ export default function MatchPage() {
                 {odds && (
                   <div className="mt-4">
                     <div
-                      className="flex items-center justify-center gap-4 rounded-xl px-5 py-3"
+                      className="flex items-center justify-center gap-6 rounded-xl px-5 py-3"
                       style={{ backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
                     >
-                      <span
-                        className="text-[18px] font-bold"
-                        style={{ color: theme.green }}
-                      >
-                        {Math.round(odds.homeWin * 100)}%
-                      </span>
-                      <span
-                        className="text-[18px] font-semibold"
-                        style={{ color: theme.gold }}
-                      >
-                        {Math.round(odds.draw * 100)}%
-                      </span>
-                      <span
-                        className="text-[18px] font-bold"
-                        style={{ color: theme.red }}
-                      >
-                        {Math.round(odds.awayWin * 100)}%
-                      </span>
+                      <div className="text-center">
+                        <p className="text-[9px] uppercase tracking-wider mb-1" style={{ color: theme.textSecondary }}>
+                          Home
+                        </p>
+                        <span
+                          className="text-[18px] font-bold"
+                          style={{ color: theme.green }}
+                        >
+                          {Math.round(odds.homeWin * 100)}%
+                        </span>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[9px] uppercase tracking-wider mb-1" style={{ color: theme.textSecondary }}>
+                          Draw
+                        </p>
+                        <span
+                          className="text-[18px] font-semibold"
+                          style={{ color: theme.gold }}
+                        >
+                          {Math.round(odds.draw * 100)}%
+                        </span>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[9px] uppercase tracking-wider mb-1" style={{ color: theme.textSecondary }}>
+                          Away
+                        </p>
+                        <span
+                          className="text-[18px] font-bold"
+                          style={{ color: theme.red }}
+                        >
+                          {Math.round(odds.awayWin * 100)}%
+                        </span>
+                      </div>
                     </div>
                     <div className="mt-2 flex items-center justify-center gap-1.5">
-                      <img
-                        src="https://polymarket.com/icons/favicon.svg"
-                        alt="Polymarket"
-                        className="h-3.5 w-3.5"
-                      />
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M200 400C310.457 400 400 310.457 400 200C400 89.5431 310.457 0 200 0C89.5431 0 0 89.5431 0 200C0 310.457 89.5431 400 200 400Z" fill="#FFFFFF"/>
+                        <path d="M200 360C288.366 360 360 288.366 360 200C360 111.634 288.366 40 200 40C111.634 40 40 111.634 40 200C40 288.366 111.634 360 200 360Z" fill="#1C1C28"/>
+                        <path d="M136 200C136 164.654 164.654 136 200 136C235.346 136 264 164.654 264 200C264 235.346 235.346 264 200 264" stroke="#FFFFFF" strokeWidth="24" strokeLinecap="round"/>
+                      </svg>
                       <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                        Polymarket
+                        Powered by Polymarket
                       </span>
                     </div>
                   </div>
