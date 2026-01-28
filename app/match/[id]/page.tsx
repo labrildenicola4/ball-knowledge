@@ -68,6 +68,13 @@ interface MatchDetails {
   stats: LiveStatsData | null;
 }
 
+interface PolymarketOdds {
+  homeWin: number;
+  draw: number;
+  awayWin: number;
+  source: string;
+}
+
 export default function MatchPage() {
   const params = useParams();
   const router = useRouter();
@@ -147,6 +154,18 @@ export default function MatchPage() {
   );
 
   const standings = standingsData?.standings || [];
+
+  // Fetch Polymarket odds for upcoming matches
+  const isMatchUpcoming = match?.status === 'NS';
+  const { data: oddsData } = useSWR<{ odds: PolymarketOdds | null }>(
+    isMatchUpcoming && matchId ? `/api/odds/${matchId}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 300000, // 5 min cache
+    }
+  );
+  const odds = oddsData?.odds || null;
 
   // Tab state - must be at top level with other hooks (before any early returns)
   const [activeTab, setActiveTab] = useState<'stats' | 'lineups' | 'h2h' | 'table'>('stats');
@@ -352,6 +371,37 @@ export default function MatchPage() {
                 <p className="mt-2 text-[11px]" style={{ color: theme.textSecondary }}>
                   {match.date}
                 </p>
+                {/* Polymarket Odds */}
+                {odds && (
+                  <div className="mt-3">
+                    <div
+                      className="flex items-center justify-center gap-2 rounded-lg px-3 py-2"
+                      style={{ backgroundColor: theme.bgTertiary }}
+                    >
+                      <span
+                        className="text-[13px] font-semibold"
+                        style={{ color: theme.green }}
+                      >
+                        {Math.round(odds.homeWin * 100)}%
+                      </span>
+                      <span
+                        className="text-[13px] font-medium"
+                        style={{ color: theme.gold }}
+                      >
+                        {Math.round(odds.draw * 100)}%
+                      </span>
+                      <span
+                        className="text-[13px] font-semibold"
+                        style={{ color: theme.red }}
+                      >
+                        {Math.round(odds.awayWin * 100)}%
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[8px]" style={{ color: theme.textSecondary }}>
+                      Win probabilities via Polymarket
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <div>
