@@ -294,8 +294,6 @@ export default function MatchPage() {
   }
 
   const isFinished = match.status === 'FT';
-  const isLive = ['LIVE', '1H', '2H', 'HT'].includes(match.status);
-  const isUpcoming = match.status === 'NS';
 
   // Get team form from match data (fetched from API)
   const homeForm = match.home.form || [];
