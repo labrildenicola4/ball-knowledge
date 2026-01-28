@@ -184,7 +184,8 @@ export async function GET() {
 
             // Find best match by comparing team names
             const normalize = (name: string) => name.toLowerCase()
-              .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // Remove diacritics (ø→o, ç→c, etc.)
+              .replace(/ø/g, 'o').replace(/æ/g, 'ae').replace(/å/g, 'a')  // Handle Nordic chars that don't NFD decompose
+              .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // Remove diacritics (ç→c, etc.)
               .replace(/[^a-z0-9]/g, '')  // Remove all non-alphanumeric
               .replace(/^fc|fc$/g, '')     // Remove FC prefix/suffix
               .replace(/atleticomadrid|atletico/, 'atleti')
