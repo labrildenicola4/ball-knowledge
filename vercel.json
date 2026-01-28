@@ -5,7 +5,7 @@
       "schedule": "0 6 * * *"
     },
     {
-      "path": "/api/sync/live",
+      "path": "/api/sync/live-all",
       "schedule": "* * * * *"
     }
   ]

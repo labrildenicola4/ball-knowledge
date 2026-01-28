@@ -184,15 +184,28 @@ export async function GET() {
             }
 
             // Find best match by comparing team names
-            const normalize = (name: string) => name.toLowerCase().replace(/[^a-z]/g, '');
+            const normalize = (name: string) => name.toLowerCase()
+              .replace(/[^a-z0-9]/g, '')  // Remove all non-alphanumeric
+              .replace(/^fc|fc$/g, '')     // Remove FC prefix/suffix
+              .replace(/^atletico/, 'atleti')  // Common alias
+              .replace(/^manchester/, 'man')   // Common alias
+              .replace(/parissg|parissaintgermain/, 'psg')  // PSG alias
+              .replace(/bodo/, 'bodo');        // Normalize ø to o
+
             const homeNorm = normalize(update.home_team_name);
             const awayNorm = normalize(update.away_team_name);
 
             const match = matchingFixtures?.find(f => {
               const fHome = normalize(f.home_team_name);
               const fAway = normalize(f.away_team_name);
-              return (fHome.includes(homeNorm.slice(0, 5)) || homeNorm.includes(fHome.slice(0, 5))) &&
-                     (fAway.includes(awayNorm.slice(0, 5)) || awayNorm.includes(fAway.slice(0, 5)));
+              // Check if names share a significant prefix (4+ chars) or one contains the other
+              const homeMatch = fHome.slice(0, 4) === homeNorm.slice(0, 4) ||
+                               fHome.includes(homeNorm.slice(0, 4)) ||
+                               homeNorm.includes(fHome.slice(0, 4));
+              const awayMatch = fAway.slice(0, 4) === awayNorm.slice(0, 4) ||
+                               fAway.includes(awayNorm.slice(0, 4)) ||
+                               awayNorm.includes(fAway.slice(0, 4));
+              return homeMatch && awayMatch;
             });
 
             if (!match) {
