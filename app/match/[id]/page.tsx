@@ -168,22 +168,27 @@ export default function MatchPage() {
     }
   }, [matchId, oddsMatchId]);
 
+  // Check if match is upcoming or live (not finished)
+  const isLive = ['LIVE', '1H', '2H', 'HT', 'ET', 'PEN', 'IN_PLAY', 'PAUSED'].includes(match?.status || '');
+  const isUpcoming = match?.status === 'NS' || match?.status === 'SCHEDULED' || match?.status === 'TIMED';
+  const showOdds = isUpcoming || isLive;
+
   useEffect(() => {
-    // Set odds URL when we have match data for an upcoming match
-    const isUpcoming = match?.status === 'NS' || match?.status === 'SCHEDULED' || match?.status === 'TIMED';
-    if (isUpcoming && matchId && match?.home?.name && match?.away?.name && !stableOddsUrl) {
+    // Set odds URL when we have match data for upcoming or live match
+    if (showOdds && matchId && match?.home?.name && match?.away?.name && !stableOddsUrl) {
       setStableOddsUrl(
         `/api/odds/${matchId}?home=${encodeURIComponent(match.home.name)}&away=${encodeURIComponent(match.away.name)}&league=${encodeURIComponent(match.leagueCode || '')}`
       );
     }
-  }, [match, matchId, stableOddsUrl]);
+  }, [match, matchId, stableOddsUrl, showOdds]);
 
   const { data: oddsData } = useSWR<{ odds: PolymarketOdds | null }>(
     stableOddsUrl,
     fetcher,
     {
       revalidateOnFocus: false,
-      dedupingInterval: 300000, // 5 min cache
+      dedupingInterval: isLive ? 30000 : 300000, // 30s for live, 5min for upcoming
+      refreshInterval: isLive ? 30000 : 0, // Auto-refresh every 30s when live
       revalidateOnReconnect: false,
     }
   );
@@ -475,7 +480,7 @@ export default function MatchPage() {
         </div>
 
         {/* Polymarket Odds - Only for upcoming matches */}
-        {isUpcoming && odds && (
+        {showOdds && odds && (
           <div className="mt-6 flex justify-center">
             <div
               className="rounded-xl px-5 py-3 w-full max-w-[280px]"
