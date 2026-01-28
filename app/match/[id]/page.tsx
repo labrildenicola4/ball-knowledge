@@ -393,57 +393,6 @@ export default function MatchPage() {
                 <p className="mt-2 text-[11px]" style={{ color: theme.textSecondary }}>
                   {match.date}
                 </p>
-                {/* Polymarket Odds */}
-                {odds && (
-                  <div className="mt-5 w-[200px]">
-                    <div
-                      className="rounded-xl px-4 py-3"
-                      style={{ backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
-                    >
-                      <div className="flex justify-between items-center gap-3">
-                        <div className="text-center flex-1">
-                          <p className="text-[8px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
-                            Home
-                          </p>
-                          <p className="text-[17px] font-bold" style={{ color: theme.green }}>
-                            {Math.round(odds.homeWin * 100)}%
-                          </p>
-                        </div>
-                        <div className="text-center flex-1">
-                          <p className="text-[8px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
-                            Draw
-                          </p>
-                          <p className="text-[17px] font-semibold" style={{ color: theme.gold }}>
-                            {Math.round(odds.draw * 100)}%
-                          </p>
-                        </div>
-                        <div className="text-center flex-1">
-                          <p className="text-[8px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
-                            Away
-                          </p>
-                          <p className="text-[17px] font-bold" style={{ color: theme.red }}>
-                            {Math.round(odds.awayWin * 100)}%
-                          </p>
-                        </div>
-                      </div>
-                      <a
-                        href="https://polymarket.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 flex items-center justify-center gap-1.5 opacity-70 hover:opacity-100 transition-opacity"
-                      >
-                        <span className="text-[8px]" style={{ color: theme.textSecondary }}>
-                          Powered by
-                        </span>
-                        <img
-                          src={darkMode ? '/logo-white.svg' : '/logo-black.svg'}
-                          alt="Polymarket"
-                          className="h-3"
-                        />
-                      </a>
-                    </div>
-                  </div>
-                )}
               </div>
             ) : (
               <div>
@@ -524,6 +473,58 @@ export default function MatchPage() {
             {awayForm.length > 0 && renderForm(awayForm)}
           </div>
         </div>
+
+        {/* Polymarket Odds - Only for upcoming matches */}
+        {isUpcoming && odds && (
+          <div className="mt-6 flex justify-center">
+            <div
+              className="rounded-xl px-5 py-3 w-full max-w-[280px]"
+              style={{ backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
+            >
+              <div className="flex justify-between items-center">
+                <div className="text-center flex-1">
+                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
+                    Home
+                  </p>
+                  <p className="text-[18px] font-bold" style={{ color: theme.green }}>
+                    {Math.round(odds.homeWin * 100)}%
+                  </p>
+                </div>
+                <div className="text-center flex-1">
+                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
+                    Draw
+                  </p>
+                  <p className="text-[18px] font-semibold" style={{ color: theme.gold }}>
+                    {Math.round(odds.draw * 100)}%
+                  </p>
+                </div>
+                <div className="text-center flex-1">
+                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
+                    Away
+                  </p>
+                  <p className="text-[18px] font-bold" style={{ color: theme.red }}>
+                    {Math.round(odds.awayWin * 100)}%
+                  </p>
+                </div>
+              </div>
+              <a
+                href="https://polymarket.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 flex items-center justify-center gap-1.5 opacity-70 hover:opacity-100 transition-opacity"
+              >
+                <span className="text-[9px]" style={{ color: theme.textSecondary }}>
+                  Powered by
+                </span>
+                <img
+                  src={darkMode ? '/logo-white.svg' : '/logo-black.svg'}
+                  alt="Polymarket"
+                  className="h-3"
+                />
+              </a>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Match Info */}
