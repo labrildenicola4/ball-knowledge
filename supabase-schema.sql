@@ -281,6 +281,10 @@ CREATE TABLE IF NOT EXISTS fixtures_cache (
   away_team_logo VARCHAR(500),
   away_score INTEGER,
 
+  -- Cached data for fast loading
+  h2h_data JSONB,  -- Head-to-head stats (cached to avoid repeated API calls)
+  match_details JSONB,  -- Full match details (cached for finished matches)
+
   -- Metadata
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),

@@ -26,7 +26,7 @@ export async function GET(
     // CHECK CACHE FIRST: For finished matches, return cached data if available
     const { data: cachedMatch } = await supabase
       .from('fixtures_cache')
-      .select('match_details, status')
+      .select('match_details, status, h2h_data')
       .eq('api_id', matchId)
       .single();
 
@@ -37,6 +37,9 @@ export async function GET(
         headers: { 'Cache-Control': 'public, max-age=3600' },
       });
     }
+
+    // Check if we have cached H2H data (for upcoming matches)
+    const cachedH2H = cachedMatch?.h2h_data as { total: number; homeWins: number; draws: number; awayWins: number } | null;
 
     // Fetch match details from football-data.org
     const match = await getMatch(matchId);
@@ -69,11 +72,13 @@ export async function GET(
     let awayCoach: string | null = null;
     let matchStats: { all: Array<{ label: string; home: number; away: number; type?: 'decimal' }> } | null = null;
 
-    // Fetch H2H, team forms, AND lineups+stats all in parallel
+    // Fetch H2H (if not cached), team forms, AND lineups+stats all in parallel
     const matchDateStr = matchDate.toISOString().split('T')[0];
+    const shouldFetchH2H = !cachedH2H || cachedH2H.total === 0;
 
     const [h2hData, homeForm, awayForm, apiFootballData] = await Promise.all([
-      getHeadToHead(matchId, 10).catch(() => []),
+      // Only fetch H2H if not cached
+      shouldFetchH2H ? getHeadToHead(matchId, 10).catch(() => []) : Promise.resolve([]),
       getTeamForm(match.homeTeam.id, 5).catch(() => []),
       getTeamForm(match.awayTeam.id, 5).catch(() => []),
       // Fetch lineups AND statistics from API-Football
@@ -85,10 +90,10 @@ export async function GET(
         : Promise.resolve({ lineups: [], statistics: [], fixtureId: null }),
     ]);
 
-    // Calculate H2H stats
-    let h2hStats = { total: 0, homeWins: 0, draws: 0, awayWins: 0 };
-    if (h2hData.length > 0) {
-      h2hStats.total = h2hData.length;
+    // Use cached H2H or calculate from fetched data
+    let h2hStats = cachedH2H || { total: 0, homeWins: 0, draws: 0, awayWins: 0 };
+    if (shouldFetchH2H && h2hData.length > 0) {
+      h2hStats = { total: h2hData.length, homeWins: 0, draws: 0, awayWins: 0 };
       h2hData.forEach((m) => {
         const homeGoals = m.score.fullTime.home ?? 0;
         const awayGoals = m.score.fullTime.away ?? 0;
@@ -105,6 +110,19 @@ export async function GET(
           h2hStats.awayWins++;
         }
       });
+
+      // Cache H2H for future requests (fire and forget)
+      supabase
+        .from('fixtures_cache')
+        .update({ h2h_data: h2hStats })
+        .eq('api_id', matchId)
+        .then(({ error }) => {
+          if (error) {
+            console.error(`[Match API] Failed to cache H2H for match ${matchId}:`, error);
+          } else {
+            console.log(`[Match API] Cached H2H for match ${matchId}`);
+          }
+        });
     }
 
     // Process lineup data from API-Football
