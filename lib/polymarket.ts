@@ -2,22 +2,24 @@
 
 const GAMMA_API_BASE = 'https://gamma-api.polymarket.com';
 
-// Map our league codes to Polymarket series IDs
+// Map our league codes (from football-data.org) to Polymarket series IDs
 const LEAGUE_TO_SERIES_ID: Record<string, number> = {
-  'premier-league': 10188,
-  'la-liga': 10193,
-  'serie-a': 10203,
-  'bundesliga': 10194,
-  'ligue-1': 10195,
-  'champions-league': 10204,
-  'europa-league': 10209,
-  'conference-league': 10437,
-  'fa-cup': 10307,
-  'copa-del-rey': 10193, // Falls under La Liga series
-  'coppa-italia': 10287,
-  'dfb-pokal': 10194, // Falls under Bundesliga series
-  'eredivisie': 10286,
-  'mls': 10189,
+  // Main European leagues
+  'PL': 10188,      // Premier League
+  'PD': 10193,      // La Liga
+  'SA': 10203,      // Serie A
+  'BL1': 10194,     // Bundesliga
+  'FL1': 10195,     // Ligue 1
+  // European competitions
+  'CL': 10204,      // Champions League
+  'EL': 10209,      // Europa League
+  'ECL': 10437,     // Conference League
+  // Other competitions
+  'DED': 10286,     // Eredivisie
+  'PPL': 10293,     // Primeira Liga
+  'ELC': 10230,     // Championship (EFL)
+  'BSA': 10285,     // Brasileirao/Argentine
+  'CLI': 10289,     // Copa Libertadores
 };
 
 export interface PolymarketOdds {
