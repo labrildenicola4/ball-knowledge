@@ -86,15 +86,17 @@ export default function MatchPage() {
   );
 
   // STEP 2: Load full match data in background (H2H, stats, form)
-  const { data: fullMatch, error: swrError } = useSWR<MatchDetails>(
+  // For live matches, poll every 30 seconds for updated stats/lineups
+  const { data: fullMatch, error: swrError, isValidating: isRefreshing } = useSWR<MatchDetails>(
     matchId ? `/api/match/${matchId}` : null,
     fetcher,
     {
-      revalidateOnFocus: false,
-      dedupingInterval: 30000,
+      revalidateOnFocus: true,
+      dedupingInterval: 15000,
       refreshInterval: (data) => {
-        const isLive = data && ['LIVE', '1H', '2H', 'HT'].includes(data.status);
-        return isLive ? 60000 : 0;
+        const isLive = data && ['LIVE', '1H', '2H', 'HT', 'ET', 'PEN'].includes(data.status);
+        // 30 seconds for live matches, 0 for finished/upcoming
+        return isLive ? 30000 : 0;
       },
     }
   );
@@ -298,10 +300,10 @@ export default function MatchPage() {
             </span>
             <span className="text-[9px] flex items-center gap-1" style={{ color: theme.textSecondary }}>
               <span
-                className="h-1.5 w-1.5 rounded-full"
+                className={`h-1.5 w-1.5 rounded-full ${isRefreshing ? 'animate-pulse' : ''}`}
                 style={{ backgroundColor: realtimeConnected ? theme.green : theme.gold }}
               />
-              {realtimeConnected ? 'Realtime' : 'Polling'}
+              {isRefreshing ? 'Updating...' : realtimeConnected ? 'Realtime' : 'Auto-refresh'}
             </span>
           </div>
         )}
