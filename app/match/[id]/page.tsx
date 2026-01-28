@@ -317,7 +317,7 @@ export default function MatchPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}>
+    <div className="flex min-h-screen flex-col transition-theme overflow-x-hidden" style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}>
       {/* Header */}
       <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
         <button
@@ -358,8 +358,8 @@ export default function MatchPage() {
       </header>
 
       {/* Main Score Section */}
-      <section className="px-4 py-8" style={{ backgroundColor: theme.bgSecondary }}>
-        <div className="flex items-center justify-between">
+      <section className="px-4 py-8 overflow-hidden" style={{ backgroundColor: theme.bgSecondary }}>
+        <div className="flex items-center justify-between overflow-hidden">
           {/* Home Team */}
           <div className="flex-1 text-center">
             <Link href={`/team/${match.home.id}`} className="transition-opacity hover:opacity-80">
