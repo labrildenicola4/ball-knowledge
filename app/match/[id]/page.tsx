@@ -156,11 +156,22 @@ export default function MatchPage() {
   const standings = standingsData?.standings || [];
 
   // Fetch Polymarket odds for upcoming matches
-  // Use state to persist odds URL once we have match data (prevents flickering on refetch)
+  // Track matchId to reset URL when navigating to different match
+  const [oddsMatchId, setOddsMatchId] = useState<string | null>(null);
   const [stableOddsUrl, setStableOddsUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (match?.status === 'NS' && matchId && match.home?.name && match.away?.name && !stableOddsUrl) {
+    // Reset if matchId changed
+    if (matchId && matchId !== oddsMatchId) {
+      setOddsMatchId(String(matchId));
+      setStableOddsUrl(null);
+    }
+  }, [matchId, oddsMatchId]);
+
+  useEffect(() => {
+    // Set odds URL when we have match data for an upcoming match
+    const isUpcoming = match?.status === 'NS' || match?.status === 'SCHEDULED' || match?.status === 'TIMED';
+    if (isUpcoming && matchId && match?.home?.name && match?.away?.name && !stableOddsUrl) {
       setStableOddsUrl(
         `/api/odds/${matchId}?home=${encodeURIComponent(match.home.name)}&away=${encodeURIComponent(match.away.name)}&league=${encodeURIComponent(match.leagueCode || '')}`
       );
@@ -384,53 +395,54 @@ export default function MatchPage() {
                 </p>
                 {/* Polymarket Odds */}
                 {odds && (
-                  <div className="mt-4">
+                  <div className="mt-4 w-full max-w-[220px] mx-auto">
                     <div
-                      className="flex items-center justify-center gap-6 rounded-xl px-5 py-3"
+                      className="flex items-center justify-between rounded-xl px-4 py-3"
                       style={{ backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
                     >
-                      <div className="text-center">
-                        <p className="text-[9px] uppercase tracking-wider mb-1" style={{ color: theme.textSecondary }}>
+                      <div className="text-center flex-1">
+                        <p className="text-[8px] sm:text-[9px] uppercase tracking-wider mb-1" style={{ color: theme.textSecondary }}>
                           Home
                         </p>
                         <span
-                          className="text-[18px] font-bold"
+                          className="text-[16px] sm:text-[18px] font-bold block"
                           style={{ color: theme.green }}
                         >
                           {Math.round(odds.homeWin * 100)}%
                         </span>
                       </div>
-                      <div className="text-center">
-                        <p className="text-[9px] uppercase tracking-wider mb-1" style={{ color: theme.textSecondary }}>
+                      <div className="text-center flex-1">
+                        <p className="text-[8px] sm:text-[9px] uppercase tracking-wider mb-1" style={{ color: theme.textSecondary }}>
                           Draw
                         </p>
                         <span
-                          className="text-[18px] font-semibold"
+                          className="text-[16px] sm:text-[18px] font-semibold block"
                           style={{ color: theme.gold }}
                         >
                           {Math.round(odds.draw * 100)}%
                         </span>
                       </div>
-                      <div className="text-center">
-                        <p className="text-[9px] uppercase tracking-wider mb-1" style={{ color: theme.textSecondary }}>
+                      <div className="text-center flex-1">
+                        <p className="text-[8px] sm:text-[9px] uppercase tracking-wider mb-1" style={{ color: theme.textSecondary }}>
                           Away
                         </p>
                         <span
-                          className="text-[18px] font-bold"
+                          className="text-[16px] sm:text-[18px] font-bold block"
                           style={{ color: theme.red }}
                         >
                           {Math.round(odds.awayWin * 100)}%
                         </span>
                       </div>
                     </div>
-                    <div className="mt-2 flex items-center justify-center gap-1.5">
-                      <svg className="h-3.5 w-3.5" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M200 400C310.457 400 400 310.457 400 200C400 89.5431 310.457 0 200 0C89.5431 0 0 89.5431 0 200C0 310.457 89.5431 400 200 400Z" fill="#FFFFFF"/>
-                        <path d="M200 360C288.366 360 360 288.366 360 200C360 111.634 288.366 40 200 40C111.634 40 40 111.634 40 200C40 288.366 111.634 360 200 360Z" fill="#1C1C28"/>
-                        <path d="M136 200C136 164.654 164.654 136 200 136C235.346 136 264 164.654 264 200C264 235.346 235.346 264 200 264" stroke="#FFFFFF" strokeWidth="24" strokeLinecap="round"/>
-                      </svg>
-                      <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                        Powered by Polymarket
+                    <div className="mt-2 flex items-center justify-center gap-1">
+                      <span
+                        className="text-[11px] sm:text-[12px] font-bold"
+                        style={{ color: '#2E5CFF' }}
+                      >
+                        P
+                      </span>
+                      <span className="text-[9px] sm:text-[10px]" style={{ color: theme.textSecondary }}>
+                        Powered by <span style={{ color: '#2E5CFF', fontWeight: 500 }}>Polymarket</span>
                       </span>
                     </div>
                   </div>
