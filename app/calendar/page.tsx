@@ -393,8 +393,19 @@ export default function CalendarPage() {
       {/* Sport Pills */}
       <div
         className="flex gap-2 px-4 py-3"
-        style={{ borderBottom: selectedSport ? 'none' : `1px solid ${theme.border}` }}
+        style={{ borderBottom: selectedSport === 'all' || !selectedSport ? `1px solid ${theme.border}` : 'none' }}
       >
+        <button
+          onClick={() => setSelectedSport('all')}
+          className="rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2"
+          style={{
+            backgroundColor: selectedSport === 'all' ? theme.accent : theme.bgSecondary,
+            color: selectedSport === 'all' ? '#fff' : theme.textSecondary,
+            border: `1px solid ${selectedSport === 'all' ? theme.accent : theme.border}`,
+          }}
+        >
+          <span>All Sports</span>
+        </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'soccer' ? null : 'soccer')}
           className="rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2"
