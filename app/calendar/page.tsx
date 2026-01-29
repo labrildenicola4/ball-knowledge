@@ -42,19 +42,24 @@ const nationFilters = [
   ...MAIN_NATIONS.map(n => ({ id: n.id, name: n.name, flag: n.flag }))
 ];
 
-// Calendar year bounds
-const YEAR_START = new Date(new Date().getFullYear(), 0, 1);  // Jan 1 of current year
-const YEAR_END = new Date(new Date().getFullYear(), 11, 31);   // Dec 31 of current year
+// Available years for dropdown
+const AVAILABLE_YEARS = [2025, 2026];
 
 export default function CalendarPage() {
   const { theme } = useTheme();
   const router = useRouter();
   // Initialize with null, will be set from localStorage or default to today
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedNation, setSelectedNation] = useState('all');
   const [collapsedNations, setCollapsedNations] = useState<Set<string>>(new Set());
   const [initialized, setInitialized] = useState(false);
   const [lastViewedMatch, setLastViewedMatch] = useState<string | null>(null);
+  const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
+
+  // Dynamic year bounds based on selected year
+  const yearStart = new Date(selectedYear, 0, 1);
+  const yearEnd = new Date(selectedYear, 11, 31);
 
   // Use SWR hook for data fetching
   const { matches: allMatches, isLoading, isError } = useFixtures(selectedDate || undefined);
@@ -79,14 +84,16 @@ export default function CalendarPage() {
 
     if (savedDate) {
       const parsed = new Date(savedDate);
-      // Check if date is valid and within season bounds
-      if (!isNaN(parsed.getTime()) && parsed >= YEAR_START && parsed <= YEAR_END) {
+      if (!isNaN(parsed.getTime())) {
         setSelectedDate(parsed);
+        setSelectedYear(parsed.getFullYear());
       } else {
         setSelectedDate(new Date());
+        setSelectedYear(new Date().getFullYear());
       }
     } else {
       setSelectedDate(new Date());
+      setSelectedYear(new Date().getFullYear());
     }
 
     if (savedNation) {
@@ -173,28 +180,42 @@ export default function CalendarPage() {
     if (!selectedDate) return;
     const newDate = new Date(selectedDate);
     newDate.setDate(selectedDate.getDate() + (direction === 'next' ? 7 : -7));
-    // Keep within season bounds
-    if (newDate >= YEAR_START && newDate <= YEAR_END) {
+    // Update year if needed and if within available years
+    const newYear = newDate.getFullYear();
+    if (AVAILABLE_YEARS.includes(newYear)) {
       setSelectedDate(newDate);
+      if (newYear !== selectedYear) {
+        setSelectedYear(newYear);
+      }
     }
   };
 
-  // Quick navigation months for calendar year
-  const currentYear = new Date().getFullYear();
+  // Quick navigation months for selected year
   const calendarMonths = [
-    { label: 'Jan', date: new Date(currentYear, 0, 15) },
-    { label: 'Feb', date: new Date(currentYear, 1, 15) },
-    { label: 'Mar', date: new Date(currentYear, 2, 15) },
-    { label: 'Apr', date: new Date(currentYear, 3, 15) },
-    { label: 'May', date: new Date(currentYear, 4, 15) },
-    { label: 'Jun', date: new Date(currentYear, 5, 15) },
-    { label: 'Jul', date: new Date(currentYear, 6, 15) },
-    { label: 'Aug', date: new Date(currentYear, 7, 15) },
-    { label: 'Sep', date: new Date(currentYear, 8, 15) },
-    { label: 'Oct', date: new Date(currentYear, 9, 15) },
-    { label: 'Nov', date: new Date(currentYear, 10, 15) },
-    { label: 'Dec', date: new Date(currentYear, 11, 15) },
+    { label: 'Jan', date: new Date(selectedYear, 0, 15) },
+    { label: 'Feb', date: new Date(selectedYear, 1, 15) },
+    { label: 'Mar', date: new Date(selectedYear, 2, 15) },
+    { label: 'Apr', date: new Date(selectedYear, 3, 15) },
+    { label: 'May', date: new Date(selectedYear, 4, 15) },
+    { label: 'Jun', date: new Date(selectedYear, 5, 15) },
+    { label: 'Jul', date: new Date(selectedYear, 6, 15) },
+    { label: 'Aug', date: new Date(selectedYear, 7, 15) },
+    { label: 'Sep', date: new Date(selectedYear, 8, 15) },
+    { label: 'Oct', date: new Date(selectedYear, 9, 15) },
+    { label: 'Nov', date: new Date(selectedYear, 10, 15) },
+    { label: 'Dec', date: new Date(selectedYear, 11, 15) },
   ];
+
+  // Handle year change
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+    setYearDropdownOpen(false);
+    // Update selected date to same month/day in new year
+    if (selectedDate) {
+      const newDate = new Date(year, selectedDate.getMonth(), selectedDate.getDate());
+      setSelectedDate(newDate);
+    }
+  };
 
   const isCurrentMonth = (monthDate: Date) => {
     if (!selectedDate) return false;
@@ -254,13 +275,42 @@ export default function CalendarPage() {
         </div>
       )}
 
-      {/* Year Banner */}
+      {/* Year Selector */}
       <div
-        className="px-4 py-2 text-center text-sm"
-        style={{ backgroundColor: theme.bgSecondary, color: theme.textSecondary }}
+        className="px-4 py-2 flex justify-center"
+        style={{ backgroundColor: theme.bgSecondary }}
       >
-        <CalendarIcon size={14} className="inline mr-1" />
-        {new Date().getFullYear()}
+        <div className="relative">
+          <button
+            onClick={() => setYearDropdownOpen(!yearDropdownOpen)}
+            className="flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium"
+            style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
+          >
+            <CalendarIcon size={14} />
+            {selectedYear}
+            <ChevronDown size={14} className={`transition-transform ${yearDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {yearDropdownOpen && (
+            <div
+              className="absolute top-full mt-1 left-0 right-0 rounded-lg overflow-hidden shadow-lg z-10"
+              style={{ backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
+            >
+              {AVAILABLE_YEARS.map((year) => (
+                <button
+                  key={year}
+                  onClick={() => handleYearChange(year)}
+                  className="w-full px-3 py-2 text-sm text-left hover:opacity-80"
+                  style={{
+                    backgroundColor: year === selectedYear ? theme.accent : 'transparent',
+                    color: year === selectedYear ? '#fff' : theme.text,
+                  }}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Month Quick Nav */}
