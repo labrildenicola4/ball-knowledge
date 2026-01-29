@@ -66,6 +66,97 @@ export const NATIONS: Nation[] = [
     domesticLeagues: ['DED'],  // Eredivisie
     internationalCompetitions: ['CL'],
   },
+  {
+    id: 'belgium',
+    name: 'Belgium',
+    flag: '🇧🇪',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'scotland',
+    name: 'Scotland',
+    flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'turkey',
+    name: 'Turkey',
+    flag: '🇹🇷',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'ukraine',
+    name: 'Ukraine',
+    flag: '🇺🇦',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'austria',
+    name: 'Austria',
+    flag: '🇦🇹',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'switzerland',
+    name: 'Switzerland',
+    flag: '🇨🇭',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'greece',
+    name: 'Greece',
+    flag: '🇬🇷',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'czech',
+    name: 'Czech Republic',
+    flag: '🇨🇿',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'denmark',
+    name: 'Denmark',
+    flag: '🇩🇰',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'norway',
+    name: 'Norway',
+    flag: '🇳🇴',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'cyprus',
+    name: 'Cyprus',
+    flag: '🇨🇾',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'azerbaijan',
+    name: 'Azerbaijan',
+    flag: '🇦🇿',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
+  {
+    id: 'kazakhstan',
+    name: 'Kazakhstan',
+    flag: '🇰🇿',
+    domesticLeagues: [],
+    internationalCompetitions: ['CL'],
+  },
 ];
 
 // Map competition codes to their nation
@@ -85,207 +176,216 @@ export const LEAGUE_TO_NATION: Record<string, string> = {
 // International competitions (CL, CLI) need team-based lookup
 export const INTERNATIONAL_COMPETITIONS = ['CL', 'CLI'];
 
-// Team ID to Nation mapping for Champions League teams (2024-25 season)
-// Football-Data.org team IDs
+// Team ID to Nation mapping for Champions League teams
+// API-Football team IDs
 export const TEAM_TO_NATION: Record<number, string> = {
-  // Spain - La Liga teams in CL
-  86: 'spain',    // Real Madrid
-  81: 'spain',    // Barcelona
-  78: 'spain',    // Atlético Madrid
-  90: 'spain',    // Real Betis
-  92: 'spain',    // Real Sociedad
-  95: 'spain',    // Valencia
-  94: 'spain',    // Villarreal
-  559: 'spain',   // Sevilla
-  82: 'spain',    // Getafe
-  79: 'spain',    // Osasuna
-  80: 'spain',    // Espanyol
-  83: 'spain',    // Granada
-  89: 'spain',    // Mallorca
-  298: 'spain',   // Girona
-  84: 'spain',    // Celta Vigo
-  85: 'spain',    // Real Valladolid
-  263: 'spain',   // Alavés
-  275: 'spain',   // Las Palmas
-  88: 'spain',    // Levante
-  87: 'spain',    // Rayo Vallecano
-  264: 'spain',   // Cádiz
-  285: 'spain',   // Elche
-  267: 'spain',   // Almería
-  250: 'spain',   // Real Zaragoza
-  262: 'spain',   // Racing Santander
-  558: 'spain',   // Athletic Club
+  // Spain - La Liga teams
+  529: 'spain',   // Barcelona
+  530: 'spain',   // Atletico Madrid
+  531: 'spain',   // Athletic Club
+  532: 'spain',   // Valencia
+  533: 'spain',   // Villarreal
+  536: 'spain',   // Sevilla
+  537: 'spain',   // Leganes
+  538: 'spain',   // Celta Vigo
+  539: 'spain',   // Espanyol
+  540: 'spain',   // Getafe
+  541: 'spain',   // Real Madrid
+  542: 'spain',   // Real Sociedad
+  543: 'spain',   // Real Betis
+  546: 'spain',   // Rayo Vallecano
+  547: 'spain',   // Girona
+  548: 'spain',   // Real Valladolid
+  720: 'spain',   // Las Palmas
+  723: 'spain',   // Almeria
+  724: 'spain',   // Cadiz
+  727: 'spain',   // Osasuna
+  728: 'spain',   // Mallorca
+  798: 'spain',   // Alaves
 
   // England - Premier League teams
-  57: 'england',  // Arsenal
-  58: 'england',  // Aston Villa
-  61: 'england',  // Chelsea
-  354: 'england', // Crystal Palace
-  62: 'england',  // Everton
-  63: 'england',  // Fulham
-  64: 'england',  // Liverpool
-  65: 'england',  // Manchester City
-  66: 'england',  // Manchester United
-  67: 'england',  // Newcastle United
-  68: 'england',  // Norwich City (Championship)
-  71: 'england',  // Tottenham Hotspur
-  563: 'england', // West Ham United
-  76: 'england',  // Wolverhampton
-  397: 'england', // Brighton
-  402: 'england', // Brentford
-  351: 'england', // Nottingham Forest
-  346: 'england', // Watford
-  389: 'england', // Luton Town
-  387: 'england', // Sheffield United
-  328: 'england', // Burnley
-  341: 'england', // Leeds United
-  338: 'england', // Leicester City
-  356: 'england', // Sheffield Wednesday
-  343: 'england', // Middlesbrough
-  70: 'england',  // Stoke City
-  332: 'england', // Birmingham City
-  355: 'england', // Reading
-  72: 'england',  // Swansea City
-  715: 'england', // Cardiff City
-  73: 'england',  // Sunderland
-  74: 'england',  // West Bromwich Albion
-  69: 'england',  // QPR
-  349: 'england', // Ipswich Town
-  1044: 'england', // AFC Bournemouth
+  33: 'england',  // Manchester United
+  34: 'england',  // Newcastle
+  35: 'england',  // Bournemouth
+  36: 'england',  // Fulham
+  39: 'england',  // Wolves
+  40: 'england',  // Liverpool
+  41: 'england',  // Southampton
+  42: 'england',  // Arsenal
+  45: 'england',  // Everton
+  46: 'england',  // Leicester
+  47: 'england',  // Tottenham
+  48: 'england',  // West Ham
+  49: 'england',  // Chelsea
+  50: 'england',  // Manchester City
+  51: 'england',  // Brighton
+  52: 'england',  // Crystal Palace
+  55: 'england',  // Brentford
+  57: 'england',  // Ipswich
+  63: 'england',  // Leeds
+  65: 'england',  // Nottingham Forest
+  66: 'england',  // Aston Villa
 
   // Italy - Serie A teams
-  98: 'italy',    // AC Milan
-  99: 'italy',    // Fiorentina
-  100: 'italy',   // AS Roma
-  102: 'italy',   // Atalanta
-  103: 'italy',   // Bologna
-  104: 'italy',   // Cagliari
-  107: 'italy',   // Genoa
-  108: 'italy',   // Inter
-  109: 'italy',   // Juventus
-  110: 'italy',   // Lazio
-  113: 'italy',   // Napoli
-  115: 'italy',   // Udinese
-  445: 'italy',   // Empoli
-  450: 'italy',   // Hellas Verona
-  471: 'italy',   // Sassuolo
-  472: 'italy',   // Parma
-  584: 'italy',   // Torino
-  586: 'italy',   // Sampdoria
-  470: 'italy',   // Frosinone
-  454: 'italy',   // Spezia
-  455: 'italy',   // Salernitana
-  5890: 'italy',  // Monza
-  112: 'italy',   // Lecce
-  1106: 'italy',  // Como 1907
+  487: 'italy',   // Lazio
+  488: 'italy',   // Sassuolo
+  489: 'italy',   // AC Milan
+  492: 'italy',   // Napoli
+  494: 'italy',   // Udinese
+  495: 'italy',   // Genoa
+  496: 'italy',   // Juventus
+  497: 'italy',   // AS Roma
+  498: 'italy',   // Sampdoria
+  499: 'italy',   // Atalanta
+  500: 'italy',   // Bologna
+  502: 'italy',   // Fiorentina
+  503: 'italy',   // Torino
+  504: 'italy',   // Verona
+  505: 'italy',   // Inter
+  511: 'italy',   // Empoli
+  512: 'italy',   // Frosinone
+  514: 'italy',   // Salernitana
+  515: 'italy',   // Cagliari
+  517: 'italy',   // Venezia
+  518: 'italy',   // Monza
+  520: 'italy',   // Lecce
+  521: 'italy',   // Parma
+  867: 'italy',   // Como
 
   // Germany - Bundesliga teams
-  1: 'germany',   // 1. FC Köln
-  2: 'germany',   // TSG Hoffenheim
-  3: 'germany',   // Bayer Leverkusen
-  4: 'germany',   // Borussia Dortmund
-  5: 'germany',   // Bayern München
-  6: 'germany',   // FC Augsburg
-  7: 'germany',   // Borussia M'gladbach
-  9: 'germany',   // Hertha BSC
-  10: 'germany',  // VfB Stuttgart
-  11: 'germany',  // VfL Wolfsburg
-  12: 'germany',  // Werder Bremen
-  16: 'germany',  // FC St. Pauli
-  17: 'germany',  // SC Freiburg
-  18: 'germany',  // Eintracht Frankfurt
-  19: 'germany',  // RB Leipzig
-  28: 'germany',  // 1. FC Union Berlin
-  36: 'germany',  // VfL Bochum
-  38: 'germany',  // 1. FSV Mainz 05
-  44: 'germany',  // 1. FC Heidenheim
-  721: 'germany', // Holstein Kiel
+  157: 'germany', // Bayern München
+  159: 'germany', // Hertha BSC
+  160: 'germany', // SC Freiburg
+  161: 'germany', // VfL Wolfsburg
+  162: 'germany', // Werder Bremen
+  163: 'germany', // Borussia Mönchengladbach
+  164: 'germany', // FC Augsburg
+  165: 'germany', // Borussia Dortmund
+  167: 'germany', // 1. FC Köln
+  168: 'germany', // Bayer Leverkusen
+  169: 'germany', // Eintracht Frankfurt
+  170: 'germany', // FC Augsburg
+  172: 'germany', // VfB Stuttgart
+  173: 'germany', // RB Leipzig
+  174: 'germany', // 1. FC Union Berlin
+  176: 'germany', // VfL Bochum
+  178: 'germany', // 1. FSV Mainz 05
+  180: 'germany', // TSG Hoffenheim
+  181: 'germany', // SV Darmstadt
+  182: 'germany', // 1. FC Heidenheim
+  186: 'germany', // FC St. Pauli
+  192: 'germany', // Holstein Kiel
 
   // France - Ligue 1 teams
-  516: 'france',  // Marseille
-  518: 'france',  // Montpellier
-  521: 'france',  // Lille
-  522: 'france',  // Nice
-  523: 'france',  // Lyon
-  524: 'france',  // Paris Saint-Germain
-  525: 'france',  // Toulouse
-  527: 'france',  // Saint-Étienne
-  528: 'france',  // Monaco
-  529: 'france',  // Rennes
-  532: 'france',  // Angers
-  533: 'france',  // Nantes
-  541: 'france',  // Auxerre
-  543: 'france',  // Reims
-  545: 'france',  // Metz
-  546: 'france',  // Le Havre
-  547: 'france',  // Lens
-  548: 'france',  // Strasbourg
-  556: 'france',  // Brest
-  576: 'france',  // Clermont Foot
+  77: 'france',   // Angers
+  79: 'france',   // Lille
+  80: 'france',   // Lyon
+  81: 'france',   // Marseille
+  82: 'france',   // Montpellier
+  83: 'france',   // Nantes
+  84: 'france',   // Nice
+  85: 'france',   // Paris Saint Germain
+  91: 'france',   // Monaco
+  93: 'france',   // Reims
+  94: 'france',   // Rennes
+  95: 'france',   // Strasbourg
+  96: 'france',   // Toulouse
+  97: 'france',   // Saint-Etienne
+  99: 'france',   // Auxerre
+  106: 'france',  // Stade Brestois 29
+  108: 'france',  // Le Havre
+  112: 'france',  // Metz
+  114: 'france',  // Paris FC
+  116: 'france',  // Lens
 
   // Portugal - Primeira Liga teams
-  498: 'portugal', // Sporting CP
-  503: 'portugal', // FC Porto
-  495: 'portugal', // Benfica
-  496: 'portugal', // Rio Ave
-  497: 'portugal', // Sporting Braga
-  5531: 'portugal', // Famalicão
-  500: 'portugal', // Boavista
-  501: 'portugal', // Marítimo
-  582: 'portugal', // Gil Vicente
-  583: 'portugal', // Vitória SC
-  712: 'portugal', // Casa Pia
-  610: 'portugal', // Estoril
-  5530: 'portugal', // Vizela
-  720: 'portugal', // Santa Clara
-  5613: 'portugal', // Arouca
-  1903: 'portugal', // Portimonense
-  5543: 'portugal', // Moreirense
+  211: 'portugal', // Benfica
+  212: 'portugal', // FC Porto
+  215: 'portugal', // Vitoria Guimaraes
+  217: 'portugal', // SC Braga
+  222: 'portugal', // Rio Ave
+  223: 'portugal', // Boavista
+  225: 'portugal', // Nacional
+  228: 'portugal', // Sporting CP
+  229: 'portugal', // Moreirense
+  230: 'portugal', // Arouca
+  231: 'portugal', // Gil Vicente
+  240: 'portugal', // Estoril
+  242: 'portugal', // Famalicao
+  712: 'portugal', // Santa Clara
+  810: 'portugal', // Casa Pia
+  4716: 'portugal', // AVS
 
   // Netherlands - Eredivisie teams
-  666: 'netherlands', // Twente
-  671: 'netherlands', // Heracles Almelo
-  672: 'netherlands', // Willem II
-  673: 'netherlands', // Vitesse
-  674: 'netherlands', // PSV
-  675: 'netherlands', // Feyenoord
-  676: 'netherlands', // FC Utrecht
-  677: 'netherlands', // FC Groningen
-  678: 'netherlands', // Ajax
-  679: 'netherlands', // SC Heerenveen
-  680: 'netherlands', // RKC Waalwijk
-  681: 'netherlands', // NEC
-  682: 'netherlands', // AZ Alkmaar
-  683: 'netherlands', // Go Ahead Eagles
-  684: 'netherlands', // PEC Zwolle
-  718: 'netherlands', // Sparta Rotterdam
-  1911: 'netherlands', // Almere City FC
-  1914: 'netherlands', // Fortuna Sittard
-  1915: 'netherlands', // NAC Breda
+  194: 'netherlands', // Ajax
+  195: 'netherlands', // AZ Alkmaar
+  196: 'netherlands', // Feyenoord
+  197: 'netherlands', // PSV Eindhoven
+  198: 'netherlands', // Vitesse
+  199: 'netherlands', // Willem II
+  200: 'netherlands', // PEC Zwolle
+  201: 'netherlands', // Twente
+  202: 'netherlands', // FC Groningen
+  203: 'netherlands', // Sparta Rotterdam
+  204: 'netherlands', // RKC Waalwijk
+  205: 'netherlands', // SC Heerenveen
+  206: 'netherlands', // NEC Nijmegen
+  207: 'netherlands', // FC Utrecht
+  209: 'netherlands', // Feyenoord
+  210: 'netherlands', // Go Ahead Eagles
+  415: 'netherlands', // Fortuna Sittard
+  417: 'netherlands', // Heracles
+  1909: 'netherlands', // Almere City
 
   // Brazil - Brasileirão teams
-  1759: 'brazil', // Flamengo
-  1765: 'brazil', // Fluminense
-  1766: 'brazil', // Vasco da Gama
-  1767: 'brazil', // Botafogo
-  1769: 'brazil', // Palmeiras
-  1770: 'brazil', // São Paulo
-  1771: 'brazil', // Santos
-  1772: 'brazil', // Corinthians
-  1776: 'brazil', // Grêmio
-  1777: 'brazil', // Internacional
-  1779: 'brazil', // Athletico Paranaense
-  1780: 'brazil', // Cruzeiro
-  1781: 'brazil', // Atlético Mineiro
-  1783: 'brazil', // Bahia
-  1785: 'brazil', // Fortaleza
-  1786: 'brazil', // Ceará
-  1787: 'brazil', // Sport Recife
-  1789: 'brazil', // Goiás
-  1791: 'brazil', // Juventude
-  1792: 'brazil', // Cuiabá
-  1794: 'brazil', // Red Bull Bragantino
-  6684: 'brazil', // América MG
+  118: 'brazil',  // Bahia
+  119: 'brazil',  // Internacional
+  120: 'brazil',  // Botafogo
+  121: 'brazil',  // Palmeiras
+  124: 'brazil',  // Fluminense
+  126: 'brazil',  // Sao Paulo
+  127: 'brazil',  // Flamengo
+  128: 'brazil',  // Santos
+  130: 'brazil',  // Gremio
+  131: 'brazil',  // Corinthians
+  132: 'brazil',  // Chapecoense
+  134: 'brazil',  // Atletico Paranaense
+  136: 'brazil',  // Vitoria
+  147: 'brazil',  // Coritiba
+  794: 'brazil',  // RB Bragantino
+  1062: 'brazil', // Atletico Mineiro
+  1193: 'brazil', // Fortaleza
+  1198: 'brazil', // Remo
+  1211: 'brazil', // Ceara
+  1213: 'brazil', // Goias
+  1216: 'brazil', // Cruzeiro
+  2139: 'brazil', // Juventude
+  7848: 'brazil', // Cuiaba
+
+  // Belgium - for CL teams
+  554: 'belgium', // Anderlecht
+  569: 'belgium', // Club Brugge
+  631: 'belgium', // Gent
+  739: 'belgium', // Royal Antwerp
+  740: 'belgium', // Standard Liege
+  1393: 'belgium', // Union St. Gilloise
+
+  // Other CL nations
+  327: 'norway',    // Bodo/Glimt
+  400: 'denmark',   // FC Copenhagen
+  553: 'greece',    // Olympiakos Piraeus
+  556: 'azerbaijan', // Qarabag
+  560: 'czech',     // Slavia Praha
+  564: 'austria',   // Salzburg
+  571: 'austria',   // Sturm Graz
+  573: 'scotland',  // Celtic
+  598: 'scotland',  // Rangers
+  609: 'switzerland', // Young Boys
+  611: 'switzerland', // Basel
+  620: 'ukraine',   // Shakhtar Donetsk
+  645: 'turkey',    // Galatasaray
+  664: 'kazakhstan', // Kairat Almaty
+  3403: 'cyprus',   // Pafos
 };
 
 // Helper: Get nation ID for a match based on league code and team IDs
