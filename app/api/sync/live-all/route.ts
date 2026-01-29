@@ -262,23 +262,36 @@ export async function GET() {
     // ALSO: Mark "orphaned" live matches as finished
     // These are matches in our DB that show as live but aren't in the API response anymore
     const liveStatuses = ['LIVE', '1H', '2H', 'HT', 'ET', 'PEN', 'IN_PLAY', 'PAUSED'];
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+
+    // Cup competitions can have extra time - use 2 hour cutoff
+    // League games use 105 min cutoff (no extra time possible)
+    const cupCompetitions = ['CL', 'EL', 'CLI', 'CDR', 'FAC', 'CDF', 'CIT', 'DFB'];
+    const leagueCutoff = new Date(Date.now() - 105 * 60 * 1000).toISOString();  // 105 min
+    const cupCutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();   // 2 hours
 
     const { data: orphanedMatches } = await supabase
       .from('fixtures_cache')
-      .select('id, api_id, home_team_name, away_team_name, kickoff')
+      .select('id, api_id, home_team_name, away_team_name, kickoff, league_code')
       .eq('match_date', today)
       .in('status', liveStatuses)
-      .lt('kickoff', twoHoursAgo);  // Started more than 2 hours ago
+      .lt('kickoff', leagueCutoff);  // Started more than 105 min ago (we'll filter cups below)
 
     let finalized = 0;
     if (orphanedMatches && orphanedMatches.length > 0) {
-      // Get the API IDs of matches that are actually still live
-      const stillLiveIds = new Set(relevantFixtures.map(f => f.fixture.id));
-
       for (const orphan of orphanedMatches) {
+        // Cup competitions need longer cutoff (extra time possible)
+        const isCup = cupCompetitions.includes(orphan.league_code);
+        const kickoffTime = new Date(orphan.kickoff).getTime();
+        const cutoffTime = isCup
+          ? new Date(cupCutoff).getTime()
+          : new Date(leagueCutoff).getTime();
+
+        // Skip if cup match hasn't passed the 2-hour cutoff yet
+        if (isCup && kickoffTime > cutoffTime) {
+          continue;
+        }
+
         // Only finalize if this match wasn't in the live API response
-        // We can't check by API ID directly since they differ, so check by name
         const isStillLive = relevantFixtures.some(f => {
           const normalize = (name: string) => name.toLowerCase().replace(/[^a-z]/g, '').slice(0, 5);
           return normalize(f.teams.home.name) === normalize(orphan.home_team_name).slice(0, 5);
@@ -290,7 +303,7 @@ export async function GET() {
             .update({ status: 'FT', updated_at: new Date().toISOString() })
             .eq('id', orphan.id);
           finalized++;
-          console.log(`[Sync/LiveAll] Finalized: ${orphan.home_team_name} vs ${orphan.away_team_name}`);
+          console.log(`[Sync/LiveAll] Finalized: ${orphan.home_team_name} vs ${orphan.away_team_name} (${isCup ? 'cup' : 'league'})`);
         }
       }
     }
