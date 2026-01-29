@@ -407,7 +407,30 @@ export default function CalendarPage() {
           <span>⚽</span>
           <span>Soccer</span>
         </button>
-        {/* Future sports go here */}
+        <button
+          onClick={() => setSelectedSport(selectedSport === 'cbb' ? null : 'cbb')}
+          className="rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50"
+          style={{
+            backgroundColor: selectedSport === 'cbb' ? theme.accent : theme.bgSecondary,
+            color: selectedSport === 'cbb' ? '#fff' : theme.textSecondary,
+            border: `1px solid ${selectedSport === 'cbb' ? theme.accent : theme.border}`,
+          }}
+        >
+          <span>🏀</span>
+          <span>CBB</span>
+        </button>
+        <button
+          onClick={() => setSelectedSport(selectedSport === 'mlb' ? null : 'mlb')}
+          className="rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50"
+          style={{
+            backgroundColor: selectedSport === 'mlb' ? theme.accent : theme.bgSecondary,
+            color: selectedSport === 'mlb' ? '#fff' : theme.textSecondary,
+            border: `1px solid ${selectedSport === 'mlb' ? theme.accent : theme.border}`,
+          }}
+        >
+          <span>⚾</span>
+          <span>MLB</span>
+        </button>
       </div>
 
       {/* Nation Filter - Shows when Soccer is selected */}
