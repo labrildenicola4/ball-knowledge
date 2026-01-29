@@ -33,42 +33,20 @@ export async function GET(request: NextRequest) {
       .select('api_id, name, short_name, tla, crest')
       .or(`name.ilike.%${query}%,short_name.ilike.%${query}%,tla.ilike.%${query}%`)
       .eq('sport_type', 'soccer')
-      .limit(50); // Fetch more to allow client-side ranking
+      .limit(15);
 
     if (error) {
       console.error('[Search API] Error:', error);
       return NextResponse.json({ teams: [], leagues: [] });
     }
 
-    // Transform and rank teams by relevance
-    const transformedTeams = (teams || [])
-      .map(t => {
-        const nameLower = t.name.toLowerCase();
-        const tlaLower = (t.tla || '').toLowerCase();
-
-        // Calculate relevance score (higher is better)
-        let score = 0;
-        if (nameLower === query) score = 100; // Exact match
-        else if (tlaLower === query) score = 90; // Exact TLA match
-        else if (nameLower.startsWith(query)) score = 80; // Name starts with query
-        else if (tlaLower.startsWith(query)) score = 70; // TLA starts with query
-        else if (nameLower.includes(` ${query}`)) score = 60; // Word boundary match
-        else score = 50; // Contains somewhere
-
-        // Prefer shorter names (usually main clubs, not B teams)
-        score -= t.name.length * 0.1;
-
-        return {
-          id: t.api_id,
-          name: t.name,
-          shortName: t.tla || t.short_name || t.name.substring(0, 3).toUpperCase(),
-          logo: t.crest,
-          _score: score,
-        };
-      })
-      .sort((a, b) => b._score - a._score)
-      .slice(0, 15)
-      .map(({ _score, ...team }) => team); // Remove score from final output
+    // Transform teams to expected format
+    const transformedTeams = (teams || []).map(t => ({
+      id: t.api_id,
+      name: t.name,
+      shortName: t.tla || t.short_name || t.name.substring(0, 3).toUpperCase(),
+      logo: t.crest,
+    }));
 
     // Filter leagues by query
     const filteredLeagues = LEAGUES.filter(
