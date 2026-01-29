@@ -496,21 +496,21 @@ export default function TeamPage() {
           )}
 
           {/* Team Details */}
-          <div className="space-y-3 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
+          <div className="space-y-3 pt-4 flex flex-col items-center" style={{ borderTop: `1px solid ${theme.border}` }}>
             {team.venue && (
-              <div className="flex items-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
+              <div className="flex items-center justify-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
                 <MapPin size={14} />
                 <span>{team.venue}</span>
               </div>
             )}
             {team.coach && (
-              <div className="flex items-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
+              <div className="flex items-center justify-center gap-2 text-sm" style={{ color: theme.textSecondary }}>
                 <Trophy size={14} />
                 <span>{team.coach}</span>
               </div>
             )}
             {team.founded > 0 && (
-              <div className="text-sm" style={{ color: theme.textSecondary }}>
+              <div className="text-sm text-center" style={{ color: theme.textSecondary }}>
                 Founded: {team.founded}
               </div>
             )}
@@ -518,7 +518,7 @@ export default function TeamPage() {
 
           {/* Quick Stats */}
           <div className="mt-6 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
-            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 text-center" style={{ color: theme.textSecondary }}>
               Season Stats
             </h3>
             <div className="grid grid-cols-2 gap-2">
