@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
-import { getMatchDataForFixture, mapStatistics, FixtureLineup } from '@/lib/api-football';
+import { getFixture, getFixtureStatistics, getFixtureLineups, getHeadToHead, getTeamForm, mapStatus, mapStatistics } from '@/lib/api-football';
 import { supabase } from '@/lib/supabase';
 
-// Force dynamic rendering - no caching at Vercel edge
+// Force dynamic rendering
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-// Reverse mapping from competition code to league key
-const CODE_TO_LEAGUE: Record<string, string> = Object.fromEntries(
-  Object.entries(COMPETITION_CODES).map(([key, code]) => [code, key])
-);
 
 export async function GET(
   request: NextRequest,
@@ -23,45 +17,56 @@ export async function GET(
   }
 
   try {
-    // CHECK CACHE FIRST: For finished matches, return cached data if available
+    // CHECK CACHE FIRST: For finished matches with full details, return immediately
     const { data: cachedMatch } = await supabase
       .from('fixtures_cache')
-      .select('match_details, status, h2h_data')
+      .select('*')
       .eq('api_id', matchId)
       .single();
 
-    // If we have cached full match details AND match is finished, return immediately
+    // If we have cached full match details AND match is finished, return them
     if (cachedMatch?.match_details && cachedMatch.status === 'FT') {
-      console.log(`[Match API] Returning cached data for match ${matchId}`);
+      console.log(`[Match API] Returning cached match_details for ${matchId}`);
       return NextResponse.json(cachedMatch.match_details, {
         headers: { 'Cache-Control': 'public, max-age=3600' },
       });
     }
 
-    // Check if we have cached H2H data (for upcoming matches)
-    const cachedH2H = cachedMatch?.h2h_data as { total: number; homeWins: number; draws: number; awayWins: number } | null;
+    // Fetch fresh fixture data from API-Football
+    const fixture = await getFixture(matchId);
 
-    // Fetch match details from football-data.org
-    const match = await getMatch(matchId);
-
-    if (!match) {
+    if (!fixture) {
+      // If not in API, try to return basic cached data
+      if (cachedMatch) {
+        console.log(`[Match API] Fixture not in API, returning cached basic data for ${matchId}`);
+        return buildResponseFromCache(cachedMatch);
+      }
       return NextResponse.json({ error: 'Match not found' }, { status: 404 });
     }
 
-    const statusInfo = mapStatus(match.status, match.minute);
-
-    const isLive = ['1H', '2H', 'HT', 'LIVE'].includes(statusInfo.status);
+    const statusInfo = mapStatus(fixture.fixture.status.short, fixture.fixture.status.elapsed);
+    const isLive = ['1H', '2H', 'HT', 'LIVE', 'ET', 'BT', 'P'].includes(statusInfo.status);
     const isFinished = statusInfo.status === 'FT';
 
     // Format date
-    const matchDate = new Date(match.utcDate);
+    const matchDate = new Date(fixture.fixture.date);
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const displayDate = `${monthNames[matchDate.getMonth()]} ${matchDate.getDate()}`;
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const hours = matchDate.getUTCHours();
+    const minutes = matchDate.getUTCMinutes();
+    const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    const displayDate = `${dayNames[matchDate.getUTCDay()]}, ${monthNames[matchDate.getUTCMonth()]} ${matchDate.getUTCDate()} · ${timeStr}`;
 
-    // Get league key for standings lookup
-    const leagueKey = CODE_TO_LEAGUE[match.competition.code] || null;
+    // Fetch additional data in parallel
+    const [lineups, statistics, h2hMatches, homeForm, awayForm] = await Promise.all([
+      getFixtureLineups(matchId).catch(() => []),
+      (isLive || isFinished) ? getFixtureStatistics(matchId).catch(() => []) : Promise.resolve([]),
+      getHeadToHead(fixture.teams.home.id, fixture.teams.away.id, 10).catch(() => []),
+      getTeamForm(fixture.teams.home.id, 5).catch(() => []),
+      getTeamForm(fixture.teams.away.id, 5).catch(() => []),
+    ]);
 
-    // Initialize lineup and stats data
+    // Process lineups
     let homeLineup: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
     let homeBench: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
     let awayLineup: Array<{ id: number; name: string; position: string; shirtNumber: number | null }> = [];
@@ -70,128 +75,94 @@ export async function GET(
     let awayFormation: string | null = null;
     let homeCoach: string | null = null;
     let awayCoach: string | null = null;
-    let matchStats: { all: Array<{ label: string; home: number; away: number; type?: 'decimal' }> } | null = null;
 
-    // Fetch H2H (if not cached), team forms, AND lineups+stats all in parallel
-    const matchDateStr = matchDate.toISOString().split('T')[0];
-    const shouldFetchH2H = !cachedH2H || cachedH2H.total === 0;
-
-    const [h2hData, homeForm, awayForm, apiFootballData] = await Promise.all([
-      // Only fetch H2H if not cached
-      shouldFetchH2H ? getHeadToHead(matchId, 10).catch(() => []) : Promise.resolve([]),
-      getTeamForm(match.homeTeam.id, 5).catch(() => []),
-      getTeamForm(match.awayTeam.id, 5).catch(() => []),
-      // Fetch lineups AND statistics from API-Football
-      leagueKey
-        ? getMatchDataForFixture(leagueKey, matchDateStr, match.homeTeam.name, match.awayTeam.name).catch((err) => {
-            console.error('[Match API] Error fetching API-Football data:', err);
-            return { lineups: [], statistics: [], fixtureId: null };
-          })
-        : Promise.resolve({ lineups: [], statistics: [], fixtureId: null }),
-    ]);
-
-    // Use cached H2H or calculate from fetched data
-    let h2hStats = cachedH2H || { total: 0, homeWins: 0, draws: 0, awayWins: 0, matches: [] as Array<{date: string; home: string; away: string; homeScore: number; awayScore: number; competition: string}> };
-
-    if (shouldFetchH2H && h2hData.length > 0) {
-      // Build list of past matches
-      const pastMatches = h2hData.map((m) => ({
-        date: m.utcDate,
-        home: m.homeTeam.shortName || m.homeTeam.name,
-        away: m.awayTeam.shortName || m.awayTeam.name,
-        homeLogo: m.homeTeam.crest,
-        awayLogo: m.awayTeam.crest,
-        homeScore: m.score.fullTime.home ?? 0,
-        awayScore: m.score.fullTime.away ?? 0,
-        competition: m.competition?.name || '',
-      }));
-
-      // Calculate stats
-      h2hStats = { total: h2hData.length, homeWins: 0, draws: 0, awayWins: 0, matches: pastMatches };
-      h2hData.forEach((m) => {
-        const homeGoals = m.score.fullTime.home ?? 0;
-        const awayGoals = m.score.fullTime.away ?? 0;
-        const isCurrentHomeTeamHome = m.homeTeam.id === match.homeTeam.id;
-
-        if (homeGoals === awayGoals) {
-          h2hStats.draws++;
-        } else if (
-          (homeGoals > awayGoals && isCurrentHomeTeamHome) ||
-          (awayGoals > homeGoals && !isCurrentHomeTeamHome)
-        ) {
-          h2hStats.homeWins++;
-        } else {
-          h2hStats.awayWins++;
-        }
-      });
-
-      // Cache H2H for future requests (fire and forget)
-      supabase
-        .from('fixtures_cache')
-        .update({ h2h_data: h2hStats })
-        .eq('api_id', matchId)
-        .then(({ error }) => {
-          if (error) {
-            console.error(`[Match API] Failed to cache H2H for match ${matchId}:`, error);
-          } else {
-            console.log(`[Match API] Cached H2H for match ${matchId}`);
-          }
-        });
-    }
-
-    // Process lineup data from API-Football
-    const lineupResult = apiFootballData.lineups;
-    if (lineupResult.length >= 2) {
-      const mapLineupPlayer = (p: { player: { id: number; name: string; number: number; pos: string } }) => ({
+    if (lineups.length >= 2) {
+      const mapPlayer = (p: { player: { id: number; name: string; number: number; pos: string } }) => ({
         id: p.player.id,
         name: p.player.name,
         position: p.player.pos || 'Unknown',
         shirtNumber: p.player.number || null,
       });
 
-      const homeLineupData = lineupResult.find(l =>
-        l.team.name.toLowerCase().includes(match.homeTeam.name.toLowerCase().split(' ')[0]) ||
-        match.homeTeam.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
-      ) || lineupResult[0];
+      const homeLineupData = lineups.find(l => l.team.id === fixture.teams.home.id) || lineups[0];
+      const awayLineupData = lineups.find(l => l.team.id === fixture.teams.away.id) || lineups[1];
 
-      const awayLineupData = lineupResult.find(l =>
-        l.team.name.toLowerCase().includes(match.awayTeam.name.toLowerCase().split(' ')[0]) ||
-        match.awayTeam.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
-      ) || lineupResult[1];
-
-      homeLineup = homeLineupData.startXI.map(mapLineupPlayer);
-      homeBench = homeLineupData.substitutes.map(mapLineupPlayer);
+      homeLineup = homeLineupData.startXI.map(mapPlayer);
+      homeBench = homeLineupData.substitutes.map(mapPlayer);
       homeFormation = homeLineupData.formation || null;
       homeCoach = homeLineupData.coach?.name || null;
 
-      awayLineup = awayLineupData.startXI.map(mapLineupPlayer);
-      awayBench = awayLineupData.substitutes.map(mapLineupPlayer);
+      awayLineup = awayLineupData.startXI.map(mapPlayer);
+      awayBench = awayLineupData.substitutes.map(mapPlayer);
       awayFormation = awayLineupData.formation || null;
       awayCoach = awayLineupData.coach?.name || null;
     }
 
-    // Process real statistics from API-Football (for live or finished matches)
-    if ((isLive || isFinished) && apiFootballData.statistics.length > 0) {
-      matchStats = mapStatistics(apiFootballData.statistics);
-      console.log(`[Match API] Real stats loaded: ${matchStats?.all?.length || 0} stat types`);
-    }
+    // Process statistics
+    const matchStats = statistics.length > 0 ? mapStatistics(statistics) : null;
+
+    // Process H2H
+    const h2hStats = {
+      total: h2hMatches.length,
+      homeWins: 0,
+      draws: 0,
+      awayWins: 0,
+      matches: h2hMatches.map(m => ({
+        date: m.fixture.date,
+        home: m.teams.home.name,
+        away: m.teams.away.name,
+        homeLogo: m.teams.home.logo,
+        awayLogo: m.teams.away.logo,
+        homeScore: m.goals.home ?? 0,
+        awayScore: m.goals.away ?? 0,
+        competition: m.league.name,
+      })),
+    };
+
+    // Calculate H2H wins/draws/losses
+    h2hMatches.forEach(m => {
+      const homeGoals = m.goals.home ?? 0;
+      const awayGoals = m.goals.away ?? 0;
+      const isCurrentHomeTeamHome = m.teams.home.id === fixture.teams.home.id;
+
+      if (homeGoals === awayGoals) {
+        h2hStats.draws++;
+      } else if (
+        (homeGoals > awayGoals && isCurrentHomeTeamHome) ||
+        (awayGoals > homeGoals && !isCurrentHomeTeamHome)
+      ) {
+        h2hStats.homeWins++;
+      } else {
+        h2hStats.awayWins++;
+      }
+    });
+
+    // Map league code
+    const LEAGUE_ID_TO_CODE: Record<number, string> = {
+      39: 'PL', 140: 'PD', 135: 'SA', 78: 'BL1', 61: 'FL1',
+      94: 'PPL', 88: 'DED', 40: 'ELC', 71: 'BSA',
+      2: 'CL', 3: 'EL', 13: 'CLI',
+      143: 'CDR', 45: 'FAC', 66: 'CDF', 137: 'CIT', 81: 'DFB',
+    };
 
     const matchDetails = {
-      id: match.id,
-      league: match.competition.name,
-      leagueCode: leagueKey,
+      id: fixture.fixture.id,
+      league: fixture.league.name,
+      leagueCode: LEAGUE_ID_TO_CODE[fixture.league.id] || fixture.league.name,
+      leagueLogo: fixture.league.logo,
       date: displayDate,
-      venue: match.venue || 'TBD',
+      venue: fixture.fixture.venue?.name || 'TBD',
       attendance: null,
       status: statusInfo.status,
-      minute: match.minute,
-      matchday: match.matchday,
+      minute: fixture.fixture.status.elapsed,
+      matchday: parseInt(fixture.league.round.match(/\d+/)?.[0] || '0'),
+      stage: fixture.league.round,
       home: {
-        id: match.homeTeam.id,
-        name: match.homeTeam.name,
-        shortName: match.homeTeam.tla || match.homeTeam.shortName || match.homeTeam.name.substring(0, 3).toUpperCase(),
-        logo: match.homeTeam.crest,
-        score: match.score.fullTime.home,
+        id: fixture.teams.home.id,
+        name: fixture.teams.home.name,
+        shortName: fixture.teams.home.name.substring(0, 3).toUpperCase(),
+        logo: fixture.teams.home.logo,
+        score: fixture.goals.home,
         form: homeForm,
         lineup: homeLineup,
         bench: homeBench,
@@ -199,11 +170,11 @@ export async function GET(
         coach: homeCoach,
       },
       away: {
-        id: match.awayTeam.id,
-        name: match.awayTeam.name,
-        shortName: match.awayTeam.tla || match.awayTeam.shortName || match.awayTeam.name.substring(0, 3).toUpperCase(),
-        logo: match.awayTeam.crest,
-        score: match.score.fullTime.away,
+        id: fixture.teams.away.id,
+        name: fixture.teams.away.name,
+        shortName: fixture.teams.away.name.substring(0, 3).toUpperCase(),
+        logo: fixture.teams.away.logo,
+        score: fixture.goals.away,
         form: awayForm,
         lineup: awayLineup,
         bench: awayBench,
@@ -212,13 +183,13 @@ export async function GET(
       },
       h2h: h2hStats,
       halfTimeScore: {
-        home: match.score.halfTime.home,
-        away: match.score.halfTime.away,
+        home: fixture.score.halftime.home,
+        away: fixture.score.halftime.away,
       },
       stats: matchStats,
     };
 
-    // CACHE FINISHED MATCHES: Save full details to Supabase for instant future loads
+    // Cache finished matches for instant future loads
     if (isFinished) {
       supabase
         .from('fixtures_cache')
@@ -235,14 +206,66 @@ export async function GET(
 
     return NextResponse.json(matchDetails, {
       headers: {
-        'Cache-Control': isFinished ? 'public, max-age=3600' : 'no-store, no-cache, must-revalidate, max-age=0',
+        'Cache-Control': isFinished ? 'public, max-age=3600' : 'no-store',
       },
     });
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('[Match API] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch match details' },
       { status: 500 }
     );
   }
+}
+
+// Helper to build response from cached fixture data
+function buildResponseFromCache(match: Record<string, unknown>) {
+  const matchDate = new Date(match.kickoff as string);
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const hours = matchDate.getUTCHours();
+  const minutes = matchDate.getUTCMinutes();
+  const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  const displayDate = `${dayNames[matchDate.getUTCDay()]}, ${monthNames[matchDate.getUTCMonth()]} ${matchDate.getUTCDate()} · ${timeStr}`;
+
+  return NextResponse.json({
+    id: match.api_id,
+    league: match.league_name,
+    leagueCode: match.league_code,
+    leagueLogo: match.league_logo,
+    date: displayDate,
+    venue: match.venue || 'TBD',
+    status: match.status,
+    minute: match.minute,
+    matchday: match.matchday || 0,
+    stage: match.stage,
+    home: {
+      id: match.home_team_id,
+      name: match.home_team_name,
+      shortName: match.home_team_short || (match.home_team_name as string).substring(0, 3).toUpperCase(),
+      logo: match.home_team_logo,
+      score: match.home_score,
+      form: [],
+      lineup: [],
+      bench: [],
+      formation: null,
+      coach: null,
+    },
+    away: {
+      id: match.away_team_id,
+      name: match.away_team_name,
+      shortName: match.away_team_short || (match.away_team_name as string).substring(0, 3).toUpperCase(),
+      logo: match.away_team_logo,
+      score: match.away_score,
+      form: [],
+      lineup: [],
+      bench: [],
+      formation: null,
+      coach: null,
+    },
+    h2h: { total: 0, homeWins: 0, draws: 0, awayWins: 0, matches: [] },
+    halfTimeScore: { home: null, away: null },
+    stats: null,
+    cached: true,
+  });
 }
