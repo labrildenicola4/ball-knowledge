@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
-import { getFixturesByDate, LEAGUE_IDS, mapStatus, parseRound, type Fixture } from '@/lib/api-football';
+import { getFixturesByDate, mapStatus, parseRound } from '@/lib/api-football';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-// Map API-Football league IDs to our league codes (for compatibility)
+// Map API-Football league IDs to our league codes
 const LEAGUE_ID_TO_CODE: Record<number, string> = {
   39: 'PL',    // Premier League
   140: 'PD',   // La Liga
@@ -26,28 +26,33 @@ const LEAGUE_ID_TO_CODE: Record<number, string> = {
   81: 'DFB',   // DFB Pokal
 };
 
-// All leagues to sync
 const ALL_LEAGUE_IDS = Object.keys(LEAGUE_ID_TO_CODE).map(Number);
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  console.log('[Sync] Starting fixtures sync (API-Football)...');
+  const searchParams = request.nextUrl.searchParams;
+
+  // Allow custom start date, default to Aug 1, 2025 (start of European season)
+  const startDateParam = searchParams.get('start') || '2025-08-01';
+  const endDateParam = searchParams.get('end') || new Date().toISOString().split('T')[0];
+
+  console.log(`[Backfill] Starting historical sync from ${startDateParam} to ${endDateParam}`);
 
   try {
     const supabase = createServiceClient();
 
-    // Get date range: 7 days ago to 30 days ahead
-    // Historical data is populated via backfill, daily sync just keeps recent/upcoming fresh
-    const today = new Date();
+    // Generate date range
     const dates: string[] = [];
+    const startDate = new Date(startDateParam);
+    const endDate = new Date(endDateParam);
 
-    for (let i = -7; i <= 30; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      dates.push(d.toISOString().split('T')[0]);
+    const current = new Date(startDate);
+    while (current <= endDate) {
+      dates.push(current.toISOString().split('T')[0]);
+      current.setDate(current.getDate() + 1);
     }
 
-    console.log(`[Sync] Fetching fixtures for ${dates.length} days`);
+    console.log(`[Backfill] Will fetch ${dates.length} days of fixtures`);
 
     const allFixtures: Array<{
       api_id: number;
@@ -74,22 +79,19 @@ export async function GET(request: NextRequest) {
       away_score: number | null;
     }> = [];
 
-    // Fetch fixtures for each date (API-Football requires date-based queries)
-    // Process in batches to avoid rate limits
-    const batchSize = 5; // 5 dates at a time
+    // Process in batches of 5 dates at a time to avoid rate limits
+    const batchSize = 5;
+    let processedDates = 0;
 
     for (let i = 0; i < dates.length; i += batchSize) {
       const dateBatch = dates.slice(i, i + batchSize);
 
       const batchPromises = dateBatch.map(async (date) => {
         try {
-          // Fetch all leagues for this date in one call (no league filter)
           const fixtures = await getFixturesByDate(date);
-
-          // Filter to only our supported leagues
           return fixtures.filter(f => ALL_LEAGUE_IDS.includes(f.league.id));
         } catch (error) {
-          console.error(`[Sync] Error fetching ${date}:`, error);
+          console.error(`[Backfill] Error fetching ${date}:`, error);
           return [];
         }
       });
@@ -131,15 +133,16 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      console.log(`[Sync] Processed dates ${i + 1}-${Math.min(i + batchSize, dates.length)} of ${dates.length}, total fixtures: ${allFixtures.length}`);
+      processedDates += dateBatch.length;
+      console.log(`[Backfill] Processed ${processedDates}/${dates.length} days, ${allFixtures.length} fixtures so far`);
 
-      // Small delay between batches to avoid rate limits
+      // Rate limit delay between batches (300ms)
       if (i + batchSize < dates.length) {
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 300));
       }
     }
 
-    console.log(`[Sync] Total fixtures to upsert: ${allFixtures.length}`);
+    console.log(`[Backfill] Total fixtures to upsert: ${allFixtures.length}`);
 
     // Extract unique teams
     const teamsMap = new Map<number, {
@@ -175,7 +178,7 @@ export async function GET(request: NextRequest) {
     }
 
     const allTeams = Array.from(teamsMap.values());
-    console.log(`[Sync] Found ${allTeams.length} unique teams`);
+    console.log(`[Backfill] Found ${allTeams.length} unique teams`);
 
     // Upsert fixtures in batches
     const upsertBatchSize = 100;
@@ -192,7 +195,7 @@ export async function GET(request: NextRequest) {
         });
 
       if (error) {
-        console.error(`[Sync] Batch upsert error:`, error);
+        console.error(`[Backfill] Batch upsert error:`, error);
       } else {
         totalUpserted += batch.length;
       }
@@ -211,40 +214,40 @@ export async function GET(request: NextRequest) {
         });
 
       if (error) {
-        console.error(`[Sync] Teams upsert error:`, error);
+        console.error(`[Backfill] Teams upsert error:`, error);
       } else {
         teamsUpserted += batch.length;
       }
     }
 
-    console.log(`[Sync] Upserted ${teamsUpserted} teams`);
-
     // Log the sync
     const duration = Date.now() - startTime;
     await supabase.from('sync_log').insert({
-      sync_type: 'fixtures',
+      sync_type: 'backfill',
       sport_type: 'soccer',
       records_synced: totalUpserted,
       status: 'success',
       completed_at: new Date().toISOString(),
     });
 
-    console.log(`[Sync] Completed in ${duration}ms. Synced ${totalUpserted} fixtures.`);
+    console.log(`[Backfill] Completed in ${duration}ms. Synced ${totalUpserted} fixtures, ${teamsUpserted} teams.`);
 
     return NextResponse.json({
       success: true,
-      synced: totalUpserted,
-      teams: teamsUpserted,
-      duration: `${duration}ms`,
+      dateRange: { start: startDateParam, end: endDateParam },
+      daysProcessed: dates.length,
+      fixturesSynced: totalUpserted,
+      teamsSynced: teamsUpserted,
+      duration: `${Math.round(duration / 1000)}s`,
     });
 
   } catch (error) {
-    console.error('[Sync] Fatal error:', error);
+    console.error('[Backfill] Fatal error:', error);
 
     try {
       const supabase = createServiceClient();
       await supabase.from('sync_log').insert({
-        sync_type: 'fixtures',
+        sync_type: 'backfill',
         sport_type: 'soccer',
         status: 'error',
         error_message: error instanceof Error ? error.message : 'Unknown error',
@@ -253,7 +256,7 @@ export async function GET(request: NextRequest) {
     } catch {}
 
     return NextResponse.json(
-      { error: 'Sync failed', message: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Backfill failed', message: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
