@@ -184,20 +184,22 @@ export default function CalendarPage() {
   const isScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Generate all days for the year
-  const getAllDaysInYear = useCallback(() => {
+  // Generate all days across available years (for continuous scrolling)
+  const getAllDays = useCallback(() => {
     const days: Date[] = [];
-    const start = new Date(selectedYear, 0, 1);
-    const end = new Date(selectedYear, 11, 31);
+    const startYear = Math.min(...AVAILABLE_YEARS);
+    const endYear = Math.max(...AVAILABLE_YEARS);
+    const start = new Date(startYear, 0, 1);
+    const end = new Date(endYear, 11, 31);
     const current = new Date(start);
     while (current <= end) {
       days.push(new Date(current));
       current.setDate(current.getDate() + 1);
     }
     return days;
-  }, [selectedYear]);
+  }, []);
 
-  const allDays = getAllDaysInYear();
+  const allDays = getAllDays();
 
   const isSameDay = (date1: Date, date2: Date) => {
     return date1.toDateString() === date2.toDateString();
@@ -423,9 +425,9 @@ export default function CalendarPage() {
 
         {/* Scrollable Day Dial */}
         <div className="relative">
-          {/* Center indicator */}
+          {/* Center indicator - behind content */}
           <div
-            className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-14 rounded-lg pointer-events-none z-10"
+            className="absolute top-3 bottom-3 left-1/2 -translate-x-1/2 w-14 rounded-lg pointer-events-none"
             style={{ backgroundColor: theme.accent }}
           />
 
@@ -433,7 +435,7 @@ export default function CalendarPage() {
           <div
             ref={dialRef}
             onScroll={handleDialScroll}
-            className="flex overflow-x-auto py-3 px-4"
+            className="flex overflow-x-auto py-3 px-4 relative z-10"
             style={{
               scrollbarWidth: 'none',
               scrollSnapType: 'x mandatory',
@@ -450,6 +452,9 @@ export default function CalendarPage() {
                   key={index}
                   onClick={() => {
                     setSelectedDate(date);
+                    if (date.getFullYear() !== selectedYear) {
+                      setSelectedYear(date.getFullYear());
+                    }
                     scrollToDate(date, true);
                   }}
                   className="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 py-2"
