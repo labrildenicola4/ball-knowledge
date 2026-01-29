@@ -42,9 +42,9 @@ const nationFilters = [
   ...MAIN_NATIONS.map(n => ({ id: n.id, name: n.name, flag: n.flag }))
 ];
 
-// 2025-26 season dates (using local time constructor)
-const SEASON_START = new Date(2025, 7, 1);  // Aug 1, 2025
-const SEASON_END = new Date(2026, 4, 31);    // May 31, 2026
+// Calendar year bounds
+const YEAR_START = new Date(new Date().getFullYear(), 0, 1);  // Jan 1 of current year
+const YEAR_END = new Date(new Date().getFullYear(), 11, 31);   // Dec 31 of current year
 
 export default function CalendarPage() {
   const { theme } = useTheme();
@@ -80,7 +80,7 @@ export default function CalendarPage() {
     if (savedDate) {
       const parsed = new Date(savedDate);
       // Check if date is valid and within season bounds
-      if (!isNaN(parsed.getTime()) && parsed >= SEASON_START && parsed <= SEASON_END) {
+      if (!isNaN(parsed.getTime()) && parsed >= YEAR_START && parsed <= YEAR_END) {
         setSelectedDate(parsed);
       } else {
         setSelectedDate(new Date());
@@ -174,23 +174,26 @@ export default function CalendarPage() {
     const newDate = new Date(selectedDate);
     newDate.setDate(selectedDate.getDate() + (direction === 'next' ? 7 : -7));
     // Keep within season bounds
-    if (newDate >= SEASON_START && newDate <= SEASON_END) {
+    if (newDate >= YEAR_START && newDate <= YEAR_END) {
       setSelectedDate(newDate);
     }
   };
 
-  // Quick navigation months for 2025-26 season
-  const seasonMonths = [
-    { label: 'Aug', date: new Date(2025, 7, 15) },
-    { label: 'Sep', date: new Date(2025, 8, 15) },
-    { label: 'Oct', date: new Date(2025, 9, 15) },
-    { label: 'Nov', date: new Date(2025, 10, 15) },
-    { label: 'Dec', date: new Date(2025, 11, 15) },
-    { label: 'Jan', date: new Date(2026, 0, 15) },
-    { label: 'Feb', date: new Date(2026, 1, 15) },
-    { label: 'Mar', date: new Date(2026, 2, 15) },
-    { label: 'Apr', date: new Date(2026, 3, 15) },
-    { label: 'May', date: new Date(2026, 4, 15) },
+  // Quick navigation months for calendar year
+  const currentYear = new Date().getFullYear();
+  const calendarMonths = [
+    { label: 'Jan', date: new Date(currentYear, 0, 15) },
+    { label: 'Feb', date: new Date(currentYear, 1, 15) },
+    { label: 'Mar', date: new Date(currentYear, 2, 15) },
+    { label: 'Apr', date: new Date(currentYear, 3, 15) },
+    { label: 'May', date: new Date(currentYear, 4, 15) },
+    { label: 'Jun', date: new Date(currentYear, 5, 15) },
+    { label: 'Jul', date: new Date(currentYear, 6, 15) },
+    { label: 'Aug', date: new Date(currentYear, 7, 15) },
+    { label: 'Sep', date: new Date(currentYear, 8, 15) },
+    { label: 'Oct', date: new Date(currentYear, 9, 15) },
+    { label: 'Nov', date: new Date(currentYear, 10, 15) },
+    { label: 'Dec', date: new Date(currentYear, 11, 15) },
   ];
 
   const isCurrentMonth = (monthDate: Date) => {
@@ -251,13 +254,13 @@ export default function CalendarPage() {
         </div>
       )}
 
-      {/* Season Banner */}
+      {/* Year Banner */}
       <div
         className="px-4 py-2 text-center text-sm"
         style={{ backgroundColor: theme.bgSecondary, color: theme.textSecondary }}
       >
         <CalendarIcon size={14} className="inline mr-1" />
-        2025-26 Season
+        {new Date().getFullYear()}
       </div>
 
       {/* Month Quick Nav */}
@@ -265,7 +268,7 @@ export default function CalendarPage() {
         className="flex gap-1 overflow-x-auto px-4 py-3"
         style={{ scrollbarWidth: 'none', borderBottom: `1px solid ${theme.border}` }}
       >
-        {seasonMonths.map((month) => (
+        {calendarMonths.map((month) => (
           <button
             key={month.label}
             onClick={() => setSelectedDate(month.date)}
