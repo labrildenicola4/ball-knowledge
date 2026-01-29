@@ -457,6 +457,62 @@ export default function CalendarPage() {
         </div>
       )}
 
+      {/* CBB Conference Filter - Shows when CBB is selected */}
+      {selectedSport === 'cbb' && (
+        <div
+          className="flex gap-1 md:gap-2 overflow-x-auto px-2 md:px-4 pb-3 opacity-50"
+          style={{ scrollbarWidth: 'none', borderBottom: `1px solid ${theme.border}` }}
+        >
+          {[
+            { id: 'all', name: 'All', emoji: null },
+            { id: 'acc', name: 'ACC', emoji: '🔵' },
+            { id: 'big10', name: 'Big 10', emoji: '🔴' },
+            { id: 'big12', name: 'Big 12', emoji: '🟠' },
+            { id: 'sec', name: 'SEC', emoji: '🟡' },
+          ].map((conf) => (
+            <button
+              key={conf.id}
+              className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
+              style={{
+                backgroundColor: theme.bgSecondary,
+                color: theme.textSecondary,
+                border: `1px solid ${theme.border}`,
+              }}
+            >
+              {conf.emoji && <span>{conf.emoji}</span>}
+              <span>{conf.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* MLB League Filter - Shows when MLB is selected */}
+      {selectedSport === 'mlb' && (
+        <div
+          className="flex gap-1 md:gap-2 overflow-x-auto px-2 md:px-4 pb-3 opacity-50"
+          style={{ scrollbarWidth: 'none', borderBottom: `1px solid ${theme.border}` }}
+        >
+          {[
+            { id: 'all', name: 'All', emoji: null },
+            { id: 'al', name: 'American League', emoji: '🔵' },
+            { id: 'nl', name: 'National League', emoji: '🔴' },
+          ].map((league) => (
+            <button
+              key={league.id}
+              className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
+              style={{
+                backgroundColor: theme.bgSecondary,
+                color: theme.textSecondary,
+                border: `1px solid ${theme.border}`,
+              }}
+            >
+              {league.emoji && <span>{league.emoji}</span>}
+              <span>{league.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Fixtures */}
       <main className="flex-1 overflow-y-auto px-4 py-4">
         <div className="mb-3 flex items-center justify-between">
