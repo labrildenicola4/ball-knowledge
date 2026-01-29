@@ -391,22 +391,22 @@ export default function CalendarPage() {
 
       {/* Nation Filter */}
       <div
-        className="flex gap-2 overflow-x-auto px-4 py-3"
+        className="flex gap-1 md:gap-2 overflow-x-auto px-2 md:px-4 py-3"
         style={{ scrollbarWidth: 'none', borderBottom: `1px solid ${theme.border}` }}
       >
         {nationFilters.map((filter) => (
           <button
             key={filter.id}
             onClick={() => setSelectedNation(filter.id)}
-            className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2"
+            className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
             style={{
               backgroundColor: selectedNation === filter.id ? theme.accent : theme.bgSecondary,
               color: selectedNation === filter.id ? '#fff' : theme.textSecondary,
               border: `1px solid ${selectedNation === filter.id ? theme.accent : theme.border}`,
             }}
           >
-            {'flag' in filter && <span>{filter.flag}</span>}
-            {filter.name}
+            {'flag' in filter ? <span>{filter.flag}</span> : null}
+            <span className={filter.id === 'all' ? '' : 'hidden md:inline'}>{filter.id === 'all' ? 'All' : filter.name}</span>
           </button>
         ))}
       </div>
