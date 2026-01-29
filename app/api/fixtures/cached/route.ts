@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         homeLogo: f.home_team_logo,
         awayLogo: f.away_team_logo,
         status: f.status,
-        time: f.status === 'NS' ? displayTime : (f.minute ? `${f.minute}'` : ''),
+        time: f.status === 'NS' ? displayTime : f.status === 'FT' ? 'FT' : (f.minute ? `${f.minute}'` : f.status),
         venue: f.venue || 'TBD',
         date: `${monthNames[matchDate.getUTCMonth()]} ${matchDate.getUTCDate()}`,
         fullDate: f.match_date,
