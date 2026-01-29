@@ -315,14 +315,14 @@ export default function CalendarPage() {
 
       {/* Month Quick Nav */}
       <div
-        className="flex gap-1 px-2 py-3"
+        className="grid grid-cols-6 md:grid-cols-12 gap-1 px-2 py-3"
         style={{ borderBottom: `1px solid ${theme.border}` }}
       >
         {calendarMonths.map((month) => (
           <button
             key={month.label}
             onClick={() => setSelectedDate(month.date)}
-            className="flex-1 rounded-lg py-2 text-xs font-medium text-center"
+            className="rounded-lg py-2 text-xs font-medium text-center"
             style={{
               backgroundColor: isCurrentMonth(month.date) ? theme.accent : theme.bgTertiary,
               color: isCurrentMonth(month.date) ? '#fff' : theme.textSecondary,
