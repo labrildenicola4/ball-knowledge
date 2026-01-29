@@ -6,10 +6,12 @@ import {
   getTeamStatistics,
   getTeamLeagues,
   getTeamForm,
+  getTeamPlayers,
   mapStatus,
   parseRound,
   type Fixture,
   type SquadPlayer,
+  type PlayerWithStats,
 } from '@/lib/api-football';
 
 export const dynamic = 'force-dynamic';
@@ -45,15 +47,22 @@ export async function GET(
   }
 
   try {
-    // Fetch team info, squad, fixtures, and leagues in parallel
-    const [teamInfo, squad, pastFixtures, upcomingFixtures, teamLeagues, formArray] = await Promise.all([
+    // Fetch team info, squad, fixtures, leagues, and player stats in parallel
+    const [teamInfo, squad, pastFixtures, upcomingFixtures, teamLeagues, formArray, playerStats] = await Promise.all([
       getTeamInfo(teamId),
       getTeamSquad(teamId).catch(() => []),
       getTeamFixtures(teamId, undefined, 50).catch(() => []),
       getTeamFixtures(teamId, undefined, undefined, 30).catch(() => []),
       getTeamLeagues(teamId).catch(() => []),
       getTeamForm(teamId, 5).catch(() => []),
+      getTeamPlayers(teamId).catch(() => []),
     ]);
+
+    // Create a map of player stats by player ID for quick lookup
+    const playerStatsMap = new Map<number, PlayerWithStats>();
+    for (const ps of playerStats) {
+      playerStatsMap.set(ps.player.id, ps);
+    }
 
     if (!teamInfo) {
       return NextResponse.json({ error: 'Team not found' }, { status: 404 });
@@ -127,29 +136,68 @@ export async function GET(
       'Attacker': 'Offence',
     };
 
-    const transformPlayer = (player: SquadPlayer) => ({
-      id: player.id,
-      name: player.name,
-      position: positionMap[player.position] || player.position,
-      nationality: 'Unknown', // API-Football squad endpoint doesn't include nationality
-      shirtNumber: player.number,
-      age: player.age,
-      photo: player.photo,
-      stats: {
-        appearances: null,
-        substitutions: null,
-        goals: null,
-        assists: null,
-        shots: null,
-        shotsOnTarget: null,
-        foulsCommitted: null,
-        foulsSuffered: null,
-        yellowCards: null,
-        redCards: null,
-        saves: null,
-        goalsAgainst: null,
-      },
-    });
+    const transformPlayer = (player: SquadPlayer) => {
+      // Look up player stats from the map
+      const ps = playerStatsMap.get(player.id);
+
+      // Aggregate stats across all competitions for this player
+      let totalAppearances = 0;
+      let totalSubstitutions = 0;
+      let totalGoals = 0;
+      let totalAssists = 0;
+      let totalShots = 0;
+      let totalShotsOnTarget = 0;
+      let totalFoulsCommitted = 0;
+      let totalFoulsSuffered = 0;
+      let totalYellowCards = 0;
+      let totalRedCards = 0;
+      let totalSaves = 0;
+      let totalGoalsAgainst = 0;
+
+      if (ps?.statistics) {
+        for (const stat of ps.statistics) {
+          // Only count stats for the current team
+          if (stat.team.id === teamId) {
+            totalAppearances += stat.games.appearances || 0;
+            totalSubstitutions += stat.substitutes.in || 0;
+            totalGoals += stat.goals.total || 0;
+            totalAssists += stat.goals.assists || 0;
+            totalShots += stat.shots.total || 0;
+            totalShotsOnTarget += stat.shots.on || 0;
+            totalFoulsCommitted += stat.fouls.committed || 0;
+            totalFoulsSuffered += stat.fouls.drawn || 0;
+            totalYellowCards += stat.cards.yellow || 0;
+            totalRedCards += stat.cards.red || 0;
+            totalSaves += stat.goals.saves || 0;
+            totalGoalsAgainst += stat.goals.conceded || 0;
+          }
+        }
+      }
+
+      return {
+        id: player.id,
+        name: player.name,
+        position: positionMap[player.position] || player.position,
+        nationality: ps?.player.nationality || 'Unknown',
+        shirtNumber: player.number,
+        age: player.age,
+        photo: player.photo,
+        stats: {
+          appearances: ps ? totalAppearances : null,
+          substitutions: ps ? totalSubstitutions : null,
+          goals: ps ? totalGoals : null,
+          assists: ps ? totalAssists : null,
+          shots: ps ? totalShots : null,
+          shotsOnTarget: ps ? totalShotsOnTarget : null,
+          foulsCommitted: ps ? totalFoulsCommitted : null,
+          foulsSuffered: ps ? totalFoulsSuffered : null,
+          yellowCards: ps ? totalYellowCards : null,
+          redCards: ps ? totalRedCards : null,
+          saves: ps ? totalSaves : null,
+          goalsAgainst: ps ? totalGoalsAgainst : null,
+        },
+      };
+    };
 
     // Group squad by position
     const positions = ['Goalkeeper', 'Defence', 'Midfield', 'Offence'];

@@ -736,3 +736,49 @@ export interface TeamLeague {
 export async function getTeamLeagues(teamId: number): Promise<TeamLeague[]> {
   return fetchApi<TeamLeague>('/leagues', { team: teamId });
 }
+
+// Player statistics with season data
+export interface PlayerWithStats {
+  player: {
+    id: number;
+    name: string;
+    firstname: string;
+    lastname: string;
+    age: number;
+    nationality: string;
+    photo: string;
+  };
+  statistics: Array<{
+    team: { id: number; name: string; logo: string };
+    league: { id: number; name: string; country: string; logo: string; season: number };
+    games: {
+      appearances: number | null;
+      lineups: number | null;
+      minutes: number | null;
+      position: string | null;
+      number: number | null;
+    };
+    substitutes: { in: number | null; out: number | null; bench: number | null };
+    shots: { total: number | null; on: number | null };
+    goals: { total: number | null; conceded: number | null; assists: number | null; saves: number | null };
+    passes: { total: number | null; key: number | null; accuracy: number | null };
+    tackles: { total: number | null; blocks: number | null; interceptions: number | null };
+    duels: { total: number | null; won: number | null };
+    dribbles: { attempts: number | null; success: number | null; past: number | null };
+    fouls: { drawn: number | null; committed: number | null };
+    cards: { yellow: number | null; yellowred: number | null; red: number | null };
+    penalty: { won: number | null; committed: number | null; scored: number | null; missed: number | null; saved: number | null };
+  }>;
+}
+
+// Get all players with statistics for a team in a season
+export async function getTeamPlayers(
+  teamId: number,
+  season?: number
+): Promise<PlayerWithStats[]> {
+  const params: Record<string, string | number> = {
+    team: teamId,
+    season: season || getSeason(),
+  };
+  return fetchApi<PlayerWithStats>('/players', params);
+}
