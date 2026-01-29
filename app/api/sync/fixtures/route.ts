@@ -1,37 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
-import { getMatches, COMPETITION_CODES, type LeagueId } from '@/lib/football-data';
+import { getFixturesByDate, LEAGUE_IDS, mapStatus, parseRound, type Fixture } from '@/lib/api-football';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+// Map API-Football league IDs to our league codes (for compatibility)
+const LEAGUE_ID_TO_CODE: Record<number, string> = {
+  39: 'PL',    // Premier League
+  140: 'PD',   // La Liga
+  135: 'SA',   // Serie A
+  78: 'BL1',   // Bundesliga
+  61: 'FL1',   // Ligue 1
+  94: 'PPL',   // Primeira Liga
+  88: 'DED',   // Eredivisie
+  40: 'ELC',   // Championship
+  71: 'BSA',   // Brasileirao
+  2: 'CL',     // Champions League
+  3: 'EL',     // Europa League
+  13: 'CLI',   // Copa Libertadores
+  143: 'CDR',  // Copa del Rey
+  45: 'FAC',   // FA Cup
+  66: 'CDF',   // Coupe de France
+  137: 'CIT',  // Coppa Italia
+  81: 'DFB',   // DFB Pokal
+};
+
 // All leagues to sync
-const ALL_LEAGUES: LeagueId[] = [
-  'laliga', 'premier', 'seriea', 'bundesliga', 'ligue1',
-  'brasileirao', 'eredivisie', 'primeiraliga', 'championship',
-  'championsleague', 'copalibertadores'
-];
+const ALL_LEAGUE_IDS = Object.keys(LEAGUE_ID_TO_CODE).map(Number);
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  console.log('[Sync] Starting fixtures sync...');
+  console.log('[Sync] Starting fixtures sync (API-Football)...');
 
   try {
     const supabase = createServiceClient();
 
-    // Get date range: 60 days ago to 6 months ahead (covers most of season)
+    // Get date range: 30 days ago to 30 days ahead
     const today = new Date();
-    const pastDate = new Date(today);
-    pastDate.setDate(today.getDate() - 60); // 60 days of past results
-    const futureDate = new Date(today);
-    futureDate.setMonth(today.getMonth() + 6); // 6 months ahead
+    const dates: string[] = [];
 
-    const dateFrom = pastDate.toISOString().split('T')[0];
-    const dateTo = futureDate.toISOString().split('T')[0];
+    for (let i = -30; i <= 30; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
 
-    console.log(`[Sync] Fetching fixtures from ${dateFrom} to ${dateTo}`);
+    console.log(`[Sync] Fetching fixtures for ${dates.length} days`);
 
-    // Fetch from all leagues
     const allFixtures: Array<{
       api_id: number;
       sport_type: string;
@@ -57,64 +73,74 @@ export async function GET(request: NextRequest) {
       away_score: number | null;
     }> = [];
 
-    for (const league of ALL_LEAGUES) {
-      try {
-        const competitionCode = COMPETITION_CODES[league];
-        console.log(`[Sync] Fetching ${league} (${competitionCode})...`);
+    // Fetch fixtures for each date (API-Football requires date-based queries)
+    // Process in batches to avoid rate limits
+    const batchSize = 5; // 5 dates at a time
 
-        const matches = await getMatches(competitionCode, dateFrom, dateTo);
-        console.log(`[Sync] Found ${matches.length} matches for ${league}`);
+    for (let i = 0; i < dates.length; i += batchSize) {
+      const dateBatch = dates.slice(i, i + batchSize);
 
-        for (const match of matches) {
-          const matchDate = new Date(match.utcDate);
+      const batchPromises = dateBatch.map(async (date) => {
+        try {
+          // Fetch all leagues for this date in one call (no league filter)
+          const fixtures = await getFixturesByDate(date);
 
-          // Map status to our format
-          let status = 'NS';
-          switch (match.status) {
-            case 'FINISHED': status = 'FT'; break;
-            case 'IN_PLAY': status = match.minute && match.minute <= 45 ? '1H' : '2H'; break;
-            case 'PAUSED': status = 'HT'; break;
-            case 'SCHEDULED':
-            case 'TIMED': status = 'NS'; break;
-            case 'POSTPONED': status = 'PST'; break;
-            case 'CANCELLED': status = 'CAN'; break;
-            default: status = match.status;
-          }
+          // Filter to only our supported leagues
+          return fixtures.filter(f => ALL_LEAGUE_IDS.includes(f.league.id));
+        } catch (error) {
+          console.error(`[Sync] Error fetching ${date}:`, error);
+          return [];
+        }
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+
+      for (const fixtures of batchResults) {
+        for (const fixture of fixtures) {
+          const leagueCode = LEAGUE_ID_TO_CODE[fixture.league.id];
+          if (!leagueCode) continue;
+
+          const matchDate = new Date(fixture.fixture.date);
+          const { status } = mapStatus(fixture.fixture.status.short, fixture.fixture.status.elapsed);
 
           allFixtures.push({
-            api_id: match.id,
+            api_id: fixture.fixture.id,
             sport_type: 'soccer',
             match_date: matchDate.toISOString().split('T')[0],
-            kickoff: match.utcDate,
+            kickoff: fixture.fixture.date,
             status,
-            minute: match.minute,
-            venue: match.venue,
-            matchday: match.matchday,
-            stage: match.stage,
-            league_name: match.competition.name,
-            league_code: match.competition.code,
-            league_logo: match.competition.emblem,
-            home_team_id: match.homeTeam.id,
-            home_team_name: match.homeTeam.shortName || match.homeTeam.name,
-            home_team_short: match.homeTeam.tla,
-            home_team_logo: match.homeTeam.crest,
-            home_score: match.score.fullTime.home,
-            away_team_id: match.awayTeam.id,
-            away_team_name: match.awayTeam.shortName || match.awayTeam.name,
-            away_team_short: match.awayTeam.tla,
-            away_team_logo: match.awayTeam.crest,
-            away_score: match.score.fullTime.away,
+            minute: fixture.fixture.status.elapsed,
+            venue: fixture.fixture.venue?.name || null,
+            matchday: parseRound(fixture.league.round),
+            stage: fixture.league.round,
+            league_name: fixture.league.name,
+            league_code: leagueCode,
+            league_logo: fixture.league.logo,
+            home_team_id: fixture.teams.home.id,
+            home_team_name: fixture.teams.home.name,
+            home_team_short: fixture.teams.home.name.substring(0, 3).toUpperCase(),
+            home_team_logo: fixture.teams.home.logo,
+            home_score: fixture.goals.home,
+            away_team_id: fixture.teams.away.id,
+            away_team_name: fixture.teams.away.name,
+            away_team_short: fixture.teams.away.name.substring(0, 3).toUpperCase(),
+            away_team_logo: fixture.teams.away.logo,
+            away_score: fixture.goals.away,
           });
         }
-      } catch (error) {
-        console.error(`[Sync] Error fetching ${league}:`, error);
-        // Continue with other leagues
+      }
+
+      console.log(`[Sync] Processed dates ${i + 1}-${Math.min(i + batchSize, dates.length)} of ${dates.length}, total fixtures: ${allFixtures.length}`);
+
+      // Small delay between batches to avoid rate limits
+      if (i + batchSize < dates.length) {
+        await new Promise(r => setTimeout(r, 200));
       }
     }
 
     console.log(`[Sync] Total fixtures to upsert: ${allFixtures.length}`);
 
-    // Extract unique teams from fixtures
+    // Extract unique teams
     const teamsMap = new Map<number, {
       api_id: number;
       sport_type: string;
@@ -150,12 +176,12 @@ export async function GET(request: NextRequest) {
     const allTeams = Array.from(teamsMap.values());
     console.log(`[Sync] Found ${allTeams.length} unique teams`);
 
-    // Upsert fixtures in batches of 100
-    const batchSize = 100;
+    // Upsert fixtures in batches
+    const upsertBatchSize = 100;
     let totalUpserted = 0;
 
-    for (let i = 0; i < allFixtures.length; i += batchSize) {
-      const batch = allFixtures.slice(i, i + batchSize);
+    for (let i = 0; i < allFixtures.length; i += upsertBatchSize) {
+      const batch = allFixtures.slice(i, i + upsertBatchSize);
 
       const { error } = await supabase
         .from('fixtures_cache')
@@ -173,8 +199,8 @@ export async function GET(request: NextRequest) {
 
     // Upsert teams
     let teamsUpserted = 0;
-    for (let i = 0; i < allTeams.length; i += batchSize) {
-      const batch = allTeams.slice(i, i + batchSize);
+    for (let i = 0; i < allTeams.length; i += upsertBatchSize) {
+      const batch = allTeams.slice(i, i + upsertBatchSize);
 
       const { error } = await supabase
         .from('teams_cache')
@@ -207,13 +233,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       synced: totalUpserted,
+      teams: teamsUpserted,
       duration: `${duration}ms`,
     });
 
   } catch (error) {
     console.error('[Sync] Fatal error:', error);
 
-    // Try to log the error
     try {
       const supabase = createServiceClient();
       await supabase.from('sync_log').insert({
