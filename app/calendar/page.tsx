@@ -56,6 +56,7 @@ export default function CalendarPage() {
   const [initialized, setInitialized] = useState(false);
   const [lastViewedMatch, setLastViewedMatch] = useState<string | null>(null);
   const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
+  const [soccerExpanded, setSoccerExpanded] = useState(true);
 
   // Dynamic year bounds based on selected year
   const yearStart = new Date(selectedYear, 0, 1);
@@ -389,26 +390,47 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* Nation Filter */}
-      <div
-        className="flex gap-1 md:gap-2 overflow-x-auto px-2 md:px-4 py-3"
-        style={{ scrollbarWidth: 'none', borderBottom: `1px solid ${theme.border}` }}
-      >
-        {nationFilters.map((filter) => (
-          <button
-            key={filter.id}
-            onClick={() => setSelectedNation(filter.id)}
-            className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
-            style={{
-              backgroundColor: selectedNation === filter.id ? theme.accent : theme.bgSecondary,
-              color: selectedNation === filter.id ? '#fff' : theme.textSecondary,
-              border: `1px solid ${selectedNation === filter.id ? theme.accent : theme.border}`,
-            }}
+      {/* Sport Filter */}
+      <div style={{ borderBottom: `1px solid ${theme.border}` }}>
+        {/* Soccer Header */}
+        <button
+          onClick={() => setSoccerExpanded(!soccerExpanded)}
+          className="w-full flex items-center justify-between px-4 py-3"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-lg">⚽</span>
+            <span className="text-sm font-medium" style={{ color: theme.text }}>Soccer</span>
+          </div>
+          <ChevronDown
+            size={18}
+            style={{ color: theme.textSecondary }}
+            className={`transition-transform ${soccerExpanded ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        {/* Nation Filter - Collapsible */}
+        {soccerExpanded && (
+          <div
+            className="flex gap-1 md:gap-2 overflow-x-auto px-2 md:px-4 pb-3"
+            style={{ scrollbarWidth: 'none' }}
           >
-            {'flag' in filter ? <span>{filter.flag}</span> : null}
-            <span className={filter.id === 'all' ? '' : 'hidden md:inline'}>{filter.id === 'all' ? 'All' : filter.name}</span>
-          </button>
-        ))}
+            {nationFilters.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => setSelectedNation(filter.id)}
+                className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
+                style={{
+                  backgroundColor: selectedNation === filter.id ? theme.accent : theme.bgSecondary,
+                  color: selectedNation === filter.id ? '#fff' : theme.textSecondary,
+                  border: `1px solid ${selectedNation === filter.id ? theme.accent : theme.border}`,
+                }}
+              >
+                {'flag' in filter ? <span>{filter.flag}</span> : null}
+                <span className={filter.id === 'all' ? '' : 'hidden md:inline'}>{filter.id === 'all' ? 'All' : filter.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Fixtures */}
