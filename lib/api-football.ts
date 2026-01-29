@@ -839,3 +839,44 @@ export async function getTeamPlayers(
   console.log(`[API-Football] Total players fetched: ${allPlayers.length}`);
   return allPlayers;
 }
+
+// Coach types
+export interface Coach {
+  id: number;
+  name: string;
+  firstname: string;
+  lastname: string;
+  age: number;
+  nationality: string;
+  photo: string;
+  career: {
+    team: { id: number; name: string; logo: string };
+    start: string;
+    end: string | null;
+  }[];
+}
+
+// Get current coach for a team
+export async function getTeamCoach(teamId: number): Promise<Coach | null> {
+  const coaches = await fetchApi<Coach>('/coachs', { team: teamId });
+  // Return the coach with a current position (end is null)
+  const currentCoach = coaches.find(c => c.career.some(job => job.team.id === teamId && job.end === null));
+  return currentCoach || coaches[0] || null;
+}
+
+// Trophy types
+export interface Trophy {
+  league: string;
+  country: string;
+  season: string;
+  place: string;
+}
+
+// Get trophies for a team (via coach - API-Football doesn't have team trophies directly)
+// This returns trophies won by the team through its players/coaches
+export async function getTeamTrophies(teamId: number): Promise<{ name: string; count: number }[]> {
+  // API-Football doesn't have a direct team trophies endpoint
+  // We'll need to aggregate from available data or use a static mapping
+  // For now, return empty - this would need a different data source
+  return [];
+}

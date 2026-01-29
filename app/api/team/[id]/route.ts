@@ -7,6 +7,7 @@ import {
   getTeamLeagues,
   getTeamForm,
   getTeamPlayers,
+  getTeamCoach,
   mapStatus,
   parseRound,
   type Fixture,
@@ -47,8 +48,8 @@ export async function GET(
   }
 
   try {
-    // Fetch team info, squad, fixtures, leagues, and player stats in parallel
-    const [teamInfo, squad, pastFixtures, upcomingFixtures, teamLeagues, formArray, playerStats] = await Promise.all([
+    // Fetch team info, squad, fixtures, leagues, player stats, and coach in parallel
+    const [teamInfo, squad, pastFixtures, upcomingFixtures, teamLeagues, formArray, playerStats, coach] = await Promise.all([
       getTeamInfo(teamId),
       getTeamSquad(teamId).catch((e) => { console.error(`[Team API] Squad fetch failed for ${teamId}:`, e.message); return []; }),
       getTeamFixtures(teamId, undefined, 50).catch((e) => { console.error(`[Team API] Past fixtures fetch failed for ${teamId}:`, e.message); return []; }),
@@ -56,6 +57,7 @@ export async function GET(
       getTeamLeagues(teamId).catch((e) => { console.error(`[Team API] Leagues fetch failed for ${teamId}:`, e.message); return []; }),
       getTeamForm(teamId, 5).catch((e) => { console.error(`[Team API] Form fetch failed for ${teamId}:`, e.message); return []; }),
       getTeamPlayers(teamId).catch((e) => { console.error(`[Team API] Players fetch failed for ${teamId}:`, e.message); return []; }),
+      getTeamCoach(teamId).catch((e) => { console.error(`[Team API] Coach fetch failed for ${teamId}:`, e.message); return null; }),
     ]);
 
     // Create a map of player stats by player ID for quick lookup
@@ -310,8 +312,8 @@ export async function GET(
       venue: teamInfo.venue.name || 'Unknown',
       clubColors: '',
       website: '',
-      coach: null, // API-Football doesn't include coach in team info
-      coachNationality: null,
+      coach: coach?.name || null,
+      coachNationality: coach?.nationality || null,
       competitions,
       form: formArray,
       finishedMatches,

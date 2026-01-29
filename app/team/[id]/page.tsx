@@ -518,7 +518,51 @@ export default function TeamPage() {
             )}
           </div>
 
-          {/* Quick Stats */}
+          {/* Coach */}
+          {team.coach && (
+            <div className="mt-6 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 text-center" style={{ color: theme.textSecondary }}>
+                Manager
+              </h3>
+              <div
+                className="rounded-lg p-3 text-center"
+                style={{ backgroundColor: theme.bgTertiary }}
+              >
+                <p className="text-sm font-medium" style={{ color: theme.text }}>{team.coach}</p>
+                {team.coachNationality && (
+                  <p className="text-[10px] mt-0.5" style={{ color: theme.textSecondary }}>{team.coachNationality}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Competitions */}
+          {team.competitions.length > 0 && (
+            <div className="mt-6 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 text-center" style={{ color: theme.textSecondary }}>
+                Competitions
+              </h3>
+              <div className="space-y-2">
+                {team.competitions.map((comp) => (
+                  <div
+                    key={comp.id}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2"
+                    style={{ backgroundColor: theme.bgTertiary }}
+                  >
+                    <img
+                      src={comp.logo}
+                      alt={comp.name}
+                      className="h-5 w-5 object-contain"
+                      style={{ filter: darkMode && !COLORED_LOGO_LEAGUES.includes(comp.code) ? 'brightness(0) invert(1)' : 'none' }}
+                    />
+                    <span className="text-xs font-medium truncate" style={{ color: theme.text }}>{comp.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Season Stats */}
           <div className="mt-6 pt-4" style={{ borderTop: `1px solid ${theme.border}` }}>
             <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 text-center" style={{ color: theme.textSecondary }}>
               Season Stats
@@ -528,15 +572,15 @@ export default function TeamPage() {
                 className="rounded-lg p-3 text-center"
                 style={{ backgroundColor: theme.bgTertiary }}
               >
-                <p className="text-lg font-semibold" style={{ color: theme.text }}>{team.statistics.points}</p>
-                <p className="text-[10px]" style={{ color: theme.textSecondary }}>Points</p>
+                <p className="text-lg font-semibold" style={{ color: theme.text }}>{team.statistics.winRate}%</p>
+                <p className="text-[10px]" style={{ color: theme.textSecondary }}>Win Rate</p>
               </div>
               <div
                 className="rounded-lg p-3 text-center"
                 style={{ backgroundColor: theme.bgTertiary }}
               >
-                <p className="text-lg font-semibold" style={{ color: theme.text }}>{team.statistics.winRate}%</p>
-                <p className="text-[10px]" style={{ color: theme.textSecondary }}>Win Rate</p>
+                <p className="text-lg font-semibold" style={{ color: theme.text }}>{team.statistics.cleanSheets}</p>
+                <p className="text-[10px]" style={{ color: theme.textSecondary }}>Clean Sheets</p>
               </div>
               <div
                 className="rounded-lg p-3 text-center"
