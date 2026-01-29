@@ -598,3 +598,141 @@ export function parseRound(round: string): number {
   const match = round.match(/\d+/);
   return match ? parseInt(match[0]) : 1;
 }
+
+// Team-related types
+export interface TeamInfo {
+  team: {
+    id: number;
+    name: string;
+    code: string | null;
+    country: string;
+    founded: number | null;
+    national: boolean;
+    logo: string;
+  };
+  venue: {
+    id: number | null;
+    name: string | null;
+    address: string | null;
+    city: string | null;
+    capacity: number | null;
+    surface: string | null;
+    image: string | null;
+  };
+}
+
+export interface SquadPlayer {
+  id: number;
+  name: string;
+  age: number | null;
+  number: number | null;
+  position: string;
+  photo: string;
+}
+
+export interface TeamSquad {
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+  };
+  players: SquadPlayer[];
+}
+
+// Get team info
+export async function getTeamInfo(teamId: number): Promise<TeamInfo | null> {
+  const teams = await fetchApi<TeamInfo>('/teams', { id: teamId });
+  return teams[0] || null;
+}
+
+// Get team squad
+export async function getTeamSquad(teamId: number): Promise<SquadPlayer[]> {
+  const squads = await fetchApi<TeamSquad>('/players/squads', { team: teamId });
+  return squads[0]?.players || [];
+}
+
+// Get team fixtures (past and upcoming)
+export async function getTeamFixtures(
+  teamId: number,
+  season?: number,
+  last?: number,
+  next?: number
+): Promise<Fixture[]> {
+  const params: Record<string, string | number> = { team: teamId };
+  if (season) params.season = season;
+  if (last) params.last = last;
+  if (next) params.next = next;
+  return fetchApi<Fixture>('/fixtures', params);
+}
+
+// Get team statistics for a league/season
+export interface TeamStatistics {
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+  };
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+  };
+  form: string;
+  fixtures: {
+    played: { home: number; away: number; total: number };
+    wins: { home: number; away: number; total: number };
+    draws: { home: number; away: number; total: number };
+    loses: { home: number; away: number; total: number };
+  };
+  goals: {
+    for: { total: { home: number; away: number; total: number } };
+    against: { total: { home: number; away: number; total: number } };
+  };
+  clean_sheet: { home: number; away: number; total: number };
+  biggest: {
+    wins: { home: string | null; away: string | null };
+    loses: { home: string | null; away: string | null };
+  };
+}
+
+export async function getTeamStatistics(
+  teamId: number,
+  leagueId: number,
+  season?: number
+): Promise<TeamStatistics | null> {
+  const params: Record<string, string | number> = {
+    team: teamId,
+    league: leagueId,
+    season: season || getSeason(),
+  };
+  const stats = await fetchApi<TeamStatistics>('/teams/statistics', params);
+  return stats[0] || null;
+}
+
+// Get all leagues a team participates in
+export interface TeamLeague {
+  league: {
+    id: number;
+    name: string;
+    type: string;
+    logo: string;
+  };
+  country: {
+    name: string;
+    code: string;
+    flag: string;
+  };
+  seasons: Array<{
+    year: number;
+    start: string;
+    end: string;
+    current: boolean;
+  }>;
+}
+
+export async function getTeamLeagues(teamId: number): Promise<TeamLeague[]> {
+  return fetchApi<TeamLeague>('/leagues', { team: teamId });
+}

@@ -1,19 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
-import { getStandings, COMPETITION_CODES, type LeagueId } from '@/lib/football-data';
+import { getStandings } from '@/lib/api-football';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-// All domestic leagues to sync standings for
-const STANDINGS_LEAGUES: LeagueId[] = [
-  'laliga', 'premier', 'seriea', 'bundesliga', 'ligue1',
-  'brasileirao', 'eredivisie', 'primeiraliga', 'championship'
+// All domestic leagues to sync standings for (API-Football league IDs)
+const STANDINGS_LEAGUES: Array<{ id: number; code: string; name: string }> = [
+  { id: 140, code: 'PD', name: 'La Liga' },
+  { id: 39, code: 'PL', name: 'Premier League' },
+  { id: 135, code: 'SA', name: 'Serie A' },
+  { id: 78, code: 'BL1', name: 'Bundesliga' },
+  { id: 61, code: 'FL1', name: 'Ligue 1' },
+  { id: 71, code: 'BSA', name: 'Brasileirao' },
+  { id: 88, code: 'DED', name: 'Eredivisie' },
+  { id: 94, code: 'PPL', name: 'Primeira Liga' },
+  { id: 40, code: 'ELC', name: 'Championship' },
 ];
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  console.log('[Sync] Starting standings sync...');
+  console.log('[Sync] Starting standings sync (API-Football)...');
 
   try {
     const supabase = createServiceClient();
@@ -25,30 +32,26 @@ export async function GET(request: NextRequest) {
 
     for (const league of STANDINGS_LEAGUES) {
       try {
-        const competitionCode = COMPETITION_CODES[league];
-        console.log(`[Sync] Fetching standings for ${league} (${competitionCode})...`);
+        console.log(`[Sync] Fetching standings for ${league.name} (${league.code})...`);
 
-        const standings = await getStandings(competitionCode);
+        const standings = await getStandings(league.id);
 
         if (standings.length > 0) {
-          // Get league name from first team's competition
-          const leagueName = league.charAt(0).toUpperCase() + league.slice(1);
-
           // Transform standings to our format
           const transformedStandings = standings.map((team) => ({
-            position: team.position,
+            position: team.rank,
             teamId: team.team.id,
-            team: team.team.shortName || team.team.name,
-            logo: team.team.crest,
-            played: team.playedGames,
-            won: team.won,
-            drawn: team.draw,
-            lost: team.lost,
-            goalsFor: team.goalsFor,
-            goalsAgainst: team.goalsAgainst,
-            gd: team.goalDifference > 0 ? `+${team.goalDifference}` : `${team.goalDifference}`,
+            team: team.team.name,
+            logo: team.team.logo,
+            played: team.all.played,
+            won: team.all.win,
+            drawn: team.all.draw,
+            lost: team.all.lose,
+            goalsFor: team.all.goals.for,
+            goalsAgainst: team.all.goals.against,
+            gd: team.goalsDiff > 0 ? `+${team.goalsDiff}` : `${team.goalsDiff}`,
             points: team.points,
-            form: team.form ? team.form.split(',').map(r => r.trim()).filter(r => r) : [],
+            form: team.form ? team.form.split('').filter(r => r) : [],
           }));
 
           // Upsert to standings_cache
@@ -56,8 +59,8 @@ export async function GET(request: NextRequest) {
             .from('standings_cache')
             .upsert({
               sport_type: 'soccer',
-              league_code: competitionCode,
-              league_name: leagueName,
+              league_code: league.code,
+              league_name: league.name,
               season,
               standings: transformedStandings,
             }, {
@@ -66,14 +69,17 @@ export async function GET(request: NextRequest) {
             });
 
           if (error) {
-            console.error(`[Sync] Error upserting standings for ${league}:`, error);
+            console.error(`[Sync] Error upserting standings for ${league.name}:`, error);
           } else {
             totalSynced++;
-            console.log(`[Sync] Synced standings for ${league} (${standings.length} teams)`);
+            console.log(`[Sync] Synced standings for ${league.name} (${standings.length} teams)`);
           }
         }
+
+        // Small delay between requests to avoid rate limiting
+        await new Promise(r => setTimeout(r, 100));
       } catch (error) {
-        console.error(`[Sync] Error fetching standings for ${league}:`, error);
+        console.error(`[Sync] Error fetching standings for ${league.name}:`, error);
         // Continue with other leagues
       }
     }

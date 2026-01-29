@@ -1,5 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTeamDetails, getTeamMatches, mapStatus } from '@/lib/football-data';
+import {
+  getTeamInfo,
+  getTeamSquad,
+  getTeamFixtures,
+  getTeamStatistics,
+  getTeamLeagues,
+  getTeamForm,
+  mapStatus,
+  parseRound,
+  type Fixture,
+  type SquadPlayer,
+} from '@/lib/api-football';
+
+export const dynamic = 'force-dynamic';
+
+// Map league IDs to codes
+const LEAGUE_ID_TO_CODE: Record<number, string> = {
+  39: 'PL', 140: 'PD', 135: 'SA', 78: 'BL1', 61: 'FL1',
+  94: 'PPL', 88: 'DED', 40: 'ELC', 71: 'BSA',
+  2: 'CL', 3: 'EL', 13: 'CLI',
+  143: 'CDR', 45: 'FAC', 66: 'CDF', 137: 'CIT', 81: 'DFB',
+};
+
+// Primary domestic leagues for team statistics
+const PRIMARY_LEAGUES: Record<string, number> = {
+  'spain': 140,      // La Liga
+  'england': 39,     // Premier League
+  'italy': 135,      // Serie A
+  'germany': 78,     // Bundesliga
+  'france': 61,      // Ligue 1
+  'portugal': 94,    // Primeira Liga
+  'netherlands': 88, // Eredivisie
+  'brazil': 71,      // Brasileirao
+};
 
 export async function GET(
   request: NextRequest,
@@ -12,203 +45,194 @@ export async function GET(
   }
 
   try {
-    // Fetch team details and matches in parallel
-    // Get more matches to show full season
-    const [teamDetails, finishedMatches, scheduledMatches] = await Promise.all([
-      getTeamDetails(teamId),
-      getTeamMatches(teamId, 'FINISHED', 50),
-      getTeamMatches(teamId, 'SCHEDULED', 50),
+    // Fetch team info, squad, fixtures, and leagues in parallel
+    const [teamInfo, squad, pastFixtures, upcomingFixtures, teamLeagues, formArray] = await Promise.all([
+      getTeamInfo(teamId),
+      getTeamSquad(teamId).catch(() => []),
+      getTeamFixtures(teamId, undefined, 50).catch(() => []),
+      getTeamFixtures(teamId, undefined, undefined, 30).catch(() => []),
+      getTeamLeagues(teamId).catch(() => []),
+      getTeamForm(teamId, 5).catch(() => []),
     ]);
 
-    // Transform matches to our format
-    const transformMatch = (match: typeof finishedMatches[0]) => {
-      const matchDate = new Date(match.utcDate);
-      const { status: displayStatus } = mapStatus(match.status, match.minute);
+    if (!teamInfo) {
+      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+    }
 
-      // Format date
+    // Find primary league for this team to get statistics
+    const primaryLeague = teamLeagues.find(l =>
+      Object.values(PRIMARY_LEAGUES).includes(l.league.id) &&
+      l.seasons.some(s => s.current)
+    );
+
+    // Get team statistics from primary league
+    let teamStats = null;
+    if (primaryLeague) {
+      teamStats = await getTeamStatistics(teamId, primaryLeague.league.id).catch(() => null);
+    }
+
+    // Transform fixtures
+    const transformFixture = (fixture: Fixture) => {
+      const matchDate = new Date(fixture.fixture.date);
+      const { status } = mapStatus(fixture.fixture.status.short, fixture.fixture.status.elapsed);
+
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const displayDate = `${monthNames[matchDate.getMonth()]} ${matchDate.getDate()}`;
-
-      // Format time
+      const displayDate = `${monthNames[matchDate.getUTCMonth()]} ${matchDate.getUTCDate()}`;
       const hours = matchDate.getUTCHours();
       const minutes = matchDate.getUTCMinutes();
       const displayTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 
       return {
-        id: match.id,
-        competition: match.competition.name,
-        competitionCode: match.competition.code,
-        competitionLogo: match.competition.emblem || `https://crests.football-data.org/${match.competition.code}.png`,
+        id: fixture.fixture.id,
+        competition: fixture.league.name,
+        competitionCode: LEAGUE_ID_TO_CODE[fixture.league.id] || fixture.league.name,
+        competitionLogo: fixture.league.logo,
         date: displayDate,
-        fullDate: matchDate.toISOString(),
+        fullDate: fixture.fixture.date,
         time: displayTime,
-        status: displayStatus,
-        matchday: match.matchday,
+        status,
+        matchday: parseRound(fixture.league.round),
         home: {
-          id: match.homeTeam.id,
-          name: match.homeTeam.shortName || match.homeTeam.name,
-          logo: match.homeTeam.crest,
-          score: match.score.fullTime.home,
+          id: fixture.teams.home.id,
+          name: fixture.teams.home.name,
+          logo: fixture.teams.home.logo,
+          score: fixture.goals.home,
         },
         away: {
-          id: match.awayTeam.id,
-          name: match.awayTeam.shortName || match.awayTeam.name,
-          logo: match.awayTeam.crest,
-          score: match.score.fullTime.away,
+          id: fixture.teams.away.id,
+          name: fixture.teams.away.name,
+          logo: fixture.teams.away.logo,
+          score: fixture.goals.away,
         },
-        isHome: match.homeTeam.id === teamId,
+        isHome: fixture.teams.home.id === teamId,
       };
     };
 
-    // Transform all matches
-    const allFinished = finishedMatches.map(transformMatch);
-    const allScheduled = scheduledMatches.map(transformMatch);
+    // Filter only finished matches from pastFixtures
+    const finishedMatches = pastFixtures
+      .filter(f => f.fixture.status.short === 'FT' || f.fixture.status.short === 'AET' || f.fixture.status.short === 'PEN')
+      .map(transformFixture)
+      .reverse(); // Most recent first
 
-    // Compute form from last 5 finished matches
-    const form: string[] = [];
-    const recentFinished = finishedMatches.slice(-5).reverse();
-    for (const match of recentFinished) {
-      const isHome = match.homeTeam.id === teamId;
-      const teamScore = isHome ? match.score.fullTime.home : match.score.fullTime.away;
-      const opponentScore = isHome ? match.score.fullTime.away : match.score.fullTime.home;
+    // Filter only scheduled matches from upcomingFixtures
+    const scheduledMatches = upcomingFixtures
+      .filter(f => f.fixture.status.short === 'NS' || f.fixture.status.short === 'TBD')
+      .map(transformFixture);
 
-      if (teamScore === null || opponentScore === null) continue;
+    // Transform squad
+    const positionMap: Record<string, string> = {
+      'Goalkeeper': 'Goalkeeper',
+      'Defender': 'Defence',
+      'Midfielder': 'Midfield',
+      'Attacker': 'Offence',
+    };
 
-      if (teamScore > opponentScore) {
-        form.push('W');
-      } else if (teamScore < opponentScore) {
-        form.push('L');
-      } else {
-        form.push('D');
-      }
-    }
-
-    // Compute statistics from finished matches
-    let wins = 0, draws = 0, losses = 0;
-    let goalsFor = 0, goalsAgainst = 0;
-    let homeWins = 0, homeDraws = 0, homeLosses = 0;
-    let awayWins = 0, awayDraws = 0, awayLosses = 0;
-    let cleanSheets = 0;
-    let biggestWin = { margin: 0, match: '' };
-    let biggestLoss = { margin: 0, match: '' };
-
-    for (const match of finishedMatches) {
-      const isHome = match.homeTeam.id === teamId;
-      const teamScore = isHome ? match.score.fullTime.home : match.score.fullTime.away;
-      const opponentScore = isHome ? match.score.fullTime.away : match.score.fullTime.home;
-      const opponent = isHome ? match.awayTeam.shortName : match.homeTeam.shortName;
-
-      if (teamScore === null || opponentScore === null) continue;
-
-      goalsFor += teamScore;
-      goalsAgainst += opponentScore;
-
-      if (opponentScore === 0) cleanSheets++;
-
-      const margin = teamScore - opponentScore;
-      if (margin > biggestWin.margin) {
-        biggestWin = { margin, match: `${teamScore}-${opponentScore} vs ${opponent}` };
-      }
-      if (margin < -biggestLoss.margin) {
-        biggestLoss = { margin: -margin, match: `${teamScore}-${opponentScore} vs ${opponent}` };
-      }
-
-      if (teamScore > opponentScore) {
-        wins++;
-        if (isHome) homeWins++;
-        else awayWins++;
-      } else if (teamScore < opponentScore) {
-        losses++;
-        if (isHome) homeLosses++;
-        else awayLosses++;
-      } else {
-        draws++;
-        if (isHome) homeDraws++;
-        else awayDraws++;
-      }
-    }
-
-    const played = wins + draws + losses;
-    const points = wins * 3 + draws;
-    const ppg = played > 0 ? (points / played).toFixed(2) : '0.00';
-
-    // Transform squad data
-    const squad = (teamDetails.squad || []).map(player => {
-      // Calculate age from dateOfBirth
-      let age: number | null = null;
-      if (player.dateOfBirth) {
-        const birthDate = new Date(player.dateOfBirth);
-        const today = new Date();
-        age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-          age--;
-        }
-      }
-
-      return {
-        id: player.id,
-        name: player.name,
-        position: player.position || 'Unknown',
-        nationality: player.nationality || 'Unknown',
-        shirtNumber: player.shirtNumber || null,
-        age,
-        // Placeholder stats - Football-Data.org free tier doesn't provide these
-        stats: {
-          appearances: null,
-          substitutions: null,
-          goals: null,
-          assists: null,
-          shots: null,
-          shotsOnTarget: null,
-          foulsCommitted: null,
-          foulsSuffered: null,
-          yellowCards: null,
-          redCards: null,
-          saves: null, // For goalkeepers
-          goalsAgainst: null, // For goalkeepers
-        },
-      };
+    const transformPlayer = (player: SquadPlayer) => ({
+      id: player.id,
+      name: player.name,
+      position: positionMap[player.position] || player.position,
+      nationality: 'Unknown', // API-Football squad endpoint doesn't include nationality
+      shirtNumber: player.number,
+      age: player.age,
+      photo: player.photo,
+      stats: {
+        appearances: null,
+        substitutions: null,
+        goals: null,
+        assists: null,
+        shots: null,
+        shotsOnTarget: null,
+        foulsCommitted: null,
+        foulsSuffered: null,
+        yellowCards: null,
+        redCards: null,
+        saves: null,
+        goalsAgainst: null,
+      },
     });
 
     // Group squad by position
     const positions = ['Goalkeeper', 'Defence', 'Midfield', 'Offence'];
     const squadByPosition = positions.map(pos => ({
       position: pos,
-      players: squad.filter(p => p.position === pos ||
-        (pos === 'Defence' && p.position?.includes('Back')) ||
-        (pos === 'Midfield' && p.position?.includes('Midfield')) ||
-        (pos === 'Offence' && (p.position?.includes('Forward') || p.position?.includes('Winger')))
-      ),
+      players: squad
+        .filter(p => positionMap[p.position] === pos)
+        .map(transformPlayer),
     })).filter(g => g.players.length > 0);
 
-    return NextResponse.json({
-      id: teamDetails.id,
-      name: teamDetails.name,
-      shortName: teamDetails.shortName,
-      tla: teamDetails.tla,
-      crest: teamDetails.crest,
-      founded: teamDetails.founded,
-      venue: teamDetails.venue,
-      clubColors: teamDetails.clubColors,
-      website: teamDetails.website,
-      coach: teamDetails.coach?.name || null,
-      coachNationality: teamDetails.coach?.nationality || null,
-      competitions: teamDetails.runningCompetitions.map(c => ({
-        id: c.id,
-        name: c.name,
-        code: c.code,
-        // Use emblem from API, fallback to constructed URL
-        logo: c.emblem || `https://crests.football-data.org/${c.code}.png`,
-      })),
-      form: form.slice(0, 5),
-      // Full season matches
-      finishedMatches: allFinished.reverse(), // Most recent first
-      scheduledMatches: allScheduled, // Chronological order
-      // Squad
-      squad: squadByPosition,
-      // Statistics
-      statistics: {
+    // Build competitions list from leagues
+    const competitions = teamLeagues
+      .filter(l => l.seasons.some(s => s.current))
+      .map(l => ({
+        id: l.league.id,
+        name: l.league.name,
+        code: LEAGUE_ID_TO_CODE[l.league.id] || l.league.name,
+        logo: l.league.logo,
+      }));
+
+    // Calculate statistics from team stats API or from fixtures
+    let statistics;
+    if (teamStats) {
+      const { fixtures, goals, clean_sheet, biggest } = teamStats;
+      const played = fixtures.played.total;
+      const wins = fixtures.wins.total;
+      const draws = fixtures.draws.total;
+      const losses = fixtures.loses.total;
+      const points = wins * 3 + draws;
+
+      statistics = {
+        played,
+        wins,
+        draws,
+        losses,
+        goalsFor: goals.for.total.total,
+        goalsAgainst: goals.against.total.total,
+        goalDifference: goals.for.total.total - goals.against.total.total,
+        points,
+        ppg: played > 0 ? (points / played).toFixed(2) : '0.00',
+        cleanSheets: clean_sheet.total,
+        homeRecord: {
+          wins: fixtures.wins.home,
+          draws: fixtures.draws.home,
+          losses: fixtures.loses.home,
+        },
+        awayRecord: {
+          wins: fixtures.wins.away,
+          draws: fixtures.draws.away,
+          losses: fixtures.loses.away,
+        },
+        biggestWin: biggest.wins.home || biggest.wins.away || 'N/A',
+        biggestLoss: biggest.loses.home || biggest.loses.away || 'N/A',
+        winRate: played > 0 ? Math.round((wins / played) * 100) : 0,
+      };
+    } else {
+      // Fallback: calculate from fixtures
+      let wins = 0, draws = 0, losses = 0;
+      let goalsFor = 0, goalsAgainst = 0;
+      let cleanSheets = 0;
+
+      for (const fixture of pastFixtures) {
+        if (fixture.fixture.status.short !== 'FT') continue;
+
+        const isHome = fixture.teams.home.id === teamId;
+        const teamScore = isHome ? fixture.goals.home : fixture.goals.away;
+        const oppScore = isHome ? fixture.goals.away : fixture.goals.home;
+
+        if (teamScore === null || oppScore === null) continue;
+
+        goalsFor += teamScore;
+        goalsAgainst += oppScore;
+        if (oppScore === 0) cleanSheets++;
+
+        if (teamScore > oppScore) wins++;
+        else if (teamScore < oppScore) losses++;
+        else draws++;
+      }
+
+      const played = wins + draws + losses;
+      const points = wins * 3 + draws;
+
+      statistics = {
         played,
         wins,
         draws,
@@ -217,17 +241,37 @@ export async function GET(
         goalsAgainst,
         goalDifference: goalsFor - goalsAgainst,
         points,
-        ppg,
+        ppg: played > 0 ? (points / played).toFixed(2) : '0.00',
         cleanSheets,
-        homeRecord: { wins: homeWins, draws: homeDraws, losses: homeLosses },
-        awayRecord: { wins: awayWins, draws: awayDraws, losses: awayLosses },
-        biggestWin: biggestWin.match || 'N/A',
-        biggestLoss: biggestLoss.match || 'N/A',
+        homeRecord: { wins: 0, draws: 0, losses: 0 },
+        awayRecord: { wins: 0, draws: 0, losses: 0 },
+        biggestWin: 'N/A',
+        biggestLoss: 'N/A',
         winRate: played > 0 ? Math.round((wins / played) * 100) : 0,
-      },
+      };
+    }
+
+    return NextResponse.json({
+      id: teamInfo.team.id,
+      name: teamInfo.team.name,
+      shortName: teamInfo.team.code || teamInfo.team.name.substring(0, 3).toUpperCase(),
+      tla: teamInfo.team.code || teamInfo.team.name.substring(0, 3).toUpperCase(),
+      crest: teamInfo.team.logo,
+      founded: teamInfo.team.founded || 0,
+      venue: teamInfo.venue.name || 'Unknown',
+      clubColors: '',
+      website: '',
+      coach: null, // API-Football doesn't include coach in team info
+      coachNationality: null,
+      competitions,
+      form: formArray,
+      finishedMatches,
+      scheduledMatches,
+      squad: squadByPosition,
+      statistics,
     });
   } catch (error) {
-    console.error('Error fetching team:', error);
+    console.error('[Team API] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
     if (errorMessage.includes('429')) {
