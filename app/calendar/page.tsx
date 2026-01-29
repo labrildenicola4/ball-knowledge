@@ -468,6 +468,30 @@ export default function CalendarPage() {
           className="flex gap-1 md:gap-2 overflow-x-auto px-2 md:px-4 pb-3"
           style={{ scrollbarWidth: 'none', borderBottom: `1px solid ${theme.border}` }}
         >
+          {/* Dynamic tournament pills FIRST - only show if matches exist today */}
+          {activeTournaments.map(({ code, logo }) => {
+            const tournament = INTERNATIONAL_TOURNAMENTS[code];
+            return (
+              <button
+                key={code}
+                onClick={() => {
+                  setSelectedTournament(selectedTournament === code ? null : code);
+                  if (selectedTournament !== code) setSelectedNation('all');
+                }}
+                className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1.5 md:gap-2"
+                style={{
+                  backgroundColor: selectedTournament === code ? theme.accent : theme.bgSecondary,
+                  color: selectedTournament === code ? '#fff' : theme.textSecondary,
+                  border: `1px solid ${selectedTournament === code ? theme.accent : theme.border}`,
+                }}
+              >
+                {logo && <img src={logo} alt={tournament.name} className="w-5 h-5 object-contain" />}
+                <span className="hidden md:inline">{tournament.name}</span>
+                <span className="md:hidden">{tournament.shortName}</span>
+              </button>
+            );
+          })}
+
           {/* Nation filters */}
           {nationFilters.map((filter) => (
             <button
@@ -487,30 +511,6 @@ export default function CalendarPage() {
               <span className={filter.id === 'all' ? '' : 'hidden md:inline'}>{filter.id === 'all' ? 'All' : filter.name}</span>
             </button>
           ))}
-
-          {/* Dynamic tournament pills - only show if matches exist today */}
-          {activeTournaments.map(({ code, logo }) => {
-            const tournament = INTERNATIONAL_TOURNAMENTS[code];
-            return (
-              <button
-                key={code}
-                onClick={() => {
-                  setSelectedTournament(selectedTournament === code ? null : code);
-                  if (selectedTournament !== code) setSelectedNation('all');
-                }}
-                className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
-                style={{
-                  backgroundColor: selectedTournament === code ? theme.accent : theme.bgSecondary,
-                  color: selectedTournament === code ? '#fff' : theme.textSecondary,
-                  border: `1px solid ${selectedTournament === code ? theme.accent : theme.border}`,
-                }}
-              >
-                {logo && <img src={logo} alt={tournament.name} className="w-4 h-4 object-contain" />}
-                <span className="hidden md:inline">{tournament.name}</span>
-                <span className="md:hidden">{tournament.shortName}</span>
-              </button>
-            );
-          })}
         </div>
       )}
 
