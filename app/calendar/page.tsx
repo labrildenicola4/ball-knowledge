@@ -212,8 +212,9 @@ export default function CalendarPage() {
     if (dayIndex === -1) return;
 
     const itemWidth = 56; // Width of each day item
-    const containerWidth = dialRef.current.offsetWidth;
-    const scrollPosition = (dayIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2);
+    // With the spacer at start (50% - 28px), when scrollLeft = N * itemWidth,
+    // item N's center aligns with the viewport center
+    const scrollPosition = dayIndex * itemWidth;
 
     isScrollingRef.current = true;
     dialRef.current.scrollTo({
@@ -238,11 +239,10 @@ export default function CalendarPage() {
     scrollTimeoutRef.current = setTimeout(() => {
       if (!dialRef.current) return;
 
-      const containerWidth = dialRef.current.offsetWidth;
       const scrollLeft = dialRef.current.scrollLeft;
       const itemWidth = 56;
-      const centerOffset = scrollLeft + (containerWidth / 2);
-      const centeredIndex = Math.round((centerOffset - itemWidth / 2) / itemWidth);
+      // Simple calculation: scrollLeft / itemWidth gives us the centered index
+      const centeredIndex = Math.round(scrollLeft / itemWidth);
 
       if (centeredIndex >= 0 && centeredIndex < allDays.length) {
         const centeredDate = allDays[centeredIndex];
