@@ -43,10 +43,10 @@ const nationFilters = [
 ];
 
 // International tournaments configuration
-const INTERNATIONAL_TOURNAMENTS: Record<string, { name: string; emoji: string }> = {
-  'CL': { name: 'Champions League', emoji: '🏆' },
-  'EL': { name: 'Europa League', emoji: '🟠' },
-  'CLI': { name: 'Copa Libertadores', emoji: '🌎' },
+const INTERNATIONAL_TOURNAMENTS: Record<string, { name: string; shortName: string }> = {
+  'CL': { name: 'Champions League', shortName: 'UCL' },
+  'EL': { name: 'Europa League', shortName: 'UEL' },
+  'CLI': { name: 'Copa Libertadores', shortName: 'Lib' },
 };
 
 // Available years for dropdown
@@ -73,10 +73,13 @@ export default function CalendarPage() {
   // Use SWR hook for data fetching
   const { matches: allMatches, isLoading, isError } = useFixtures(selectedDate || undefined);
 
-  // Compute which international tournaments have matches today
-  const activeTournaments = Object.keys(INTERNATIONAL_TOURNAMENTS).filter(code =>
-    allMatches.some(match => match.leagueCode === code)
-  );
+  // Compute which international tournaments have matches today (with logos)
+  const activeTournaments = Object.keys(INTERNATIONAL_TOURNAMENTS)
+    .map(code => {
+      const match = allMatches.find(m => m.leagueCode === code);
+      return match ? { code, logo: match.leagueLogo } : null;
+    })
+    .filter((t): t is { code: string; logo: string } => t !== null);
 
   // Filter matches by selected tournament or nation
   const matches = selectedTournament
@@ -486,7 +489,7 @@ export default function CalendarPage() {
           ))}
 
           {/* Dynamic tournament pills - only show if matches exist today */}
-          {activeTournaments.map((code) => {
+          {activeTournaments.map(({ code, logo }) => {
             const tournament = INTERNATIONAL_TOURNAMENTS[code];
             return (
               <button
@@ -502,9 +505,9 @@ export default function CalendarPage() {
                   border: `1px solid ${selectedTournament === code ? theme.accent : theme.border}`,
                 }}
               >
-                <span>{tournament.emoji}</span>
+                {logo && <img src={logo} alt={tournament.name} className="w-4 h-4 object-contain" />}
                 <span className="hidden md:inline">{tournament.name}</span>
-                <span className="md:hidden">{code}</span>
+                <span className="md:hidden">{tournament.shortName}</span>
               </button>
             );
           })}
