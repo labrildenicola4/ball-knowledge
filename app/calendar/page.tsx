@@ -511,7 +511,6 @@ export default function CalendarPage() {
                   />
                 )}
                 <span className="hidden md:inline">{tournament.name}</span>
-                <span className="md:hidden">{tournament.shortName}</span>
               </button>
             );
           })}
