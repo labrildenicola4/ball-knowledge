@@ -11,19 +11,13 @@ import { MatchStandings } from '@/components/MatchStandings';
 import { LiveStats, LiveStatsData } from '@/components/LiveStats';
 import { MatchLineup, LineupPlayer } from '@/components/MatchLineup';
 import { useLiveMatch } from '@/lib/use-live-scores';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabaseBrowser } from '@/lib/supabase';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'Match not found' : 'Failed to fetch');
   return res.json();
 });
-
-// Create Supabase client outside component to avoid recreation
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 interface Team {
   id: number;
@@ -205,11 +199,11 @@ export default function MatchPage() {
   // Check auth and load favorites
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseBrowser.auth.getUser();
       setUser(user);
 
       if (user && match) {
-        const { data } = await supabase
+        const { data } = await supabaseBrowser
           .from('user_favorites')
           .select('favorite_id')
           .eq('user_id', user.id)
@@ -237,14 +231,14 @@ export default function MatchPage() {
     const isFav = isHome ? homeFavorite : awayFavorite;
 
     if (isFav) {
-      await supabase
+      await supabaseBrowser
         .from('user_favorites')
         .delete()
         .eq('user_id', user.id)
         .eq('favorite_type', 'team')
         .eq('favorite_id', teamId);
     } else {
-      await supabase
+      await supabaseBrowser
         .from('user_favorites')
         .insert({
           user_id: user.id,

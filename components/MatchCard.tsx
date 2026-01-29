@@ -47,6 +47,7 @@ export function MatchCard({ match }: MatchCardProps) {
                 alt={match.league}
                 className="h-5 w-5 object-contain"
                 style={{ filter: darkMode && !keepOriginalLogo ? 'brightness(0) invert(1)' : 'none' }}
+                loading="lazy"
               />
             )}
             <span
@@ -72,7 +73,7 @@ export function MatchCard({ match }: MatchCardProps) {
           {/* Home Team */}
           <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
             {match.homeLogo.startsWith('http') ? (
-              <img src={match.homeLogo} alt={match.home} className="h-8 w-8 flex-shrink-0 object-contain" />
+              <img src={match.homeLogo} alt={match.home} className="h-8 w-8 flex-shrink-0 object-contain" loading="lazy" />
             ) : (
               <span className="text-2xl flex-shrink-0">{match.homeLogo}</span>
             )}
@@ -99,7 +100,7 @@ export function MatchCard({ match }: MatchCardProps) {
               <span className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px] text-right" style={{ color: theme.text }}>{match.away}</span>
             </div>
             {match.awayLogo.startsWith('http') ? (
-              <img src={match.awayLogo} alt={match.away} className="h-8 w-8 flex-shrink-0 object-contain" />
+              <img src={match.awayLogo} alt={match.away} className="h-8 w-8 flex-shrink-0 object-contain" loading="lazy" />
             ) : (
               <span className="text-2xl flex-shrink-0">{match.awayLogo}</span>
             )}

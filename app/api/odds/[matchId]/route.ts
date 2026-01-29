@@ -68,6 +68,6 @@ export async function GET(
     });
   } catch (error) {
     console.error('[Odds API] Error:', error);
-    return NextResponse.json({ odds: null }, { status: 200 });
+    return NextResponse.json({ odds: null, error: 'Failed to fetch odds' }, { status: 500 });
   }
 }

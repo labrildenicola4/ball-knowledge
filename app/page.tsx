@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -68,34 +68,36 @@ export default function HomePage() {
     (m) => !['LIVE', '1H', '2H', 'HT'].includes(m.status)
   );
 
-  // Group matches by nation
-  const nationGroups: NationGroup[] = NATIONS.map((nation) => {
-    const nationMatches: Match[] = [];
-    const seenMatchIds = new Set<number>();
+  // Group matches by nation (memoized to avoid recalculating on every render)
+  const nationGroups = useMemo<NationGroup[]>(() => {
+    return NATIONS.map((nation) => {
+      const nationMatches: Match[] = [];
+      const seenMatchIds = new Set<number>();
 
-    for (const match of otherMatches) {
-      // Skip if we've already added this match to this nation
-      if (seenMatchIds.has(match.id)) continue;
+      for (const match of otherMatches) {
+        // Skip if we've already added this match to this nation
+        if (seenMatchIds.has(match.id)) continue;
 
-      // Get nations for this match
-      const matchNations = getNationsForMatch(
-        match.leagueCode || '',
-        match.homeId || 0,
-        match.awayId || 0
-      );
+        // Get nations for this match
+        const matchNations = getNationsForMatch(
+          match.leagueCode || '',
+          match.homeId || 0,
+          match.awayId || 0
+        );
 
-      // If this match belongs to this nation, add it
-      if (matchNations.includes(nation.id)) {
-        nationMatches.push(match);
-        seenMatchIds.add(match.id);
+        // If this match belongs to this nation, add it
+        if (matchNations.includes(nation.id)) {
+          nationMatches.push(match);
+          seenMatchIds.add(match.id);
+        }
       }
-    }
 
-    return {
-      nation,
-      matches: nationMatches,
-    };
-  }).filter((group) => group.matches.length > 0);
+      return {
+        nation,
+        matches: nationMatches,
+      };
+    }).filter((group) => group.matches.length > 0);
+  }, [otherMatches]);
 
   return (
     <div

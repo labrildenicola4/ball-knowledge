@@ -4,17 +4,38 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trophy, Sun, Moon, Search, X } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
-import { searchAll, type SearchableTeam, type SearchableLeague } from '@/lib/search-data';
+
+// Types for search results
+interface SearchTeam {
+  id: number;
+  name: string;
+  shortName: string;
+  logo: string;
+}
+
+interface SearchLeague {
+  id: string;
+  name: string;
+  code: string;
+  country: string;
+  logo: string;
+}
+
+interface SearchResults {
+  teams: SearchTeam[];
+  leagues: SearchLeague[];
+}
 
 export function Header() {
   const { darkMode, toggleDarkMode, theme } = useTheme();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<{ teams: SearchableTeam[]; leagues: SearchableLeague[] }>({
+  const [results, setResults] = useState<SearchResults>({
     teams: [],
     leagues: [],
   });
+  const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -38,23 +59,46 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Search as user types
+  // Debounced search as user types
   useEffect(() => {
-    if (query.length >= 2) {
-      const searchResults = searchAll(query);
-      setResults(searchResults);
-    } else {
+    if (query.length < 2) {
       setResults({ teams: [], leagues: [] });
+      return;
     }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setResults(data);
+        }
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error('[Search] Error:', err);
+        }
+      } finally {
+        setIsSearching(false);
+      }
+    }, 200); // 200ms debounce
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, [query]);
 
-  const handleTeamClick = (team: SearchableTeam) => {
+  const handleTeamClick = (team: SearchTeam) => {
     router.push(`/team/${team.id}`);
     setSearchOpen(false);
     setQuery('');
   };
 
-  const handleLeagueClick = (league: SearchableLeague) => {
+  const handleLeagueClick = (league: SearchLeague) => {
     // Navigate to standings for that league
     router.push(`/standings?league=${league.id}`);
     setSearchOpen(false);
@@ -123,7 +167,13 @@ export function Header() {
                   className="absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto rounded-xl shadow-lg"
                   style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                 >
-                  {!hasResults ? (
+                  {isSearching ? (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-sm" style={{ color: theme.textSecondary }}>
+                        Searching...
+                      </p>
+                    </div>
+                  ) : !hasResults ? (
                     <div className="px-4 py-6 text-center">
                       <p className="text-sm" style={{ color: theme.textSecondary }}>
                         No results for "{query}"
@@ -151,6 +201,7 @@ export function Header() {
                                 src={league.logo}
                                 alt={league.name}
                                 className="h-6 w-6 object-contain"
+                                loading="lazy"
                               />
                               <div>
                                 <p className="text-sm font-medium" style={{ color: theme.text }}>
@@ -185,13 +236,14 @@ export function Header() {
                                 src={team.logo}
                                 alt={team.name}
                                 className="h-8 w-8 object-contain"
+                                loading="lazy"
                               />
                               <div>
                                 <p className="text-sm font-medium" style={{ color: theme.text }}>
                                   {team.name}
                                 </p>
                                 <p className="text-xs" style={{ color: theme.textSecondary }}>
-                                  {team.league}
+                                  {team.shortName}
                                 </p>
                               </div>
                             </button>

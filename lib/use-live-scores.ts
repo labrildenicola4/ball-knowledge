@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from './supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -30,6 +30,9 @@ export function useLiveScores(options: UseLiveScoresOptions = {}) {
   const [matches, setMatches] = useState<Map<number, LiveMatch>>(new Map());
   const [isConnected, setIsConnected] = useState(false);
 
+  // Use ref to track previous matchIds and avoid unnecessary resubscriptions
+  const prevMatchIdsRef = useRef<string | null>(null);
+
   // Update a single match in state
   const updateMatch = useCallback((match: LiveMatch) => {
     setMatches(prev => {
@@ -40,6 +43,15 @@ export function useLiveScores(options: UseLiveScoresOptions = {}) {
   }, []);
 
   useEffect(() => {
+    // Create stable key for comparison
+    const matchIdsKey = matchIds ? matchIds.slice().sort().join(',') : null;
+
+    // Skip if matchIds haven't actually changed
+    if (matchIdsKey === prevMatchIdsRef.current) {
+      return;
+    }
+    prevMatchIdsRef.current = matchIdsKey;
+
     let channel: RealtimeChannel | null = null;
 
     async function setupSubscription() {
@@ -81,7 +93,7 @@ export function useLiveScores(options: UseLiveScoresOptions = {}) {
         supabase.removeChannel(channel);
       }
     };
-  }, [matchIds?.join(','), watchAll, updateMatch]);
+  }, [matchIds, watchAll, updateMatch]);
 
   // Get a specific match by API ID
   const getMatch = useCallback((apiId: number) => matches.get(apiId), [matches]);

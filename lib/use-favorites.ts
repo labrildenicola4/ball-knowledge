@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabaseBrowser } from './supabase';
 import { User } from '@supabase/supabase-js';
 
 type FavoriteType = 'team' | 'league' | 'tournament';
@@ -16,16 +16,11 @@ export function useFavorites() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   // Load user and favorites on mount
   useEffect(() => {
     const init = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseBrowser.auth.getUser();
         setUser(user);
 
         if (user) {
@@ -41,7 +36,7 @@ export function useFavorites() {
     init();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabaseBrowser.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         await loadFavorites();
@@ -54,7 +49,7 @@ export function useFavorites() {
   }, []);
 
   const loadFavorites = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseBrowser
       .from('user_favorites')
       .select('favorite_type, favorite_id');
 
@@ -66,7 +61,7 @@ export function useFavorites() {
   const addFavorite = useCallback(async (type: FavoriteType, id: number) => {
     if (!user) return false;
 
-    const { error } = await supabase
+    const { error } = await supabaseBrowser
       .from('user_favorites')
       .insert({ user_id: user.id, favorite_type: type, favorite_id: id });
 
@@ -75,12 +70,12 @@ export function useFavorites() {
       return true;
     }
     return false;
-  }, [user, supabase]);
+  }, [user]);
 
   const removeFavorite = useCallback(async (type: FavoriteType, id: number) => {
     if (!user) return false;
 
-    const { error } = await supabase
+    const { error } = await supabaseBrowser
       .from('user_favorites')
       .delete()
       .eq('user_id', user.id)
@@ -94,7 +89,7 @@ export function useFavorites() {
       return true;
     }
     return false;
-  }, [user, supabase]);
+  }, [user]);
 
   const toggleFavorite = useCallback(async (type: FavoriteType, id: number) => {
     if (isFavorite(type, id)) {
@@ -117,7 +112,7 @@ export function useFavorites() {
   const clearFavorites = useCallback(async () => {
     if (!user) return false;
 
-    const { error } = await supabase
+    const { error } = await supabaseBrowser
       .from('user_favorites')
       .delete()
       .eq('user_id', user.id);
@@ -127,7 +122,7 @@ export function useFavorites() {
       return true;
     }
     return false;
-  }, [user, supabase]);
+  }, [user]);
 
   return {
     favorites,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTheme } from '@/lib/theme';
 
 export interface LineupPlayer {
@@ -163,10 +163,15 @@ function FullPitch({
   awayShortName: string;
 }) {
   const { theme } = useTheme();
-  const homeFormation = parseFormation(home.formation);
-  const awayFormation = parseFormation(away.formation);
-  const homeRows = positionPlayers(home.lineup, homeFormation);
-  const awayRows = positionPlayers(away.lineup, awayFormation);
+
+  const { homeRows, awayRows } = useMemo(() => {
+    const homeFormation = parseFormation(home.formation);
+    const awayFormation = parseFormation(away.formation);
+    return {
+      homeRows: positionPlayers(home.lineup, homeFormation),
+      awayRows: positionPlayers(away.lineup, awayFormation),
+    };
+  }, [home.lineup, home.formation, away.lineup, away.formation]);
 
   // Team colors (you could make these dynamic based on team)
   const homeColor = '#ffffff';
@@ -356,8 +361,11 @@ export function MatchLineup({ home, away, homeShortName, awayShortName, matchSta
 
   const currentTeam = activeTab === 'home' ? home : away;
   const currentName = activeTab === 'home' ? homeShortName : awayShortName;
-  const formation = parseFormation(currentTeam.formation);
-  const playerRows = positionPlayers(currentTeam.lineup, formation);
+
+  const playerRows = useMemo(() => {
+    const formation = parseFormation(currentTeam.formation);
+    return positionPlayers(currentTeam.lineup, formation);
+  }, [currentTeam.lineup, currentTeam.formation]);
 
   return (
     <div>

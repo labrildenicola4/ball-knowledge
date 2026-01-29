@@ -50,12 +50,12 @@ export async function GET(
     // Fetch team info, squad, fixtures, leagues, and player stats in parallel
     const [teamInfo, squad, pastFixtures, upcomingFixtures, teamLeagues, formArray, playerStats] = await Promise.all([
       getTeamInfo(teamId),
-      getTeamSquad(teamId).catch(() => []),
-      getTeamFixtures(teamId, undefined, 50).catch(() => []),
-      getTeamFixtures(teamId, undefined, undefined, 30).catch(() => []),
-      getTeamLeagues(teamId).catch(() => []),
-      getTeamForm(teamId, 5).catch(() => []),
-      getTeamPlayers(teamId).catch(() => []),
+      getTeamSquad(teamId).catch((e) => { console.error(`[Team API] Squad fetch failed for ${teamId}:`, e.message); return []; }),
+      getTeamFixtures(teamId, undefined, 50).catch((e) => { console.error(`[Team API] Past fixtures fetch failed for ${teamId}:`, e.message); return []; }),
+      getTeamFixtures(teamId, undefined, undefined, 30).catch((e) => { console.error(`[Team API] Upcoming fixtures fetch failed for ${teamId}:`, e.message); return []; }),
+      getTeamLeagues(teamId).catch((e) => { console.error(`[Team API] Leagues fetch failed for ${teamId}:`, e.message); return []; }),
+      getTeamForm(teamId, 5).catch((e) => { console.error(`[Team API] Form fetch failed for ${teamId}:`, e.message); return []; }),
+      getTeamPlayers(teamId).catch((e) => { console.error(`[Team API] Players fetch failed for ${teamId}:`, e.message); return []; }),
     ]);
 
     // Create a map of player stats by player ID for quick lookup

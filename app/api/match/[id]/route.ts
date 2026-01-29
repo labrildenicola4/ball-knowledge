@@ -191,17 +191,16 @@ export async function GET(
 
     // Cache finished matches for instant future loads
     if (isFinished) {
-      supabase
+      const { error: cacheError } = await supabase
         .from('fixtures_cache')
         .update({ match_details: matchDetails })
-        .eq('api_id', matchId)
-        .then(({ error }) => {
-          if (error) {
-            console.error(`[Match API] Failed to cache match ${matchId}:`, error);
-          } else {
-            console.log(`[Match API] Cached full details for match ${matchId}`);
-          }
-        });
+        .eq('api_id', matchId);
+
+      if (cacheError) {
+        console.error(`[Match API] Failed to cache match ${matchId}:`, cacheError);
+      } else {
+        console.log(`[Match API] Cached full details for match ${matchId}`);
+      }
     }
 
     return NextResponse.json(matchDetails, {

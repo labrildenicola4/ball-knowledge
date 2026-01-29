@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { ThemeProvider } from '@/lib/theme';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -37,6 +38,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Google Fonts - using link instead of @import for non-blocking render */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Playfair+Display:wght@400;500;600&family=JetBrains+Mono:wght@300;400;500;600&display=swap"
+          rel="stylesheet"
+        />
+
         {/* PWA Meta Tags */}
         <meta name="application-name" content="Ball Knowledge" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -76,7 +85,9 @@ export default function RootLayout({
         />
       </head>
       <body className="dark">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   );
