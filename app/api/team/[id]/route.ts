@@ -158,7 +158,8 @@ export async function GET(
         for (const stat of ps.statistics) {
           // Only count stats for the current team
           if (stat.team.id === teamId) {
-            totalAppearances += stat.games.appearances || 0;
+            // appearances = lineups (starts) + substitutes.in (came on as sub)
+            totalAppearances += (stat.games.lineups || 0) + (stat.substitutes.in || 0);
             totalSubstitutions += stat.substitutes.in || 0;
             totalGoals += stat.goals.total || 0;
             totalAssists += stat.goals.assists || 0;
