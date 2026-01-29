@@ -42,6 +42,13 @@ const nationFilters = [
   ...MAIN_NATIONS.map(n => ({ id: n.id, name: n.name, flag: n.flag }))
 ];
 
+// International tournaments configuration
+const INTERNATIONAL_TOURNAMENTS: Record<string, { name: string; emoji: string }> = {
+  'CL': { name: 'Champions League', emoji: '🏆' },
+  'EL': { name: 'Europa League', emoji: '🟠' },
+  'CLI': { name: 'Copa Libertadores', emoji: '🌎' },
+};
+
 // Available years for dropdown
 const AVAILABLE_YEARS = [2025, 2026];
 
@@ -57,6 +64,7 @@ export default function CalendarPage() {
   const [lastViewedMatch, setLastViewedMatch] = useState<string | null>(null);
   const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
   const [selectedSport, setSelectedSport] = useState<string | null>('soccer');
+  const [selectedTournament, setSelectedTournament] = useState<string | null>(null);
 
   // Dynamic year bounds based on selected year
   const yearStart = new Date(selectedYear, 0, 1);
@@ -65,17 +73,24 @@ export default function CalendarPage() {
   // Use SWR hook for data fetching
   const { matches: allMatches, isLoading, isError } = useFixtures(selectedDate || undefined);
 
-  // Filter matches by selected nation
-  const matches = selectedNation === 'all'
-    ? allMatches
-    : allMatches.filter((match) => {
-        const matchNations = getNationsForMatch(
-          match.leagueCode || '',
-          match.homeId || 0,
-          match.awayId || 0
-        );
-        return matchNations.includes(selectedNation);
-      });
+  // Compute which international tournaments have matches today
+  const activeTournaments = Object.keys(INTERNATIONAL_TOURNAMENTS).filter(code =>
+    allMatches.some(match => match.leagueCode === code)
+  );
+
+  // Filter matches by selected tournament or nation
+  const matches = selectedTournament
+    ? allMatches.filter(match => match.leagueCode === selectedTournament)
+    : selectedNation === 'all'
+      ? allMatches
+      : allMatches.filter((match) => {
+          const matchNations = getNationsForMatch(
+            match.leagueCode || '',
+            match.homeId || 0,
+            match.awayId || 0
+          );
+          return matchNations.includes(selectedNation);
+        });
 
   // Load saved date and last match from localStorage on mount
   useEffect(() => {
@@ -444,27 +459,55 @@ export default function CalendarPage() {
         </button>
       </div>
 
-      {/* Nation Filter - Shows when Soccer is selected */}
+      {/* Soccer Filters - Shows when Soccer is selected */}
       {selectedSport === 'soccer' && (
         <div
           className="flex gap-1 md:gap-2 overflow-x-auto px-2 md:px-4 pb-3"
           style={{ scrollbarWidth: 'none', borderBottom: `1px solid ${theme.border}` }}
         >
+          {/* Nation filters */}
           {nationFilters.map((filter) => (
             <button
               key={filter.id}
-              onClick={() => setSelectedNation(filter.id)}
+              onClick={() => {
+                setSelectedNation(filter.id);
+                setSelectedTournament(null);
+              }}
               className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
               style={{
-                backgroundColor: selectedNation === filter.id ? theme.accent : theme.bgSecondary,
-                color: selectedNation === filter.id ? '#fff' : theme.textSecondary,
-                border: `1px solid ${selectedNation === filter.id ? theme.accent : theme.border}`,
+                backgroundColor: selectedNation === filter.id && !selectedTournament ? theme.accent : theme.bgSecondary,
+                color: selectedNation === filter.id && !selectedTournament ? '#fff' : theme.textSecondary,
+                border: `1px solid ${selectedNation === filter.id && !selectedTournament ? theme.accent : theme.border}`,
               }}
             >
               {'flag' in filter ? <span>{filter.flag}</span> : null}
               <span className={filter.id === 'all' ? '' : 'hidden md:inline'}>{filter.id === 'all' ? 'All' : filter.name}</span>
             </button>
           ))}
+
+          {/* Dynamic tournament pills - only show if matches exist today */}
+          {activeTournaments.map((code) => {
+            const tournament = INTERNATIONAL_TOURNAMENTS[code];
+            return (
+              <button
+                key={code}
+                onClick={() => {
+                  setSelectedTournament(selectedTournament === code ? null : code);
+                  if (selectedTournament !== code) setSelectedNation('all');
+                }}
+                className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
+                style={{
+                  backgroundColor: selectedTournament === code ? theme.accent : theme.bgSecondary,
+                  color: selectedTournament === code ? '#fff' : theme.textSecondary,
+                  border: `1px solid ${selectedTournament === code ? theme.accent : theme.border}`,
+                }}
+              >
+                <span>{tournament.emoji}</span>
+                <span className="hidden md:inline">{tournament.name}</span>
+                <span className="md:hidden">{code}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
