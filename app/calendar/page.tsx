@@ -35,10 +35,11 @@ interface NationGroup {
   matches: Match[];
 }
 
-// Nation filter options
+// Nation filter options - only show nations with domestic leagues
+const MAIN_NATIONS = NATIONS.filter(n => n.domesticLeagues.length > 0);
 const nationFilters = [
   { id: 'all', name: 'All Nations' },
-  ...NATIONS.map(n => ({ id: n.id, name: n.name, flag: n.flag }))
+  ...MAIN_NATIONS.map(n => ({ id: n.id, name: n.name, flag: n.flag }))
 ];
 
 // 2025-26 season dates (using local time constructor)
