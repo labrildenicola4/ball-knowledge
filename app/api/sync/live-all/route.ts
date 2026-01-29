@@ -259,12 +259,49 @@ export async function GET() {
       });
     }
 
+    // ALSO: Mark "orphaned" live matches as finished
+    // These are matches in our DB that show as live but aren't in the API response anymore
+    const liveStatuses = ['LIVE', '1H', '2H', 'HT', 'ET', 'PEN', 'IN_PLAY', 'PAUSED'];
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+
+    const { data: orphanedMatches } = await supabase
+      .from('fixtures_cache')
+      .select('id, api_id, home_team_name, away_team_name, kickoff')
+      .eq('match_date', today)
+      .in('status', liveStatuses)
+      .lt('kickoff', twoHoursAgo);  // Started more than 2 hours ago
+
+    let finalized = 0;
+    if (orphanedMatches && orphanedMatches.length > 0) {
+      // Get the API IDs of matches that are actually still live
+      const stillLiveIds = new Set(relevantFixtures.map(f => f.fixture.id));
+
+      for (const orphan of orphanedMatches) {
+        // Only finalize if this match wasn't in the live API response
+        // We can't check by API ID directly since they differ, so check by name
+        const isStillLive = relevantFixtures.some(f => {
+          const normalize = (name: string) => name.toLowerCase().replace(/[^a-z]/g, '').slice(0, 5);
+          return normalize(f.teams.home.name) === normalize(orphan.home_team_name).slice(0, 5);
+        });
+
+        if (!isStillLive) {
+          await supabase
+            .from('fixtures_cache')
+            .update({ status: 'FT', updated_at: new Date().toISOString() })
+            .eq('id', orphan.id);
+          finalized++;
+          console.log(`[Sync/LiveAll] Finalized: ${orphan.home_team_name} vs ${orphan.away_team_name}`);
+        }
+      }
+    }
+
     const duration = Date.now() - startTime;
-    console.log(`[Sync/LiveAll] Completed in ${duration}ms. Updated ${updated}/${relevantFixtures.length} matches.`);
+    console.log(`[Sync/LiveAll] Completed in ${duration}ms. Updated ${updated}/${relevantFixtures.length} matches. Finalized ${finalized} matches.`);
 
     return NextResponse.json({
       success: true,
       updated,
+      finalized,
       total: relevantFixtures.length,
       globalLive: allLiveFixtures.length,
       errors: errors.length > 0 ? errors.slice(0, 5) : undefined, // Limit error output
