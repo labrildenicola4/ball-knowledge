@@ -4,38 +4,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trophy, Sun, Moon, Search, X } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
-
-// Types for search results
-interface SearchTeam {
-  id: number;
-  name: string;
-  shortName: string;
-  logo: string;
-}
-
-interface SearchLeague {
-  id: string;
-  name: string;
-  code: string;
-  country: string;
-  logo: string;
-}
-
-interface SearchResults {
-  teams: SearchTeam[];
-  leagues: SearchLeague[];
-}
+import { searchAll, type SearchableTeam, type SearchableLeague } from '@/lib/search-data';
 
 export function Header() {
   const { darkMode, toggleDarkMode, theme } = useTheme();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResults>({
+  const [results, setResults] = useState<{ teams: SearchableTeam[]; leagues: SearchableLeague[] }>({
     teams: [],
     leagues: [],
   });
-  const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -59,46 +38,23 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Debounced search as user types
+  // Search as user types
   useEffect(() => {
-    if (query.length < 2) {
+    if (query.length >= 2) {
+      const searchResults = searchAll(query);
+      setResults(searchResults);
+    } else {
       setResults({ teams: [], leagues: [] });
-      return;
     }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
-          signal: controller.signal,
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setResults(data);
-        }
-      } catch (err) {
-        if (err instanceof Error && err.name !== 'AbortError') {
-          console.error('[Search] Error:', err);
-        }
-      } finally {
-        setIsSearching(false);
-      }
-    }, 200); // 200ms debounce
-
-    return () => {
-      clearTimeout(timeoutId);
-      controller.abort();
-    };
   }, [query]);
 
-  const handleTeamClick = (team: SearchTeam) => {
+  const handleTeamClick = (team: SearchableTeam) => {
     router.push(`/team/${team.id}`);
     setSearchOpen(false);
     setQuery('');
   };
 
-  const handleLeagueClick = (league: SearchLeague) => {
+  const handleLeagueClick = (league: SearchableLeague) => {
     // Navigate to standings for that league
     router.push(`/standings?league=${league.id}`);
     setSearchOpen(false);
@@ -167,13 +123,7 @@ export function Header() {
                   className="absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto rounded-xl shadow-lg"
                   style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                 >
-                  {isSearching ? (
-                    <div className="px-4 py-6 text-center">
-                      <p className="text-sm" style={{ color: theme.textSecondary }}>
-                        Searching...
-                      </p>
-                    </div>
-                  ) : !hasResults ? (
+                  {!hasResults ? (
                     <div className="px-4 py-6 text-center">
                       <p className="text-sm" style={{ color: theme.textSecondary }}>
                         No results for "{query}"
@@ -243,7 +193,7 @@ export function Header() {
                                   {team.name}
                                 </p>
                                 <p className="text-xs" style={{ color: theme.textSecondary }}>
-                                  {team.shortName}
+                                  {team.league}
                                 </p>
                               </div>
                             </button>
