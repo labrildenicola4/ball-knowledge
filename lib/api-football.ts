@@ -771,14 +771,71 @@ export interface PlayerWithStats {
   }>;
 }
 
-// Get all players with statistics for a team in a season
+// Get all players with statistics for a team in a season (handles pagination)
 export async function getTeamPlayers(
   teamId: number,
   season?: number
 ): Promise<PlayerWithStats[]> {
-  const params: Record<string, string | number> = {
-    team: teamId,
-    season: season || getSeason(),
-  };
-  return fetchApi<PlayerWithStats>('/players', params);
+  const allPlayers: PlayerWithStats[] = [];
+  let currentPage = 1;
+  let totalPages = 1;
+  const seasonYear = season || getSeason();
+
+  do {
+    const queryString = new URLSearchParams({
+      team: String(teamId),
+      season: String(seasonYear),
+      page: String(currentPage),
+    }).toString();
+
+    const url = `${API_BASE}/players?${queryString}`;
+    const cacheKey = url;
+
+    // Check cache
+    const cached = cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log(`[API-Football] Cache hit: /players page ${currentPage}`);
+      const cachedData = cached.data as { response: PlayerWithStats[]; paging: { total: number } };
+      allPlayers.push(...cachedData.response);
+      totalPages = cachedData.paging.total;
+    } else {
+      console.log(`[API-Football] Fetching: ${url}`);
+
+      const response = await fetch(url, {
+        headers: {
+          'x-apisports-key': API_KEY,
+        },
+      });
+
+      if (!response.ok) {
+        console.error(`[API-Football] HTTP Error: ${response.status}`);
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Check for API errors
+      const hasErrors = Array.isArray(data.errors)
+        ? data.errors.length > 0
+        : Object.keys(data.errors || {}).length > 0;
+
+      if (hasErrors) {
+        console.error(`[API-Football] API Error: ${JSON.stringify(data.errors)}`);
+        break;
+      }
+
+      console.log(`[API-Football] Players page ${currentPage}/${data.paging.total}, got ${data.results} players`);
+
+      // Cache this page
+      cache.set(cacheKey, { data: { response: data.response, paging: data.paging }, timestamp: Date.now() });
+
+      allPlayers.push(...data.response);
+      totalPages = data.paging.total;
+    }
+
+    currentPage++;
+  } while (currentPage <= totalPages);
+
+  console.log(`[API-Football] Total players fetched: ${allPlayers.length}`);
+  return allPlayers;
 }
