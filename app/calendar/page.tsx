@@ -410,23 +410,24 @@ export default function CalendarPage() {
 
       {/* Sport Pills */}
       <div
-        className="flex gap-2 px-4 py-3"
-        style={{ borderBottom: selectedSport === 'all' || !selectedSport ? `1px solid ${theme.border}` : 'none' }}
+        className="flex gap-2 overflow-x-auto px-4 py-3"
+        style={{ scrollbarWidth: 'none', borderBottom: selectedSport === 'all' || !selectedSport ? `1px solid ${theme.border}` : 'none' }}
       >
         <button
           onClick={() => setSelectedSport('all')}
-          className="rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2"
+          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
           style={{
             backgroundColor: selectedSport === 'all' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'all' ? '#fff' : theme.textSecondary,
             border: `1px solid ${selectedSport === 'all' ? theme.accent : theme.border}`,
           }}
         >
-          <span>All Sports</span>
+          <span className="hidden md:inline">All Sports</span>
+          <span className="md:hidden">All</span>
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'soccer' ? null : 'soccer')}
-          className="rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2"
+          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
           style={{
             backgroundColor: selectedSport === 'soccer' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'soccer' ? '#fff' : theme.textSecondary,
@@ -438,7 +439,7 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'cbb' ? null : 'cbb')}
-          className="rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50"
+          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50"
           style={{
             backgroundColor: selectedSport === 'cbb' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'cbb' ? '#fff' : theme.textSecondary,
@@ -450,7 +451,7 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'mlb' ? null : 'mlb')}
-          className="rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50"
+          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50"
           style={{
             backgroundColor: selectedSport === 'mlb' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'mlb' ? '#fff' : theme.textSecondary,
