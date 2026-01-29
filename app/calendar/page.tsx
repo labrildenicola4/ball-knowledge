@@ -468,7 +468,23 @@ export default function CalendarPage() {
           className="flex gap-1 md:gap-2 overflow-x-auto px-2 md:px-4 pb-3"
           style={{ scrollbarWidth: 'none', borderBottom: `1px solid ${theme.border}` }}
         >
-          {/* Dynamic tournament pills FIRST - only show if matches exist today */}
+          {/* All filter first */}
+          <button
+            onClick={() => {
+              setSelectedNation('all');
+              setSelectedTournament(null);
+            }}
+            className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
+            style={{
+              backgroundColor: selectedNation === 'all' && !selectedTournament ? theme.accent : theme.bgSecondary,
+              color: selectedNation === 'all' && !selectedTournament ? '#fff' : theme.textSecondary,
+              border: `1px solid ${selectedNation === 'all' && !selectedTournament ? theme.accent : theme.border}`,
+            }}
+          >
+            <span>All</span>
+          </button>
+
+          {/* Dynamic tournament pills - only show if matches exist today */}
           {activeTournaments.map(({ code, logo }) => {
             const tournament = INTERNATIONAL_TOURNAMENTS[code];
             return (
@@ -485,15 +501,22 @@ export default function CalendarPage() {
                   border: `1px solid ${selectedTournament === code ? theme.accent : theme.border}`,
                 }}
               >
-                {logo && <img src={logo} alt={tournament.name} className="w-5 h-5 object-contain" />}
+                {logo && (
+                  <img
+                    src={logo}
+                    alt={tournament.name}
+                    className="w-5 h-5 object-contain"
+                    style={{ filter: 'brightness(0) invert(1)' }}
+                  />
+                )}
                 <span className="hidden md:inline">{tournament.name}</span>
                 <span className="md:hidden">{tournament.shortName}</span>
               </button>
             );
           })}
 
-          {/* Nation filters */}
-          {nationFilters.map((filter) => (
+          {/* Nation filters (skip 'all' since it's already first) */}
+          {nationFilters.filter(f => f.id !== 'all').map((filter) => (
             <button
               key={filter.id}
               onClick={() => {
@@ -508,7 +531,7 @@ export default function CalendarPage() {
               }}
             >
               {'flag' in filter ? <span>{filter.flag}</span> : null}
-              <span className={filter.id === 'all' ? '' : 'hidden md:inline'}>{filter.id === 'all' ? 'All' : filter.name}</span>
+              <span className="hidden md:inline">{filter.name}</span>
             </button>
           ))}
         </div>
