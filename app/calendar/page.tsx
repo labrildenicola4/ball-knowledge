@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Calendar as CalendarIcon } from 'lucide-react';
 import { Header } from '@/components/Header';
@@ -179,35 +179,95 @@ export default function CalendarPage() {
     };
   }).filter((group) => group.matches.length > 0);
 
-  // Generate week days around selected date
-  const getWeekDays = () => {
-    if (!selectedDate) return [];
-    const days = [];
-    for (let i = -3; i <= 3; i++) {
-      const date = new Date(selectedDate);
-      date.setDate(selectedDate.getDate() + i);
-      days.push(date);
+  // Ref for the date dial scroll container
+  const dialRef = useRef<HTMLDivElement>(null);
+  const isScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Generate all days for the year
+  const getAllDaysInYear = useCallback(() => {
+    const days: Date[] = [];
+    const start = new Date(selectedYear, 0, 1);
+    const end = new Date(selectedYear, 11, 31);
+    const current = new Date(start);
+    while (current <= end) {
+      days.push(new Date(current));
+      current.setDate(current.getDate() + 1);
     }
     return days;
-  };
+  }, [selectedYear]);
+
+  const allDays = getAllDaysInYear();
 
   const isSameDay = (date1: Date, date2: Date) => {
     return date1.toDateString() === date2.toDateString();
   };
 
-  const navigateWeek = (direction: 'prev' | 'next') => {
-    if (!selectedDate) return;
-    const newDate = new Date(selectedDate);
-    newDate.setDate(selectedDate.getDate() + (direction === 'next' ? 7 : -7));
-    // Update year if needed and if within available years
-    const newYear = newDate.getFullYear();
-    if (AVAILABLE_YEARS.includes(newYear)) {
-      setSelectedDate(newDate);
-      if (newYear !== selectedYear) {
-        setSelectedYear(newYear);
-      }
+  // Scroll to selected date
+  const scrollToDate = useCallback((date: Date, smooth = true) => {
+    if (!dialRef.current) return;
+    const dayIndex = allDays.findIndex(d => isSameDay(d, date));
+    if (dayIndex === -1) return;
+
+    const itemWidth = 56; // Width of each day item
+    const containerWidth = dialRef.current.offsetWidth;
+    const scrollPosition = (dayIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2);
+
+    isScrollingRef.current = true;
+    dialRef.current.scrollTo({
+      left: scrollPosition,
+      behavior: smooth ? 'smooth' : 'auto'
+    });
+
+    setTimeout(() => {
+      isScrollingRef.current = false;
+    }, smooth ? 300 : 50);
+  }, [allDays]);
+
+  // Handle scroll to detect centered date
+  const handleDialScroll = useCallback(() => {
+    if (!dialRef.current || isScrollingRef.current) return;
+
+    // Debounce the scroll handling
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
     }
-  };
+
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (!dialRef.current) return;
+
+      const containerWidth = dialRef.current.offsetWidth;
+      const scrollLeft = dialRef.current.scrollLeft;
+      const itemWidth = 56;
+      const centerOffset = scrollLeft + (containerWidth / 2);
+      const centeredIndex = Math.round((centerOffset - itemWidth / 2) / itemWidth);
+
+      if (centeredIndex >= 0 && centeredIndex < allDays.length) {
+        const centeredDate = allDays[centeredIndex];
+        if (!isSameDay(centeredDate, selectedDate!)) {
+          setSelectedDate(centeredDate);
+          // Update year if needed
+          if (centeredDate.getFullYear() !== selectedYear) {
+            setSelectedYear(centeredDate.getFullYear());
+          }
+        }
+      }
+    }, 100);
+  }, [allDays, selectedDate, selectedYear]);
+
+  // Scroll to selected date on mount and when date changes externally
+  useEffect(() => {
+    if (selectedDate && initialized) {
+      scrollToDate(selectedDate, false);
+    }
+  }, [initialized]); // Only on init
+
+  // Scroll when month quick nav is clicked
+  useEffect(() => {
+    if (selectedDate && initialized && !isScrollingRef.current) {
+      scrollToDate(selectedDate, true);
+    }
+  }, [selectedDate?.getMonth()]);
 
   // Quick navigation months for selected year
   const calendarMonths = [
@@ -352,59 +412,78 @@ export default function CalendarPage() {
         ))}
       </div>
 
-      {/* Date Selector */}
-      <div className="px-4 py-4" style={{ borderBottom: `1px solid ${theme.border}` }}>
-        {/* Week Navigation */}
-        <div className="mb-4 flex items-center justify-between">
-          <button
-            onClick={() => navigateWeek('prev')}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ border: `1px solid ${theme.border}`, color: theme.text }}
-          >
-            <ChevronLeft size={16} />
-          </button>
+      {/* Date Dial */}
+      <div style={{ borderBottom: `1px solid ${theme.border}` }}>
+        {/* Month/Year Display */}
+        <div className="py-2 text-center">
           <h2 className="text-base font-medium" style={{ color: theme.text }}>
             {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </h2>
-          <button
-            onClick={() => navigateWeek('next')}
-            className="flex h-8 w-8 items-center justify-center rounded-full"
-            style={{ border: `1px solid ${theme.border}`, color: theme.text }}
-          >
-            <ChevronRight size={16} />
-          </button>
         </div>
 
-        {/* Week Days */}
-        <div className="flex justify-between">
-          {getWeekDays().map((date, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedDate(date)}
-              className="flex flex-col items-center gap-1 rounded-lg px-2 py-2"
-              style={{
-                backgroundColor: isSameDay(date, selectedDate) ? theme.accent : 'transparent',
-                minWidth: '48px',
-              }}
-            >
-              <span
-                className="text-xs uppercase font-medium"
-                style={{
-                  color: isSameDay(date, selectedDate) ? '#fff' : theme.textSecondary,
-                }}
-              >
-                {date.toLocaleDateString('en-US', { weekday: 'short' })}
-              </span>
-              <span
-                className="text-base font-medium"
-                style={{
-                  color: isSameDay(date, selectedDate) ? '#fff' : theme.text,
-                }}
-              >
-                {date.getDate()}
-              </span>
-            </button>
-          ))}
+        {/* Scrollable Day Dial */}
+        <div className="relative">
+          {/* Center indicator */}
+          <div
+            className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-14 rounded-lg pointer-events-none z-10"
+            style={{ backgroundColor: theme.accent }}
+          />
+
+          {/* Scrollable container */}
+          <div
+            ref={dialRef}
+            onScroll={handleDialScroll}
+            className="flex overflow-x-auto py-3 px-4"
+            style={{
+              scrollbarWidth: 'none',
+              scrollSnapType: 'x mandatory',
+            }}
+          >
+            {/* Spacer for centering first item */}
+            <div className="flex-shrink-0" style={{ width: 'calc(50% - 28px)' }} />
+
+            {allDays.map((date, index) => {
+              const isSelected = isSameDay(date, selectedDate);
+              const isToday = isSameDay(date, new Date());
+              return (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setSelectedDate(date);
+                    scrollToDate(date, true);
+                  }}
+                  className="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 py-2"
+                  style={{ scrollSnapAlign: 'center' }}
+                >
+                  <span
+                    className="text-[10px] uppercase font-medium"
+                    style={{
+                      color: isSelected ? '#fff' : theme.textSecondary,
+                    }}
+                  >
+                    {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                  </span>
+                  <span
+                    className="text-lg font-semibold"
+                    style={{
+                      color: isSelected ? '#fff' : theme.text,
+                    }}
+                  >
+                    {date.getDate()}
+                  </span>
+                  {isToday && !isSelected && (
+                    <div
+                      className="w-1 h-1 rounded-full"
+                      style={{ backgroundColor: theme.accent }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+
+            {/* Spacer for centering last item */}
+            <div className="flex-shrink-0" style={{ width: 'calc(50% - 28px)' }} />
+          </div>
         </div>
       </div>
 
