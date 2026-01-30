@@ -15,6 +15,16 @@ import { CODE_TO_LEAGUE_KEY } from '@/lib/constants/leagues';
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+// Get date in Eastern Time as YYYY-MM-DD
+function getEasternDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 // Alias for backward compatibility
 const CODE_TO_LEAGUE = CODE_TO_LEAGUE_KEY;
 
@@ -80,7 +90,7 @@ export async function GET(request: NextRequest) {
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const displayDate = `${monthNames[matchDate.getMonth()]} ${matchDate.getDate()}`;
         const leagueKey = LEAGUE_ID_TO_KEY[fixture.league.id] || CODE_TO_LEAGUE[cachedMatch.league_code] || null;
-        const matchDateStr = matchDate.toISOString().split('T')[0];
+        const matchDateStr = getEasternDate(matchDate);
 
         // Fetch H2H, team forms, and lineups+stats in parallel
         const [h2hData, homeForm, awayForm, apiFootballData] = await Promise.all([

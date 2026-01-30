@@ -6,6 +6,16 @@ import { LEAGUE_ID_TO_CODE, SUPPORTED_LEAGUE_IDS } from '@/lib/constants/leagues
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+// Get date in Eastern Time as YYYY-MM-DD
+function getEasternDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 const ALL_LEAGUE_IDS = Array.from(SUPPORTED_LEAGUE_IDS);
 
 export async function GET(request: NextRequest) {
@@ -14,7 +24,7 @@ export async function GET(request: NextRequest) {
 
   // Allow custom start date, default to Aug 1, 2025 (start of European season)
   const startDateParam = searchParams.get('start') || '2025-08-01';
-  const endDateParam = searchParams.get('end') || new Date().toISOString().split('T')[0];
+  const endDateParam = searchParams.get('end') || getEasternDate(new Date());
 
   console.log(`[Backfill] Starting historical sync from ${startDateParam} to ${endDateParam}`);
 
@@ -28,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     const current = new Date(startDate);
     while (current <= endDate) {
-      dates.push(current.toISOString().split('T')[0]);
+      dates.push(getEasternDate(current));
       current.setDate(current.getDate() + 1);
     }
 
@@ -89,7 +99,7 @@ export async function GET(request: NextRequest) {
           allFixtures.push({
             api_id: fixture.fixture.id,
             sport_type: 'soccer',
-            match_date: matchDate.toISOString().split('T')[0],
+            match_date: getEasternDate(matchDate),
             kickoff: fixture.fixture.date,
             status,
             minute: fixture.fixture.status.elapsed,

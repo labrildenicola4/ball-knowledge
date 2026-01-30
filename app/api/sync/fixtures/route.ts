@@ -6,6 +6,16 @@ import { LEAGUE_ID_TO_CODE, SUPPORTED_LEAGUE_IDS } from '@/lib/constants/leagues
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+// Get date in Eastern Time as YYYY-MM-DD
+function getEasternDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 // All leagues to sync
 const ALL_LEAGUE_IDS = Array.from(SUPPORTED_LEAGUE_IDS);
 
@@ -24,7 +34,7 @@ export async function GET(request: NextRequest) {
     for (let i = -7; i <= 30; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() + i);
-      dates.push(d.toISOString().split('T')[0]);
+      dates.push(getEasternDate(d));
     }
 
     console.log(`[Sync] Fetching fixtures for ${dates.length} days`);
@@ -87,7 +97,7 @@ export async function GET(request: NextRequest) {
           allFixtures.push({
             api_id: fixture.fixture.id,
             sport_type: 'soccer',
-            match_date: matchDate.toISOString().split('T')[0],
+            match_date: getEasternDate(matchDate),
             kickoff: fixture.fixture.date,
             status,
             minute: fixture.fixture.status.elapsed,

@@ -5,6 +5,16 @@ import { LEAGUE_ID_TO_CODE, SUPPORTED_LEAGUE_IDS } from '@/lib/constants/leagues
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+// Get date in Eastern Time as YYYY-MM-DD
+function getEasternDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 const API_FOOTBALL_BASE = 'https://v3.football.api-sports.io';
 const API_KEY = process.env.API_FOOTBALL_KEY!;
 
@@ -137,8 +147,8 @@ export async function GET() {
       away_score: f.goals.away,
     }));
 
-    // Get today's date for filtering
-    const today = new Date().toISOString().split('T')[0];
+    // Get today's date for filtering (in Eastern Time)
+    const today = getEasternDate(new Date());
 
     // Batch update: For each live match, update the corresponding fixture in our cache
     let updated = 0;

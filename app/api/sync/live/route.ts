@@ -5,6 +5,16 @@ import { getFixture } from '@/lib/api-football';
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+// Get date in Eastern Time as YYYY-MM-DD
+function getEasternDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 // Status codes that indicate a live match
 const LIVE_STATUSES = ['IN_PLAY', 'PAUSED', 'LIVE', '1H', '2H', 'HT', 'ET', 'P'];
 
@@ -16,7 +26,7 @@ export async function GET(request: NextRequest) {
     const supabase = createServiceClient();
 
     // Find matches that might be live (scheduled for today with live-ish status or starting soon)
-    const today = new Date().toISOString().split('T')[0];
+    const today = getEasternDate(new Date());
     const now = new Date();
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     const threeHoursAhead = new Date(now.getTime() + 3 * 60 * 60 * 1000);
