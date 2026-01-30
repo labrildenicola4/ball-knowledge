@@ -599,6 +599,59 @@ export default function CalendarPage() {
           <span>⚾</span>
           <span>MLB</span>
         </button>
+        {/* Coming Soon Sports - Greyed Out */}
+        <button
+          disabled
+          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50 cursor-not-allowed"
+          style={{
+            backgroundColor: theme.bgSecondary,
+            color: theme.textSecondary,
+            border: `1px solid ${theme.border}`,
+          }}
+          title="Coming Soon"
+        >
+          <span>🏀</span>
+          <span>NBA</span>
+        </button>
+        <button
+          disabled
+          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50 cursor-not-allowed"
+          style={{
+            backgroundColor: theme.bgSecondary,
+            color: theme.textSecondary,
+            border: `1px solid ${theme.border}`,
+          }}
+          title="Coming Soon"
+        >
+          <span>🏈</span>
+          <span>NFL</span>
+        </button>
+        <button
+          disabled
+          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50 cursor-not-allowed"
+          style={{
+            backgroundColor: theme.bgSecondary,
+            color: theme.textSecondary,
+            border: `1px solid ${theme.border}`,
+          }}
+          title="Coming Soon"
+        >
+          <span>🏒</span>
+          <span>NHL</span>
+        </button>
+        <button
+          disabled
+          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50 cursor-not-allowed"
+          style={{
+            backgroundColor: theme.bgSecondary,
+            color: theme.textSecondary,
+            border: `1px solid ${theme.border}`,
+          }}
+          title="Coming Soon"
+        >
+          <span>🏈</span>
+          <span>CFB</span>
+        </button>
       </div>
 
       {/* Soccer Filters - Shows when Soccer is selected */}
