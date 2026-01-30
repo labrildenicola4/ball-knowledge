@@ -56,6 +56,16 @@ const INTERNATIONAL_TOURNAMENTS: Record<string, { name: string; shortName: strin
 // Available years for dropdown
 const AVAILABLE_YEARS = [2025, 2026];
 
+// Format date as YYYY-MM-DD in Eastern Time (matching the rest of the app)
+function formatDateET(date: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 export default function CalendarPage() {
   const { theme } = useTheme();
   const router = useRouter();
@@ -91,7 +101,7 @@ export default function CalendarPage() {
     if (selectedSport === 'cbb' && selectedDate) {
       setBasketballLoading(true);
       setBasketballError(false);
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      const dateStr = formatDateET(selectedDate);
       fetch(`/api/basketball/games?date=${dateStr}`)
         .then(res => res.json())
         .then(data => {
@@ -109,7 +119,7 @@ export default function CalendarPage() {
     if (selectedSport === 'mlb' && selectedDate) {
       setMlbLoading(true);
       setMlbError(false);
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      const dateStr = formatDateET(selectedDate);
       fetch(`/api/mlb/games?date=${dateStr}`)
         .then(res => res.json())
         .then(data => {
