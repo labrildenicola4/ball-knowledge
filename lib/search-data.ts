@@ -23,12 +23,24 @@ export interface SearchableLeague {
 // ESPN MLB logo URL pattern
 const getMLBLogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/mlb/500/${abbrev.toLowerCase()}.png`;
 
+// ESPN NBA logo URL pattern
+const getNBALogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/nba/500/${abbrev.toLowerCase()}.png`;
+
 export interface SearchableMLBTeam {
   id: string;
   name: string;
   abbreviation: string;
   league: 'AL' | 'NL';
   division: 'East' | 'Central' | 'West';
+  logo: string;
+}
+
+export interface SearchableNBATeam {
+  id: string;
+  name: string;
+  abbreviation: string;
+  conference: 'Eastern' | 'Western';
+  division: string;
   logo: string;
 }
 
@@ -69,6 +81,45 @@ export const MLB_TEAMS: SearchableMLBTeam[] = [
   { id: '19', name: 'Los Angeles Dodgers', abbreviation: 'LAD', league: 'NL', division: 'West', logo: getMLBLogo('lad') },
   { id: '25', name: 'San Diego Padres', abbreviation: 'SD', league: 'NL', division: 'West', logo: getMLBLogo('sd') },
   { id: '26', name: 'San Francisco Giants', abbreviation: 'SF', league: 'NL', division: 'West', logo: getMLBLogo('sf') },
+];
+
+export const NBA_TEAMS: SearchableNBATeam[] = [
+  // Eastern Conference - Atlantic
+  { id: '2', name: 'Boston Celtics', abbreviation: 'BOS', conference: 'Eastern', division: 'Atlantic', logo: getNBALogo('bos') },
+  { id: '17', name: 'Brooklyn Nets', abbreviation: 'BKN', conference: 'Eastern', division: 'Atlantic', logo: getNBALogo('bkn') },
+  { id: '18', name: 'New York Knicks', abbreviation: 'NYK', conference: 'Eastern', division: 'Atlantic', logo: getNBALogo('ny') },
+  { id: '20', name: 'Philadelphia 76ers', abbreviation: 'PHI', conference: 'Eastern', division: 'Atlantic', logo: getNBALogo('phi') },
+  { id: '28', name: 'Toronto Raptors', abbreviation: 'TOR', conference: 'Eastern', division: 'Atlantic', logo: getNBALogo('tor') },
+  // Eastern Conference - Central
+  { id: '4', name: 'Chicago Bulls', abbreviation: 'CHI', conference: 'Eastern', division: 'Central', logo: getNBALogo('chi') },
+  { id: '5', name: 'Cleveland Cavaliers', abbreviation: 'CLE', conference: 'Eastern', division: 'Central', logo: getNBALogo('cle') },
+  { id: '8', name: 'Detroit Pistons', abbreviation: 'DET', conference: 'Eastern', division: 'Central', logo: getNBALogo('det') },
+  { id: '11', name: 'Indiana Pacers', abbreviation: 'IND', conference: 'Eastern', division: 'Central', logo: getNBALogo('ind') },
+  { id: '15', name: 'Milwaukee Bucks', abbreviation: 'MIL', conference: 'Eastern', division: 'Central', logo: getNBALogo('mil') },
+  // Eastern Conference - Southeast
+  { id: '1', name: 'Atlanta Hawks', abbreviation: 'ATL', conference: 'Eastern', division: 'Southeast', logo: getNBALogo('atl') },
+  { id: '30', name: 'Charlotte Hornets', abbreviation: 'CHA', conference: 'Eastern', division: 'Southeast', logo: getNBALogo('cha') },
+  { id: '14', name: 'Miami Heat', abbreviation: 'MIA', conference: 'Eastern', division: 'Southeast', logo: getNBALogo('mia') },
+  { id: '19', name: 'Orlando Magic', abbreviation: 'ORL', conference: 'Eastern', division: 'Southeast', logo: getNBALogo('orl') },
+  { id: '27', name: 'Washington Wizards', abbreviation: 'WAS', conference: 'Eastern', division: 'Southeast', logo: getNBALogo('wsh') },
+  // Western Conference - Northwest
+  { id: '7', name: 'Denver Nuggets', abbreviation: 'DEN', conference: 'Western', division: 'Northwest', logo: getNBALogo('den') },
+  { id: '16', name: 'Minnesota Timberwolves', abbreviation: 'MIN', conference: 'Western', division: 'Northwest', logo: getNBALogo('min') },
+  { id: '22', name: 'Oklahoma City Thunder', abbreviation: 'OKC', conference: 'Western', division: 'Northwest', logo: getNBALogo('okc') },
+  { id: '21', name: 'Portland Trail Blazers', abbreviation: 'POR', conference: 'Western', division: 'Northwest', logo: getNBALogo('por') },
+  { id: '26', name: 'Utah Jazz', abbreviation: 'UTA', conference: 'Western', division: 'Northwest', logo: getNBALogo('utah') },
+  // Western Conference - Pacific
+  { id: '9', name: 'Golden State Warriors', abbreviation: 'GSW', conference: 'Western', division: 'Pacific', logo: getNBALogo('gs') },
+  { id: '12', name: 'LA Clippers', abbreviation: 'LAC', conference: 'Western', division: 'Pacific', logo: getNBALogo('lac') },
+  { id: '13', name: 'Los Angeles Lakers', abbreviation: 'LAL', conference: 'Western', division: 'Pacific', logo: getNBALogo('lal') },
+  { id: '23', name: 'Phoenix Suns', abbreviation: 'PHX', conference: 'Western', division: 'Pacific', logo: getNBALogo('phx') },
+  { id: '23', name: 'Sacramento Kings', abbreviation: 'SAC', conference: 'Western', division: 'Pacific', logo: getNBALogo('sac') },
+  // Western Conference - Southwest
+  { id: '6', name: 'Dallas Mavericks', abbreviation: 'DAL', conference: 'Western', division: 'Southwest', logo: getNBALogo('dal') },
+  { id: '10', name: 'Houston Rockets', abbreviation: 'HOU', conference: 'Western', division: 'Southwest', logo: getNBALogo('hou') },
+  { id: '29', name: 'Memphis Grizzlies', abbreviation: 'MEM', conference: 'Western', division: 'Southwest', logo: getNBALogo('mem') },
+  { id: '3', name: 'New Orleans Pelicans', abbreviation: 'NOP', conference: 'Western', division: 'Southwest', logo: getNBALogo('no') },
+  { id: '24', name: 'San Antonio Spurs', abbreviation: 'SAS', conference: 'Western', division: 'Southwest', logo: getNBALogo('sa') },
 ];
 
 // Competition emblem URLs from API-Football
@@ -219,9 +270,10 @@ export function searchAll(query: string): {
   teams: SearchableTeam[];
   leagues: SearchableLeague[];
   mlbTeams: SearchableMLBTeam[];
+  nbaTeams: SearchableNBATeam[];
 } {
   const q = query.toLowerCase().trim();
-  if (!q) return { teams: [], leagues: [], mlbTeams: [] };
+  if (!q) return { teams: [], leagues: [], mlbTeams: [], nbaTeams: [] };
 
   const teams = TEAMS.filter(
     (t) =>
@@ -242,5 +294,11 @@ export function searchAll(query: string): {
       t.abbreviation.toLowerCase().includes(q)
   ).slice(0, 10);
 
-  return { teams, leagues, mlbTeams };
+  const nbaTeams = NBA_TEAMS.filter(
+    (t) =>
+      t.name.toLowerCase().includes(q) ||
+      t.abbreviation.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  return { teams, leagues, mlbTeams, nbaTeams };
 }
