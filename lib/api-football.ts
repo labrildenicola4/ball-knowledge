@@ -1,6 +1,11 @@
 // API-Football client
 // Docs: https://www.api-football.com/documentation-v3
 
+import { LEAGUE_IDS, LEAGUE_ID_TO_KEY } from './constants/leagues';
+
+// Re-export for backward compatibility
+export { LEAGUE_IDS, LEAGUE_ID_TO_KEY };
+
 const API_BASE = 'https://v3.football.api-sports.io';
 const API_KEY = process.env.API_FOOTBALL_KEY!;
 
@@ -8,36 +13,6 @@ const API_KEY = process.env.API_FOOTBALL_KEY!;
 const cache = new Map<string, { data: unknown; timestamp: number }>();
 const CACHE_TTL = 60 * 1000; // 1 minute for general data
 const LIVE_CACHE_TTL = 15 * 1000; // 15 seconds for live data
-
-// League IDs in API-Football
-export const LEAGUE_IDS: Record<string, number> = {
-  // Top 5 European leagues
-  premier: 39,
-  laliga: 140,
-  seriea: 135,
-  bundesliga: 78,
-  ligue1: 61,
-  // Additional leagues
-  primeiraliga: 94,
-  eredivisie: 88,
-  championship: 40,
-  brasileirao: 71,
-  // Domestic cups
-  copadelrey: 143,
-  facup: 45,
-  coupdefrance: 66,
-  coppadeitalia: 137,
-  dfbpokal: 81,
-  // International
-  championsleague: 2,
-  europaleague: 3,
-  copalibertadores: 13,
-};
-
-// Reverse mapping
-export const LEAGUE_ID_TO_KEY: Record<number, string> = Object.fromEntries(
-  Object.entries(LEAGUE_IDS).map(([key, id]) => [id, key])
-);
 
 interface ApiResponse<T> {
   get: string;

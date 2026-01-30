@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
+import { LEAGUE_ID_TO_CODE, SUPPORTED_LEAGUE_IDS } from '@/lib/constants/leagues';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -7,27 +8,8 @@ export const dynamic = 'force-dynamic';
 const API_FOOTBALL_BASE = 'https://v3.football.api-sports.io';
 const API_KEY = process.env.API_FOOTBALL_KEY!;
 
-// Map API-Football league IDs to our league codes
-const LEAGUE_ID_TO_CODE: Record<number, string> = {
-  // Top 5 European leagues
-  39: 'PL',    // Premier League
-  140: 'PD',   // La Liga
-  135: 'SA',   // Serie A
-  78: 'BL1',   // Bundesliga
-  61: 'FL1',   // Ligue 1
-  // Additional leagues
-  94: 'PPL',   // Primeira Liga
-  88: 'DED',   // Eredivisie
-  40: 'ELC',   // Championship
-  71: 'BSA',   // Brasileirao
-  // International
-  2: 'CL',     // Champions League
-  3: 'EL',     // Europa League
-  13: 'CLI',   // Copa Libertadores
-};
-
 // Supported league IDs (only sync leagues we care about)
-const SUPPORTED_LEAGUES = new Set(Object.keys(LEAGUE_ID_TO_CODE).map(Number));
+const SUPPORTED_LEAGUES = SUPPORTED_LEAGUE_IDS;
 
 // Map API-Football status to our status format
 function mapStatus(status: string): string {

@@ -2,7 +2,7 @@
 
 const GAMMA_API_BASE = 'https://gamma-api.polymarket.com';
 
-// Map our league codes (from football-data.org) to Polymarket series IDs
+// Map our league codes to Polymarket series IDs
 const LEAGUE_TO_SERIES_ID: Record<string, number> = {
   // Main European leagues
   'PL': 10188,      // Premier League

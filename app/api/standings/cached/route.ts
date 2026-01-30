@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getStandings } from '@/lib/api-football';
+import { LEAGUE_IDS, LEAGUE_ID_TO_CODE, CODE_TO_LEAGUE_ID } from '@/lib/constants/leagues';
 
 export const dynamic = 'force-dynamic';
 
-// Map league names/codes to API-Football league IDs
+// Map league names/codes to API-Football league IDs (combines key lookup and code lookup)
 const LEAGUE_NAME_TO_ID: Record<string, number> = {
-  'laliga': 140, 'premier': 39, 'seriea': 135, 'bundesliga': 78, 'ligue1': 61,
-  'primeiraliga': 94, 'eredivisie': 88, 'championship': 40, 'brasileirao': 71,
-  'championsleague': 2, 'europaleague': 3, 'copalibertadores': 13,
-  'PD': 140, 'PL': 39, 'SA': 135, 'BL1': 78, 'FL1': 61,
-  'PPL': 94, 'DED': 88, 'ELC': 40, 'BSA': 71,
-  'CL': 2, 'EL': 3, 'CLI': 13,
-};
-
-// Reverse mapping for cache lookups
-const LEAGUE_ID_TO_CODE: Record<number, string> = {
-  140: 'PD', 39: 'PL', 135: 'SA', 78: 'BL1', 61: 'FL1',
-  94: 'PPL', 88: 'DED', 40: 'ELC', 71: 'BSA',
-  2: 'CL', 3: 'EL', 13: 'CLI',
+  ...LEAGUE_IDS,
+  ...CODE_TO_LEAGUE_ID,
 };
 
 export async function GET(request: NextRequest) {

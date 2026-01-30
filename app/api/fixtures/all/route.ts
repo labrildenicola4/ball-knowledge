@@ -1,32 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFixturesByDate, mapStatus, parseRound } from '@/lib/api-football';
 import { createServiceClient } from '@/lib/supabase-server';
+import { LEAGUE_ID_TO_CODE, SUPPORTED_LEAGUE_IDS } from '@/lib/constants/leagues';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
-
-// Map API-Football league IDs to our league codes
-const LEAGUE_ID_TO_CODE: Record<number, string> = {
-  39: 'PL',    // Premier League
-  140: 'PD',   // La Liga
-  135: 'SA',   // Serie A
-  78: 'BL1',   // Bundesliga
-  61: 'FL1',   // Ligue 1
-  94: 'PPL',   // Primeira Liga
-  88: 'DED',   // Eredivisie
-  40: 'ELC',   // Championship
-  71: 'BSA',   // Brasileirao
-  2: 'CL',     // Champions League
-  3: 'EL',     // Europa League
-  13: 'CLI',   // Copa Libertadores
-  143: 'CDR',  // Copa del Rey
-  45: 'FAC',   // FA Cup
-  66: 'CDF',   // Coupe de France
-  137: 'CIT',  // Coppa Italia
-  81: 'DFB',   // DFB Pokal
-};
-
-const SUPPORTED_LEAGUE_IDS = new Set(Object.keys(LEAGUE_ID_TO_CODE).map(Number));
 
 interface TransformedMatch {
   id: number;

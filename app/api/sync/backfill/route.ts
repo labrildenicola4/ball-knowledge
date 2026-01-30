@@ -1,32 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
 import { getFixturesByDate, mapStatus, parseRound } from '@/lib/api-football';
+import { LEAGUE_ID_TO_CODE, SUPPORTED_LEAGUE_IDS } from '@/lib/constants/leagues';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-// Map API-Football league IDs to our league codes
-const LEAGUE_ID_TO_CODE: Record<number, string> = {
-  39: 'PL',    // Premier League
-  140: 'PD',   // La Liga
-  135: 'SA',   // Serie A
-  78: 'BL1',   // Bundesliga
-  61: 'FL1',   // Ligue 1
-  94: 'PPL',   // Primeira Liga
-  88: 'DED',   // Eredivisie
-  40: 'ELC',   // Championship
-  71: 'BSA',   // Brasileirao
-  2: 'CL',     // Champions League
-  3: 'EL',     // Europa League
-  13: 'CLI',   // Copa Libertadores
-  143: 'CDR',  // Copa del Rey
-  45: 'FAC',   // FA Cup
-  66: 'CDF',   // Coupe de France
-  137: 'CIT',  // Coppa Italia
-  81: 'DFB',   // DFB Pokal
-};
-
-const ALL_LEAGUE_IDS = Object.keys(LEAGUE_ID_TO_CODE).map(Number);
+const ALL_LEAGUE_IDS = Array.from(SUPPORTED_LEAGUE_IDS);
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();

@@ -14,16 +14,9 @@ import {
   type SquadPlayer,
   type PlayerWithStats,
 } from '@/lib/api-football';
+import { LEAGUE_ID_TO_CODE } from '@/lib/constants/leagues';
 
 export const dynamic = 'force-dynamic';
-
-// Map league IDs to codes
-const LEAGUE_ID_TO_CODE: Record<number, string> = {
-  39: 'PL', 140: 'PD', 135: 'SA', 78: 'BL1', 61: 'FL1',
-  94: 'PPL', 88: 'DED', 40: 'ELC', 71: 'BSA',
-  2: 'CL', 3: 'EL', 13: 'CLI',
-  143: 'CDR', 45: 'FAC', 66: 'CDF', 137: 'CIT', 81: 'DFB',
-};
 
 // Primary domestic leagues for team statistics
 const PRIMARY_LEAGUES: Record<string, number> = {

@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
-import { getMatch, getHeadToHead, getTeamForm, mapStatus, COMPETITION_CODES } from '@/lib/football-data';
-import { getMatchDataForFixture, mapStatistics } from '@/lib/api-football';
+import {
+  getFixture,
+  getHeadToHead,
+  getTeamForm,
+  mapStatus,
+  getMatchDataForFixture,
+  mapStatistics,
+  LEAGUE_ID_TO_KEY,
+  type Fixture,
+} from '@/lib/api-football';
+import { CODE_TO_LEAGUE_KEY } from '@/lib/constants/leagues';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-// Reverse mapping from competition code to league key
-const CODE_TO_LEAGUE: Record<string, string> = Object.fromEntries(
-  Object.entries(COMPETITION_CODES).map(([key, code]) => [code, key])
-);
+// Alias for backward compatibility
+const CODE_TO_LEAGUE = CODE_TO_LEAGUE_KEY;
 
 // Rate limit delay between matches (ms)
 const DELAY_BETWEEN_MATCHES = 3000;
@@ -59,40 +66,40 @@ export async function GET(request: NextRequest) {
       try {
         console.log(`[Sync Match Details] Syncing match ${cachedMatch.api_id}: ${cachedMatch.home_team_name} vs ${cachedMatch.away_team_name}`);
 
-        // Fetch full match details from football-data.org
-        const match = await getMatch(cachedMatch.api_id);
+        // Fetch full match details from api-football
+        const fixture = await getFixture(cachedMatch.api_id);
 
-        if (!match) {
+        if (!fixture) {
           console.error(`[Sync Match Details] Match ${cachedMatch.api_id} not found`);
           errorCount++;
           continue;
         }
 
-        const statusInfo = mapStatus(match.status, match.minute);
-        const matchDate = new Date(match.utcDate);
+        const statusInfo = mapStatus(fixture.fixture.status.short, fixture.fixture.status.elapsed);
+        const matchDate = new Date(fixture.fixture.date);
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const displayDate = `${monthNames[matchDate.getMonth()]} ${matchDate.getDate()}`;
-        const leagueKey = CODE_TO_LEAGUE[match.competition.code] || null;
+        const leagueKey = LEAGUE_ID_TO_KEY[fixture.league.id] || CODE_TO_LEAGUE[cachedMatch.league_code] || null;
         const matchDateStr = matchDate.toISOString().split('T')[0];
 
         // Fetch H2H, team forms, and lineups+stats in parallel
         const [h2hData, homeForm, awayForm, apiFootballData] = await Promise.all([
-          getHeadToHead(cachedMatch.api_id, 10).catch(() => []),
-          getTeamForm(match.homeTeam.id, 5).catch(() => []),
-          getTeamForm(match.awayTeam.id, 5).catch(() => []),
+          getHeadToHead(fixture.teams.home.id, fixture.teams.away.id, 10).catch(() => []),
+          getTeamForm(fixture.teams.home.id, 5).catch(() => []),
+          getTeamForm(fixture.teams.away.id, 5).catch(() => []),
           leagueKey
-            ? getMatchDataForFixture(leagueKey, matchDateStr, match.homeTeam.name, match.awayTeam.name).catch(() => ({ lineups: [], statistics: [], fixtureId: null }))
+            ? getMatchDataForFixture(leagueKey, matchDateStr, fixture.teams.home.name, fixture.teams.away.name).catch(() => ({ lineups: [], statistics: [], fixtureId: null }))
             : Promise.resolve({ lineups: [], statistics: [], fixtureId: null }),
         ]);
 
-        // Calculate H2H stats
+        // Calculate H2H stats from api-football fixtures
         let h2hStats = { total: 0, homeWins: 0, draws: 0, awayWins: 0 };
         if (h2hData.length > 0) {
           h2hStats.total = h2hData.length;
-          h2hData.forEach((m) => {
-            const homeGoals = m.score.fullTime.home ?? 0;
-            const awayGoals = m.score.fullTime.away ?? 0;
-            const isCurrentHomeTeamHome = m.homeTeam.id === match.homeTeam.id;
+          h2hData.forEach((m: Fixture) => {
+            const homeGoals = m.goals.home ?? 0;
+            const awayGoals = m.goals.away ?? 0;
+            const isCurrentHomeTeamHome = m.teams.home.id === fixture.teams.home.id;
             if (homeGoals === awayGoals) {
               h2hStats.draws++;
             } else if ((homeGoals > awayGoals && isCurrentHomeTeamHome) || (awayGoals > homeGoals && !isCurrentHomeTeamHome)) {
@@ -123,13 +130,13 @@ export async function GET(request: NextRequest) {
           });
 
           const homeLineupData = lineupResult.find(l =>
-            l.team.name.toLowerCase().includes(match.homeTeam.name.toLowerCase().split(' ')[0]) ||
-            match.homeTeam.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
+            l.team.name.toLowerCase().includes(fixture.teams.home.name.toLowerCase().split(' ')[0]) ||
+            fixture.teams.home.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
           ) || lineupResult[0];
 
           const awayLineupData = lineupResult.find(l =>
-            l.team.name.toLowerCase().includes(match.awayTeam.name.toLowerCase().split(' ')[0]) ||
-            match.awayTeam.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
+            l.team.name.toLowerCase().includes(fixture.teams.away.name.toLowerCase().split(' ')[0]) ||
+            fixture.teams.away.name.toLowerCase().includes(l.team.name.toLowerCase().split(' ')[0])
           ) || lineupResult[1];
 
           homeLineup = homeLineupData.startXI.map(mapLineupPlayer);
@@ -151,21 +158,21 @@ export async function GET(request: NextRequest) {
 
         // Build full match details
         const matchDetails = {
-          id: match.id,
-          league: match.competition.name,
-          leagueCode: leagueKey,
+          id: fixture.fixture.id,
+          league: fixture.league.name,
+          leagueCode: leagueKey || cachedMatch.league_code,
           date: displayDate,
-          venue: match.venue || 'TBD',
+          venue: fixture.fixture.venue?.name || 'TBD',
           attendance: null,
           status: statusInfo.status,
-          minute: match.minute,
-          matchday: match.matchday,
+          minute: fixture.fixture.status.elapsed,
+          matchday: parseInt(fixture.league.round.match(/\d+/)?.[0] || '1'),
           home: {
-            id: match.homeTeam.id,
-            name: match.homeTeam.name,
-            shortName: match.homeTeam.tla || match.homeTeam.shortName || match.homeTeam.name.substring(0, 3).toUpperCase(),
-            logo: match.homeTeam.crest,
-            score: match.score.fullTime.home,
+            id: fixture.teams.home.id,
+            name: fixture.teams.home.name,
+            shortName: fixture.teams.home.name.substring(0, 3).toUpperCase(),
+            logo: fixture.teams.home.logo,
+            score: fixture.goals.home,
             form: homeForm,
             lineup: homeLineup,
             bench: homeBench,
@@ -173,11 +180,11 @@ export async function GET(request: NextRequest) {
             coach: homeCoach,
           },
           away: {
-            id: match.awayTeam.id,
-            name: match.awayTeam.name,
-            shortName: match.awayTeam.tla || match.awayTeam.shortName || match.awayTeam.name.substring(0, 3).toUpperCase(),
-            logo: match.awayTeam.crest,
-            score: match.score.fullTime.away,
+            id: fixture.teams.away.id,
+            name: fixture.teams.away.name,
+            shortName: fixture.teams.away.name.substring(0, 3).toUpperCase(),
+            logo: fixture.teams.away.logo,
+            score: fixture.goals.away,
             form: awayForm,
             lineup: awayLineup,
             bench: awayBench,
@@ -186,8 +193,8 @@ export async function GET(request: NextRequest) {
           },
           h2h: h2hStats,
           halfTimeScore: {
-            home: match.score.halfTime.home,
-            away: match.score.halfTime.away,
+            home: fixture.score.halftime.home,
+            away: fixture.score.halftime.away,
           },
           stats: matchStats,
         };

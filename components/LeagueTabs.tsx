@@ -9,13 +9,21 @@ const leagues = [
   { id: 'seriea', name: 'Serie A', icon: '🇮🇹' },
   { id: 'bundesliga', name: 'Bundesliga', icon: '🇩🇪' },
   { id: 'ligue1', name: 'Ligue 1', icon: '🇫🇷' },
-  // Additional Leagues
+  // Domestic Cups
+  { id: 'copadelrey', name: 'Copa del Rey', icon: '🇪🇸' },
+  { id: 'facup', name: 'FA Cup', icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  { id: 'coppadeitalia', name: 'Coppa Italia', icon: '🇮🇹' },
+  { id: 'dfbpokal', name: 'DFB Pokal', icon: '🇩🇪' },
+  { id: 'coupdefrance', name: 'Coupe de France', icon: '🇫🇷' },
+  // Other Leagues
   { id: 'championship', name: 'Championship', icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
   { id: 'eredivisie', name: 'Eredivisie', icon: '🇳🇱' },
   { id: 'primeiraliga', name: 'Primeira Liga', icon: '🇵🇹' },
   { id: 'brasileirao', name: 'Brasileirão', icon: '🇧🇷' },
   // International
   { id: 'championsleague', name: 'UCL', icon: '🏆' },
+  { id: 'europaleague', name: 'Europa League', icon: '🏆' },
+  { id: 'conferenceleague', name: 'Conference', icon: '🏆' },
   { id: 'copalibertadores', name: 'Libertadores', icon: '🏆' },
 ];
 

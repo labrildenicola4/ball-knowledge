@@ -14,36 +14,36 @@ export const NATIONS: Nation[] = [
     id: 'spain',
     name: 'Spain',
     flag: '🇪🇸',
-    domesticLeagues: ['PD'],  // La Liga
-    internationalCompetitions: ['CL'],
+    domesticLeagues: ['PD', 'CDR'],  // La Liga, Copa del Rey
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'england',
     name: 'England',
     flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-    domesticLeagues: ['PL', 'ELC'],  // Premier League, Championship
-    internationalCompetitions: ['CL'],
+    domesticLeagues: ['PL', 'ELC', 'FAC'],  // Premier League, Championship, FA Cup
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'italy',
     name: 'Italy',
     flag: '🇮🇹',
-    domesticLeagues: ['SA'],  // Serie A
-    internationalCompetitions: ['CL'],
+    domesticLeagues: ['SA', 'CIT'],  // Serie A, Coppa Italia
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'germany',
     name: 'Germany',
     flag: '🇩🇪',
-    domesticLeagues: ['BL1'],  // Bundesliga
-    internationalCompetitions: ['CL'],
+    domesticLeagues: ['BL1', 'DFB'],  // Bundesliga, DFB Pokal
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'france',
     name: 'France',
     flag: '🇫🇷',
-    domesticLeagues: ['FL1'],  // Ligue 1
-    internationalCompetitions: ['CL'],
+    domesticLeagues: ['FL1', 'CDF'],  // Ligue 1, Coupe de France
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'brazil',
@@ -57,124 +57,129 @@ export const NATIONS: Nation[] = [
     name: 'Portugal',
     flag: '🇵🇹',
     domesticLeagues: ['PPL'],  // Primeira Liga
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'netherlands',
     name: 'Netherlands',
     flag: '🇳🇱',
     domesticLeagues: ['DED'],  // Eredivisie
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'belgium',
     name: 'Belgium',
     flag: '🇧🇪',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'scotland',
     name: 'Scotland',
     flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'turkey',
     name: 'Turkey',
     flag: '🇹🇷',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'ukraine',
     name: 'Ukraine',
     flag: '🇺🇦',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'austria',
     name: 'Austria',
     flag: '🇦🇹',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'switzerland',
     name: 'Switzerland',
     flag: '🇨🇭',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'greece',
     name: 'Greece',
     flag: '🇬🇷',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'czech',
     name: 'Czech Republic',
     flag: '🇨🇿',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'denmark',
     name: 'Denmark',
     flag: '🇩🇰',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'norway',
     name: 'Norway',
     flag: '🇳🇴',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'cyprus',
     name: 'Cyprus',
     flag: '🇨🇾',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'azerbaijan',
     name: 'Azerbaijan',
     flag: '🇦🇿',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
   {
     id: 'kazakhstan',
     name: 'Kazakhstan',
     flag: '🇰🇿',
     domesticLeagues: [],
-    internationalCompetitions: ['CL'],
+    internationalCompetitions: ['CL', 'EL', 'ECL'],
   },
 ];
 
 // Map competition codes to their nation
-// Domestic leagues map directly to one nation
+// Domestic leagues and cups map directly to one nation
 export const LEAGUE_TO_NATION: Record<string, string> = {
   'PD': 'spain',      // La Liga
+  'CDR': 'spain',     // Copa del Rey
   'PL': 'england',    // Premier League
   'ELC': 'england',   // Championship
+  'FAC': 'england',   // FA Cup
   'SA': 'italy',      // Serie A
+  'CIT': 'italy',     // Coppa Italia
   'BL1': 'germany',   // Bundesliga
+  'DFB': 'germany',   // DFB Pokal
   'FL1': 'france',    // Ligue 1
+  'CDF': 'france',    // Coupe de France
   'BSA': 'brazil',    // Brasileirão
   'PPL': 'portugal',  // Primeira Liga
   'DED': 'netherlands', // Eredivisie
 };
 
-// International competitions (CL, CLI) need team-based lookup
-export const INTERNATIONAL_COMPETITIONS = ['CL', 'CLI'];
+// International competitions (CL, EL, ECL, CLI) need team-based lookup
+export const INTERNATIONAL_COMPETITIONS = ['CL', 'EL', 'ECL', 'CLI'];
 
 // Team ID to Nation mapping for Champions League teams
 // API-Football team IDs
@@ -453,7 +458,14 @@ export function getLeagueIdFromCode(code: string): string {
     'PPL': 'primeiraliga',
     'DED': 'eredivisie',
     'CL': 'championsleague',
+    'EL': 'europaleague',
+    'ECL': 'conferenceleague',
     'CLI': 'copalibertadores',
+    'CDR': 'copadelrey',
+    'FAC': 'facup',
+    'CIT': 'coppadeitalia',
+    'DFB': 'dfbpokal',
+    'CDF': 'coupdefrance',
   };
   return mapping[code] || code.toLowerCase();
 }

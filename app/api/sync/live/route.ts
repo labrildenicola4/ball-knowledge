@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase-server';
-import { getMatch } from '@/lib/football-data';
+import { getFixture } from '@/lib/api-football';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -82,19 +82,32 @@ export async function GET(request: NextRequest) {
     // Update each match
     for (const match of matchesToCheck) {
       try {
-        const details = await getMatch(match.api_id);
+        const fixture = await getFixture(match.api_id);
 
-        // Map status
+        if (!fixture) {
+          errors.push(`Match ${match.api_id}: Not found`);
+          continue;
+        }
+
+        // Map api-football status codes
         let status = 'NS';
-        switch (details.status) {
-          case 'FINISHED': status = 'FT'; break;
-          case 'IN_PLAY': status = details.minute && details.minute <= 45 ? '1H' : '2H'; break;
-          case 'PAUSED': status = 'HT'; break;
-          case 'SCHEDULED':
-          case 'TIMED': status = 'NS'; break;
-          case 'POSTPONED': status = 'PST'; break;
-          case 'CANCELLED': status = 'CAN'; break;
-          default: status = details.status;
+        const apiStatus = fixture.fixture.status.short;
+        switch (apiStatus) {
+          case 'FT':
+          case 'AET':
+          case 'PEN': status = 'FT'; break;
+          case '1H': status = '1H'; break;
+          case '2H': status = '2H'; break;
+          case 'HT': status = 'HT'; break;
+          case 'ET': status = 'ET'; break;
+          case 'NS':
+          case 'TBD': status = 'NS'; break;
+          case 'PST': status = 'PST'; break;
+          case 'CANC': status = 'CAN'; break;
+          case 'SUSP': status = 'SUSP'; break;
+          case 'INT': status = 'INT'; break;
+          case 'LIVE': status = fixture.fixture.status.elapsed && fixture.fixture.status.elapsed <= 45 ? '1H' : '2H'; break;
+          default: status = apiStatus;
         }
 
         // Update the cache
@@ -102,9 +115,9 @@ export async function GET(request: NextRequest) {
           .from('fixtures_cache')
           .update({
             status,
-            minute: details.minute || null,
-            home_score: details.score.fullTime.home ?? details.score.halfTime?.home ?? null,
-            away_score: details.score.fullTime.away ?? details.score.halfTime?.away ?? null,
+            minute: fixture.fixture.status.elapsed || null,
+            home_score: fixture.goals.home ?? fixture.score.halftime?.home ?? null,
+            away_score: fixture.goals.away ?? fixture.score.halftime?.away ?? null,
             updated_at: new Date().toISOString(),
           })
           .eq('api_id', match.api_id);
@@ -113,7 +126,7 @@ export async function GET(request: NextRequest) {
           errors.push(`Match ${match.api_id}: ${updateError.message}`);
         } else {
           updated++;
-          console.log(`[Sync/Live] Updated match ${match.api_id}: ${status} ${details.score.fullTime.home ?? 0}-${details.score.fullTime.away ?? 0}`);
+          console.log(`[Sync/Live] Updated match ${match.api_id}: ${status} ${fixture.goals.home ?? 0}-${fixture.goals.away ?? 0}`);
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Unknown error';
