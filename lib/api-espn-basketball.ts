@@ -100,11 +100,13 @@ function transformGame(event: ESPNEvent): BasketballGame {
     venue: competition.venue?.fullName,
     broadcast: competition.broadcasts?.[0]?.names?.[0],
     date: new Date(event.date).toLocaleDateString('en-US', {
+      timeZone: 'America/New_York',
       weekday: 'short',
       month: 'short',
       day: 'numeric',
     }),
     startTime: new Date(event.date).toLocaleTimeString('en-US', {
+      timeZone: 'America/New_York',
       hour: 'numeric',
       minute: '2-digit',
     }),
@@ -165,11 +167,13 @@ export async function getBasketballGameSummary(gameId: string): Promise<{
     venue: data.gameInfo?.venue?.fullName,
     broadcast: event.broadcasts?.[0]?.names?.[0],
     date: new Date(data.header.competitions[0].date).toLocaleDateString('en-US', {
+      timeZone: 'America/New_York',
       weekday: 'short',
       month: 'short',
       day: 'numeric',
     }),
     startTime: new Date(data.header.competitions[0].date).toLocaleTimeString('en-US', {
+      timeZone: 'America/New_York',
       hour: 'numeric',
       minute: '2-digit',
     }),
@@ -369,6 +373,7 @@ export async function getBasketballTeam(teamId: string): Promise<BasketballTeamI
       schedule: data.team.nextEvent?.map(event => ({
         id: event.id,
         date: new Date(event.date).toLocaleDateString('en-US', {
+          timeZone: 'America/New_York',
           weekday: 'short',
           month: 'short',
           day: 'numeric',
