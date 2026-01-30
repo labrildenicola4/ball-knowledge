@@ -63,6 +63,7 @@ interface CombinedGame {
   time: string;
   timeValue: number; // For sorting
   isLive: boolean;
+  isFinished?: boolean;
   soccerMatch?: Match;
   basketballGame?: BasketballGame;
   mlbGame?: MLBGame;
@@ -173,15 +174,17 @@ export default function HomePage() {
   const allGames = useMemo<CombinedGame[]>(() => {
     const combined: CombinedGame[] = [];
 
-    // Add soccer matches
+    // Add soccer matches (exclude finished games from upcoming)
     matches.forEach(match => {
-      const isLive = ['LIVE', '1H', '2H', 'HT'].includes(match.status);
+      const isLive = ['LIVE', '1H', '2H', 'HT', 'ET', 'P'].includes(match.status);
+      const isFinished = match.status === 'FT';
       combined.push({
         type: 'soccer',
         id: `soccer-${match.id}`,
         time: match.time,
         timeValue: parseTimeToEST(match.time),
         isLive,
+        isFinished,
         soccerMatch: match,
       });
     });
@@ -189,12 +192,14 @@ export default function HomePage() {
     // Add basketball games
     basketballGames.forEach(game => {
       const isLive = game.status === 'in_progress';
+      const isFinished = game.status === 'final';
       combined.push({
         type: 'basketball',
         id: `basketball-${game.id}`,
         time: game.startTime,
         timeValue: parseTimeToEST(game.startTime),
         isLive,
+        isFinished,
         basketballGame: game,
       });
     });
@@ -202,12 +207,14 @@ export default function HomePage() {
     // Add MLB games
     mlbGames.forEach(game => {
       const isLive = game.status === 'in_progress';
+      const isFinished = game.status === 'final';
       combined.push({
         type: 'mlb',
         id: `mlb-${game.id}`,
         time: game.startTime,
         timeValue: parseTimeToEST(game.startTime),
         isLive,
+        isFinished,
         mlbGame: game,
       });
     });
@@ -215,10 +222,11 @@ export default function HomePage() {
     return combined;
   }, [matches, basketballGames, mlbGames]);
 
-  // Separate live and upcoming games
+  // Separate live, finished, and upcoming games
   const liveGames = allGames.filter(g => g.isLive);
+  const finishedGames = allGames.filter(g => g.isFinished);
   const upcomingGames = allGames
-    .filter(g => !g.isLive)
+    .filter(g => !g.isLive && !g.isFinished)
     .sort((a, b) => a.timeValue - b.timeValue);
 
   // Group upcoming games by hour for better organization
@@ -381,6 +389,51 @@ export default function HomePage() {
                 {!liveCollapsed && (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
                     {liveGames.map((game) => (
+                      game.type === 'soccer' && game.soccerMatch ? (
+                        <MatchCard key={game.id} match={game.soccerMatch} />
+                      ) : game.type === 'basketball' && game.basketballGame ? (
+                        <BasketballGameCard key={game.id} game={game.basketballGame} />
+                      ) : game.type === 'mlb' && game.mlbGame ? (
+                        <MLBGameCard key={game.id} game={game.mlbGame} />
+                      ) : null
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Completed Games Section */}
+            {finishedGames.length > 0 && (
+              <section
+                className="rounded-xl overflow-hidden"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <button
+                  onClick={() => toggleSection('completed')}
+                  className="w-full flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: collapsedSections.has('completed') ? 'none' : `1px solid ${theme.border}` }}
+                >
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-base font-medium" style={{ color: theme.textSecondary }}>
+                      Completed
+                    </h2>
+                    <span
+                      className="rounded-full px-2.5 py-0.5 text-xs"
+                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    >
+                      {finishedGames.length}
+                    </span>
+                  </div>
+                  {collapsedSections.has('completed') ? (
+                    <ChevronDown size={18} style={{ color: theme.textSecondary }} />
+                  ) : (
+                    <ChevronUp size={18} style={{ color: theme.textSecondary }} />
+                  )}
+                </button>
+
+                {!collapsedSections.has('completed') && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
+                    {finishedGames.map((game) => (
                       game.type === 'soccer' && game.soccerMatch ? (
                         <MatchCard key={game.id} match={game.soccerMatch} />
                       ) : game.type === 'basketball' && game.basketballGame ? (
