@@ -63,25 +63,28 @@ export function MLBGameCard({ game }: MLBGameCardProps) {
         </div>
 
         {/* Teams & Score */}
-        <div className="space-y-2">
+        <div className="flex items-center">
           {/* Away Team */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              {game.awayTeam.logo ? (
-                <img
-                  src={game.awayTeam.logo}
-                  alt={game.awayTeam.name}
-                  className="h-6 w-6 flex-shrink-0 object-contain"
-                  loading="lazy"
-                />
-              ) : (
-                <div
-                  className="h-6 w-6 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: game.awayTeam.color || theme.bgTertiary }}
-                />
-              )}
+          <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+            {game.awayTeam.logo ? (
+              <img
+                src={game.awayTeam.logo}
+                alt={game.awayTeam.name}
+                className="h-8 w-8 flex-shrink-0 object-contain"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                className="h-8 w-8 rounded-full flex-shrink-0"
+                style={{ backgroundColor: game.awayTeam.color || theme.bgTertiary }}
+              />
+            )}
+            <div className="flex flex-col min-w-0">
+              <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                Away
+              </span>
               <span
-                className="text-sm font-medium truncate"
+                className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px]"
                 style={{
                   color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: awayWon ? 600 : 500,
@@ -89,55 +92,27 @@ export function MLBGameCard({ game }: MLBGameCardProps) {
               >
                 {game.awayTeam.shortDisplayName}
               </span>
-              {game.awayTeam.record && (
-                <span
-                  className="text-[10px] hidden sm:inline"
-                  style={{ color: theme.textSecondary }}
-                >
-                  ({game.awayTeam.record})
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {(isLive || isFinal) && (
-                <>
-                  <span
-                    className="text-[10px] font-mono"
-                    style={{ color: theme.textSecondary }}
-                  >
-                    {game.awayTeam.hits ?? 0}H
-                  </span>
-                  <span
-                    className="font-mono text-lg font-semibold w-8 text-right"
-                    style={{
-                      color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
-                    }}
-                  >
-                    {game.awayTeam.score ?? 0}
-                  </span>
-                </>
-              )}
             </div>
           </div>
 
+          {/* Score */}
+          <div
+            className="font-mono rounded-lg px-4 py-2 text-lg font-semibold flex-shrink-0"
+            style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
+          >
+            {(isLive || isFinal)
+              ? `${game.awayTeam.score ?? 0} - ${game.homeTeam.score ?? 0}`
+              : 'vs'}
+          </div>
+
           {/* Home Team */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              {game.homeTeam.logo ? (
-                <img
-                  src={game.homeTeam.logo}
-                  alt={game.homeTeam.name}
-                  className="h-6 w-6 flex-shrink-0 object-contain"
-                  loading="lazy"
-                />
-              ) : (
-                <div
-                  className="h-6 w-6 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: game.homeTeam.color || theme.bgTertiary }}
-                />
-              )}
+          <div className="flex items-center gap-2 flex-1 min-w-0 pl-2 justify-end">
+            <div className="flex flex-col items-end min-w-0">
+              <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                Home
+              </span>
               <span
-                className="text-sm font-medium truncate"
+                className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px] text-right"
                 style={{
                   color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: homeWon ? 600 : 500,
@@ -145,35 +120,20 @@ export function MLBGameCard({ game }: MLBGameCardProps) {
               >
                 {game.homeTeam.shortDisplayName}
               </span>
-              {game.homeTeam.record && (
-                <span
-                  className="text-[10px] hidden sm:inline"
-                  style={{ color: theme.textSecondary }}
-                >
-                  ({game.homeTeam.record})
-                </span>
-              )}
             </div>
-            <div className="flex items-center gap-2">
-              {(isLive || isFinal) && (
-                <>
-                  <span
-                    className="text-[10px] font-mono"
-                    style={{ color: theme.textSecondary }}
-                  >
-                    {game.homeTeam.hits ?? 0}H
-                  </span>
-                  <span
-                    className="font-mono text-lg font-semibold w-8 text-right"
-                    style={{
-                      color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
-                    }}
-                  >
-                    {game.homeTeam.score ?? 0}
-                  </span>
-                </>
-              )}
-            </div>
+            {game.homeTeam.logo ? (
+              <img
+                src={game.homeTeam.logo}
+                alt={game.homeTeam.name}
+                className="h-8 w-8 flex-shrink-0 object-contain"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                className="h-8 w-8 rounded-full flex-shrink-0"
+                style={{ backgroundColor: game.homeTeam.color || theme.bgTertiary }}
+              />
+            )}
           </div>
         </div>
 
