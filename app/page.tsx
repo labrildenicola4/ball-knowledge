@@ -46,6 +46,16 @@ function parseTimeToEST(timeStr: string): number {
   return hours * 60 + minutes;
 }
 
+// Get today's date in Eastern Time as YYYY-MM-DD
+function getTodayET(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+}
+
 // Combined game type for chronological display
 interface CombinedGame {
   type: 'soccer' | 'basketball' | 'mlb';
@@ -76,10 +86,11 @@ export default function HomePage() {
   const [mlbLoading, setMlbLoading] = useState(true);
   const [mlbError, setMlbError] = useState(false);
 
-  // Fetch basketball games
+  // Fetch basketball games for today
   useEffect(() => {
     setBasketballLoading(true);
-    fetch('/api/basketball/games')
+    const todayStr = getTodayET();
+    fetch(`/api/basketball/games?date=${todayStr}`)
       .then(res => res.json())
       .then(data => {
         setBasketballGames(data.games || []);
@@ -91,10 +102,11 @@ export default function HomePage() {
       });
   }, []);
 
-  // Fetch MLB games
+  // Fetch MLB games for today
   useEffect(() => {
     setMlbLoading(true);
-    fetch('/api/mlb/games')
+    const todayStr = getTodayET();
+    fetch(`/api/mlb/games?date=${todayStr}`)
       .then(res => res.json())
       .then(data => {
         setMlbGames(data.games || []);
@@ -108,8 +120,9 @@ export default function HomePage() {
 
   const refreshAll = () => {
     refresh();
+    const todayStr = getTodayET();
     setBasketballLoading(true);
-    fetch('/api/basketball/games')
+    fetch(`/api/basketball/games?date=${todayStr}`)
       .then(res => res.json())
       .then(data => {
         setBasketballGames(data.games || []);
@@ -120,7 +133,7 @@ export default function HomePage() {
         setBasketballLoading(false);
       });
     setMlbLoading(true);
-    fetch('/api/mlb/games')
+    fetch(`/api/mlb/games?date=${todayStr}`)
       .then(res => res.json())
       .then(data => {
         setMlbGames(data.games || []);
