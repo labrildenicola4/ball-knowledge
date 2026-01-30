@@ -3,14 +3,6 @@
     {
       "path": "/api/sync/fixtures",
       "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/sync/espn?mode=live&sport=all",
-      "schedule": "*/2 * * * *"
-    },
-    {
-      "path": "/api/sync/espn?mode=full&sport=all",
-      "schedule": "0 6 * * *"
     }
   ]
 }
