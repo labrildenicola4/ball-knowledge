@@ -98,7 +98,7 @@ export default function CalendarPage() {
   const [mlbError, setMlbError] = useState(false);
 
   useEffect(() => {
-    if (selectedSport === 'cbb' && selectedDate) {
+    if ((selectedSport === 'cbb' || selectedSport === 'all') && selectedDate) {
       setBasketballLoading(true);
       setBasketballError(false);
       const dateStr = formatDateET(selectedDate);
@@ -116,7 +116,7 @@ export default function CalendarPage() {
   }, [selectedSport, selectedDate]);
 
   useEffect(() => {
-    if (selectedSport === 'mlb' && selectedDate) {
+    if ((selectedSport === 'mlb' || selectedSport === 'all') && selectedDate) {
       setMlbLoading(true);
       setMlbError(false);
       const dateStr = formatDateET(selectedDate);
@@ -134,7 +134,13 @@ export default function CalendarPage() {
   }, [selectedSport, selectedDate]);
 
   // Determine loading/error states based on selected sport
-  const isLoading = selectedSport === 'cbb' ? basketballLoading : selectedSport === 'mlb' ? mlbLoading : soccerLoading;
+  const isLoading = selectedSport === 'all'
+    ? soccerLoading || basketballLoading || mlbLoading
+    : selectedSport === 'cbb'
+      ? basketballLoading
+      : selectedSport === 'mlb'
+        ? mlbLoading
+        : soccerLoading;
   const isError = selectedSport === 'cbb' ? basketballError : selectedSport === 'mlb' ? mlbError : soccerError;
 
   // Compute which international tournaments have matches today (with logos)
@@ -772,12 +778,95 @@ export default function CalendarPage() {
             {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
           </h2>
           <span className="text-sm" style={{ color: theme.textSecondary }}>
-            {selectedSport === 'cbb' ? basketballGames.length : selectedSport === 'mlb' ? mlbGames.length : matches.length} {(selectedSport === 'cbb' ? basketballGames.length : selectedSport === 'mlb' ? mlbGames.length : matches.length) === 1 ? 'game' : 'games'}
+            {selectedSport === 'all'
+              ? matches.length + basketballGames.length + mlbGames.length
+              : selectedSport === 'cbb'
+                ? basketballGames.length
+                : selectedSport === 'mlb'
+                  ? mlbGames.length
+                  : matches.length
+            } {(selectedSport === 'all'
+              ? matches.length + basketballGames.length + mlbGames.length
+              : selectedSport === 'cbb'
+                ? basketballGames.length
+                : selectedSport === 'mlb'
+                  ? mlbGames.length
+                  : matches.length
+            ) === 1 ? 'game' : 'games'}
           </span>
         </div>
 
-        {/* Basketball Games - when CBB is selected */}
-        {selectedSport === 'cbb' ? (
+        {/* All Sports - when All is selected */}
+        {selectedSport === 'all' ? (
+          <div className="flex flex-col gap-6">
+            {/* Soccer Section */}
+            {matches.length > 0 && (
+              <section>
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                  <span>⚽</span> Soccer ({matches.length})
+                </h3>
+                <div className="flex flex-col gap-3">
+                  {matches.map((match) => (
+                    <MatchCard key={match.id} match={match} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Basketball Section */}
+            {basketballGames.length > 0 && (
+              <section>
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                  <span>🏀</span> College Basketball ({basketballGames.length})
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {basketballGames.map((game) => (
+                    <BasketballGameCard key={game.id} game={game} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* MLB Section */}
+            {mlbGames.length > 0 && (
+              <section>
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                  <span>⚾</span> MLB ({mlbGames.length})
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {mlbGames.map((game) => (
+                    <MLBGameCard key={game.id} game={game} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* No games message */}
+            {matches.length === 0 && basketballGames.length === 0 && mlbGames.length === 0 && !isLoading && (
+              <div
+                className="rounded-lg py-8 text-center"
+                style={{ backgroundColor: theme.bgSecondary }}
+              >
+                <p className="text-sm" style={{ color: theme.textSecondary }}>
+                  No games on this date
+                </p>
+              </div>
+            )}
+
+            {/* Loading indicator */}
+            {isLoading && matches.length === 0 && basketballGames.length === 0 && mlbGames.length === 0 && (
+              <div className="py-8 text-center">
+                <div
+                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                  style={{ color: theme.accent }}
+                />
+                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
+                  Loading games...
+                </p>
+              </div>
+            )}
+          </div>
+        ) : selectedSport === 'cbb' ? (
           basketballLoading ? (
             <div className="py-8 text-center">
               <div
