@@ -52,6 +52,9 @@ interface PolymarketEvent {
 function normalizeTeamName(name: string): string {
   return name
     .toLowerCase()
+    // Normalize accented characters to ASCII equivalents
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/\s*fc\s*/gi, ' ')
     .replace(/\s*cf\s*/gi, ' ')
     .replace(/\s*sc\s*/gi, ' ')
@@ -61,11 +64,11 @@ function normalizeTeamName(name: string): string {
     .replace(/hotspur/gi, '')
     .replace(/wanderers/gi, '')
     .replace(/athletic/gi, '')
-    .replace(/atlético/gi, 'atletico')
-    .replace(/münchen/gi, 'munich')
+    .replace(/atletico/gi, 'atletico')
+    .replace(/munchen/gi, 'munich')
     .replace(/bayern munich/gi, 'bayern')
     .replace(/borussia dortmund/gi, 'dortmund')
-    .replace(/borussia mönchengladbach/gi, 'gladbach')
+    .replace(/borussia monchengladbach/gi, 'gladbach')
     .replace(/rb leipzig/gi, 'leipzig')
     .replace(/paris saint-germain/gi, 'psg')
     .replace(/olympique lyonnais/gi, 'lyon')
@@ -157,8 +160,9 @@ export async function getMatchOdds(
 
       // Check if teams match in the event title
       const title = event.title.toLowerCase();
-      const homeMatches = teamsMatch(homeTeam, title) || title.includes(normalizeTeamName(homeTeam));
-      const awayMatches = teamsMatch(awayTeam, title) || title.includes(normalizeTeamName(awayTeam));
+      const normalizedTitle = normalizeTeamName(event.title);
+      const homeMatches = teamsMatch(homeTeam, title) || normalizedTitle.includes(normalizeTeamName(homeTeam));
+      const awayMatches = teamsMatch(awayTeam, title) || normalizedTitle.includes(normalizeTeamName(awayTeam));
 
       if (homeMatches && awayMatches) {
         // Found the match! Extract odds from markets
