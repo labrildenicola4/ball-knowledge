@@ -27,14 +27,12 @@ export function BasketballGameCard({ game }: BasketballGameCardProps) {
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {game.conferenceGame && (
-              <span
-                className="rounded px-1.5 py-0.5 text-[9px] font-medium uppercase"
-                style={{ backgroundColor: theme.accent, color: '#fff' }}
-              >
-                Conf
-              </span>
-            )}
+            <span
+              className="rounded px-1.5 py-0.5 text-[9px] font-medium uppercase"
+              style={{ backgroundColor: theme.accent, color: '#fff' }}
+            >
+              {game.conference || 'NCAA'}
+            </span>
             {game.broadcast && (
               <span
                 className="text-[10px] font-medium"

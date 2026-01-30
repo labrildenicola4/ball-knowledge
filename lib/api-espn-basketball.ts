@@ -112,6 +112,7 @@ function transformGame(event: ESPNEvent): BasketballGame {
     }),
     conferenceGame: competition.conferenceCompetition || false,
     neutralSite: competition.neutralSite || false,
+    conference: competition.groups?.shortName || competition.groups?.name || '',
   };
 }
 
@@ -472,6 +473,7 @@ interface ESPNEvent {
     broadcasts?: Array<{ names: string[] }>;
     conferenceCompetition?: boolean;
     neutralSite?: boolean;
+    groups?: { shortName?: string; name?: string };
   }>;
 }
 

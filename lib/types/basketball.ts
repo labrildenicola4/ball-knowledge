@@ -29,6 +29,7 @@ export interface BasketballGame {
   startTime: string;
   conferenceGame: boolean;
   neutralSite: boolean;
+  conference?: string;
 }
 
 export interface BasketballPlayerStats {
