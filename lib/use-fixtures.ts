@@ -62,12 +62,17 @@ const fetcher = async (url: string): Promise<FixturesResponse> => {
   return res.json();
 };
 
-// Format date as YYYY-MM-DD
+// Format date as YYYY-MM-DD in Eastern Time
 function formatDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  // Use Eastern Time to determine the date, matching the app's display timezone
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  // en-CA locale gives us YYYY-MM-DD format
+  return formatter.format(date);
 }
 
 export function useFixtures(date?: Date) {

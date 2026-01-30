@@ -53,6 +53,76 @@ export const NATIONS: Nation[] = [
     internationalCompetitions: ['CLI'],  // Copa Libertadores
   },
   {
+    id: 'argentina',
+    name: 'Argentina',
+    flag: '🇦🇷',
+    domesticLeagues: [],  // Liga Profesional Argentina (future)
+    internationalCompetitions: ['CLI'],
+  },
+  {
+    id: 'colombia',
+    name: 'Colombia',
+    flag: '🇨🇴',
+    domesticLeagues: [],  // Liga BetPlay (future)
+    internationalCompetitions: ['CLI'],
+  },
+  {
+    id: 'chile',
+    name: 'Chile',
+    flag: '🇨🇱',
+    domesticLeagues: [],  // Primera División Chile (future)
+    internationalCompetitions: ['CLI'],
+  },
+  {
+    id: 'uruguay',
+    name: 'Uruguay',
+    flag: '🇺🇾',
+    domesticLeagues: [],  // Primera División Uruguay (future)
+    internationalCompetitions: ['CLI'],
+  },
+  {
+    id: 'paraguay',
+    name: 'Paraguay',
+    flag: '🇵🇾',
+    domesticLeagues: [],  // Primera División Paraguay (future)
+    internationalCompetitions: ['CLI'],
+  },
+  {
+    id: 'ecuador',
+    name: 'Ecuador',
+    flag: '🇪🇨',
+    domesticLeagues: [],  // Liga Pro Ecuador (future)
+    internationalCompetitions: ['CLI'],
+  },
+  {
+    id: 'peru',
+    name: 'Peru',
+    flag: '🇵🇪',
+    domesticLeagues: [],  // Liga 1 Peru (future)
+    internationalCompetitions: ['CLI'],
+  },
+  {
+    id: 'bolivia',
+    name: 'Bolivia',
+    flag: '🇧🇴',
+    domesticLeagues: [],  // División Profesional Bolivia (future)
+    internationalCompetitions: ['CLI'],
+  },
+  {
+    id: 'venezuela',
+    name: 'Venezuela',
+    flag: '🇻🇪',
+    domesticLeagues: [],  // Liga FUTVE (future)
+    internationalCompetitions: ['CLI'],
+  },
+  {
+    id: 'mexico',
+    name: 'Mexico',
+    flag: '🇲🇽',
+    domesticLeagues: [],  // Liga MX (future)
+    internationalCompetitions: ['CLI'],
+  },
+  {
     id: 'portugal',
     name: 'Portugal',
     flag: '🇵🇹',
@@ -354,8 +424,11 @@ export const TEAM_TO_NATION: Record<number, string> = {
   130: 'brazil',  // Gremio
   131: 'brazil',  // Corinthians
   132: 'brazil',  // Chapecoense
+  133: 'brazil',  // Vasco da Gama
   134: 'brazil',  // Atletico Paranaense
   136: 'brazil',  // Vitoria
+  138: 'brazil',  // Criciuma
+  140: 'brazil',  // Sport Recife
   147: 'brazil',  // Coritiba
   794: 'brazil',  // RB Bragantino
   1062: 'brazil', // Atletico Mineiro
@@ -363,6 +436,7 @@ export const TEAM_TO_NATION: Record<number, string> = {
   1198: 'brazil', // Remo
   1211: 'brazil', // Ceara
   1213: 'brazil', // Goias
+  1214: 'brazil', // Mirassol
   1216: 'brazil', // Cruzeiro
   2139: 'brazil', // Juventude
   7848: 'brazil', // Cuiaba
@@ -391,6 +465,121 @@ export const TEAM_TO_NATION: Record<number, string> = {
   645: 'turkey',    // Galatasaray
   664: 'kazakhstan', // Kairat Almaty
   3403: 'cyprus',   // Pafos
+
+  // Argentina - Copa Libertadores teams
+  435: 'argentina', // River Plate
+  436: 'argentina', // Racing Club
+  437: 'argentina', // Independiente
+  442: 'argentina', // Defensa y Justicia
+  445: 'argentina', // Huracan
+  446: 'argentina', // Lanus
+  448: 'argentina', // Rosario Central
+  449: 'argentina', // Talleres Cordoba
+  450: 'argentina', // Tigre
+  451: 'argentina', // Union Santa Fe
+  452: 'argentina', // San Lorenzo
+  453: 'argentina', // Argentinos Juniors
+  455: 'argentina', // Banfield
+  456: 'argentina', // Newells Old Boys
+  457: 'argentina', // Estudiantes
+  458: 'argentina', // Boca Juniors
+  459: 'argentina', // Central Cordoba
+  460: 'argentina', // Colon Santa Fe
+  461: 'argentina', // Godoy Cruz
+  462: 'argentina', // Gimnasia La Plata
+  463: 'argentina', // Aldosivi
+  464: 'argentina', // Arsenal de Sarandi
+  465: 'argentina', // Atletico Tucuman
+  466: 'argentina', // Belgrano Cordoba
+  467: 'argentina', // Patronato
+  468: 'argentina', // Platense
+  477: 'argentina', // Velez Sarsfield
+  478: 'argentina', // Sarmiento
+  1064: 'argentina', // Instituto
+  2434: 'argentina', // Barracas Central
+
+  // Colombia - Copa Libertadores teams
+  1127: 'colombia', // Atletico Nacional
+  1130: 'colombia', // Junior Barranquilla
+  1131: 'colombia', // Millonarios
+  1133: 'colombia', // America de Cali
+  1134: 'colombia', // Independiente Medellin
+  1135: 'colombia', // Santa Fe
+  1137: 'colombia', // Deportivo Cali
+  1139: 'colombia', // Once Caldas
+  1140: 'colombia', // Deportes Tolima
+  1143: 'colombia', // La Equidad
+  1146: 'colombia', // Deportivo Pasto
+
+  // Chile - Copa Libertadores teams
+  2379: 'chile',    // Colo-Colo
+  2380: 'chile',    // Universidad Catolica
+  2381: 'chile',    // Universidad de Chile
+  2382: 'chile',    // Union Espanola
+  2384: 'chile',    // Audax Italiano
+  2385: 'chile',    // Palestino
+  2386: 'chile',    // Cobresal
+
+  // Uruguay - Copa Libertadores teams
+  830: 'uruguay',   // Penarol
+  832: 'uruguay',   // Nacional
+  834: 'uruguay',   // Defensor Sporting
+  835: 'uruguay',   // Danubio
+  838: 'uruguay',   // River Plate (Uruguay)
+  839: 'uruguay',   // Racing Montevideo
+  842: 'uruguay',   // Wanderers
+
+  // Paraguay - Copa Libertadores teams
+  2341: 'paraguay', // Olimpia
+  2342: 'paraguay', // Cerro Porteno
+  2343: 'paraguay', // Libertad
+  2344: 'paraguay', // Guarani
+  2345: 'paraguay', // Nacional Asuncion
+  2346: 'paraguay', // Sol de America
+
+  // Ecuador - Copa Libertadores teams
+  1150: 'ecuador',  // Barcelona SC
+  1151: 'ecuador',  // LDU Quito
+  1152: 'ecuador',  // Emelec
+  1153: 'ecuador',  // Independiente del Valle
+  1154: 'ecuador',  // El Nacional
+  1155: 'ecuador',  // Deportivo Cuenca
+  1156: 'ecuador',  // Delfin
+
+  // Peru - Copa Libertadores teams
+  2317: 'peru',     // Alianza Lima
+  2318: 'peru',     // Universitario
+  2319: 'peru',     // Sporting Cristal
+  2320: 'peru',     // FBC Melgar
+  2321: 'peru',     // Cienciano
+
+  // Bolivia - Copa Libertadores teams
+  2650: 'bolivia',  // Bolivar
+  2651: 'bolivia',  // The Strongest
+  2652: 'bolivia',  // Jorge Wilstermann
+  2722: 'bolivia',  // Blooming
+  2723: 'bolivia',  // Oriente Petrolero
+
+  // Venezuela - Copa Libertadores teams
+  2772: 'venezuela', // Caracas FC
+  2773: 'venezuela', // Deportivo Tachira
+  2774: 'venezuela', // Zamora FC
+  2775: 'venezuela', // Carabobo FC
+
+  // Mexico - Liga MX teams
+  2279: 'mexico',   // Club America
+  2280: 'mexico',   // Guadalajara (Chivas)
+  2281: 'mexico',   // Cruz Azul
+  2282: 'mexico',   // Pumas UNAM
+  2283: 'mexico',   // Monterrey
+  2284: 'mexico',   // Tigres UANL
+  2286: 'mexico',   // Leon
+  2288: 'mexico',   // Pachuca
+  2290: 'mexico',   // Atlas
+  2292: 'mexico',   // Toluca
+  2293: 'mexico',   // Santos Laguna
+  2294: 'mexico',   // Necaxa
+  2295: 'mexico',   // Queretaro
 };
 
 // Helper: Get nation ID for a match based on league code and team IDs

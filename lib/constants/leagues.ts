@@ -23,7 +23,6 @@ export const LEAGUE_IDS: Record<string, number> = {
   // International
   championsleague: 2,
   europaleague: 3,
-  conferenceleague: 848,
   copalibertadores: 13,
 };
 
@@ -45,7 +44,6 @@ export const LEAGUE_ID_TO_CODE: Record<number, string> = {
   71: 'BSA',   // Brasileirao
   2: 'CL',     // Champions League
   3: 'EL',     // Europa League
-  848: 'ECL',  // Conference League
   13: 'CLI',   // Copa Libertadores
   143: 'CDR',  // Copa del Rey
   45: 'FAC',   // FA Cup
@@ -72,7 +70,6 @@ export const CODE_TO_LEAGUE_KEY: Record<string, string> = {
   'BSA': 'brasileirao',
   'CL': 'championsleague',
   'EL': 'europaleague',
-  'ECL': 'conferenceleague',
   'CLI': 'copalibertadores',
   'CDR': 'copadelrey',
   'FAC': 'facup',

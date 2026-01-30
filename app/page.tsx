@@ -6,9 +6,11 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchCard } from '@/components/MatchCard';
 import { BasketballGameCard } from '@/components/basketball/BasketballGameCard';
+import { MLBGameCard } from '@/components/mlb/MLBGameCard';
 import { useTheme } from '@/lib/theme';
 import { useLiveFixtures } from '@/lib/use-fixtures';
 import { BasketballGame } from '@/lib/types/basketball';
+import { MLBGame } from '@/lib/types/mlb';
 
 interface Match {
   id: number;
@@ -46,13 +48,14 @@ function parseTimeToEST(timeStr: string): number {
 
 // Combined game type for chronological display
 interface CombinedGame {
-  type: 'soccer' | 'basketball';
+  type: 'soccer' | 'basketball' | 'mlb';
   id: string;
   time: string;
   timeValue: number; // For sorting
   isLive: boolean;
   soccerMatch?: Match;
   basketballGame?: BasketballGame;
+  mlbGame?: MLBGame;
 }
 
 export default function HomePage() {
@@ -67,6 +70,11 @@ export default function HomePage() {
   const [basketballGames, setBasketballGames] = useState<BasketballGame[]>([]);
   const [basketballLoading, setBasketballLoading] = useState(true);
   const [basketballError, setBasketballError] = useState(false);
+
+  // MLB games state
+  const [mlbGames, setMlbGames] = useState<MLBGame[]>([]);
+  const [mlbLoading, setMlbLoading] = useState(true);
+  const [mlbError, setMlbError] = useState(false);
 
   // Fetch basketball games
   useEffect(() => {
@@ -83,6 +91,21 @@ export default function HomePage() {
       });
   }, []);
 
+  // Fetch MLB games
+  useEffect(() => {
+    setMlbLoading(true);
+    fetch('/api/mlb/games')
+      .then(res => res.json())
+      .then(data => {
+        setMlbGames(data.games || []);
+        setMlbLoading(false);
+      })
+      .catch(() => {
+        setMlbError(true);
+        setMlbLoading(false);
+      });
+  }, []);
+
   const refreshAll = () => {
     refresh();
     setBasketballLoading(true);
@@ -96,10 +119,21 @@ export default function HomePage() {
         setBasketballError(true);
         setBasketballLoading(false);
       });
+    setMlbLoading(true);
+    fetch('/api/mlb/games')
+      .then(res => res.json())
+      .then(data => {
+        setMlbGames(data.games || []);
+        setMlbLoading(false);
+      })
+      .catch(() => {
+        setMlbError(true);
+        setMlbLoading(false);
+      });
   };
 
-  const isLoading = soccerLoading && basketballLoading;
-  const isError = soccerError && basketballError;
+  const isLoading = soccerLoading && basketballLoading && mlbLoading;
+  const isError = soccerError && basketballError && mlbError;
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', {
@@ -152,8 +186,21 @@ export default function HomePage() {
       });
     });
 
+    // Add MLB games
+    mlbGames.forEach(game => {
+      const isLive = game.status === 'in_progress';
+      combined.push({
+        type: 'mlb',
+        id: `mlb-${game.id}`,
+        time: game.startTime,
+        timeValue: parseTimeToEST(game.startTime),
+        isLive,
+        mlbGame: game,
+      });
+    });
+
     return combined;
-  }, [matches, basketballGames]);
+  }, [matches, basketballGames, mlbGames]);
 
   // Separate live and upcoming games
   const liveGames = allGames.filter(g => g.isLive);
@@ -187,7 +234,7 @@ export default function HomePage() {
     return groups;
   }, [upcomingGames]);
 
-  const totalGames = matches.length + basketballGames.length;
+  const totalGames = matches.length + basketballGames.length + mlbGames.length;
 
   return (
     <div
@@ -218,22 +265,25 @@ export default function HomePage() {
               color: theme.textSecondary,
             }}
           >
-            <RefreshCw size={16} className={isRefreshing || basketballLoading ? 'animate-spin' : ''} />
+            <RefreshCw size={16} className={isRefreshing || basketballLoading || mlbLoading ? 'animate-spin' : ''} />
             Refresh
           </button>
         </div>
-        {(isRefreshing || basketballLoading) && (
+        {(isRefreshing || basketballLoading || mlbLoading) && (
           <p className="mt-1 text-sm" style={{ color: theme.textSecondary }}>
             Updating...
           </p>
         )}
         {/* Sport counts */}
-        <div className="flex gap-3 mt-2">
+        <div className="flex gap-3 mt-2 flex-wrap">
           <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
             ⚽ {matches.length} soccer
           </span>
           <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
             🏀 {basketballGames.length} basketball
+          </span>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
+            ⚾ {mlbGames.length} baseball
           </span>
         </div>
       </div>
@@ -322,6 +372,8 @@ export default function HomePage() {
                         <MatchCard key={game.id} match={game.soccerMatch} />
                       ) : game.type === 'basketball' && game.basketballGame ? (
                         <BasketballGameCard key={game.id} game={game.basketballGame} />
+                      ) : game.type === 'mlb' && game.mlbGame ? (
+                        <MLBGameCard key={game.id} game={game.mlbGame} />
                       ) : null
                     ))}
                   </div>
@@ -368,6 +420,8 @@ export default function HomePage() {
                           <MatchCard key={game.id} match={game.soccerMatch} />
                         ) : game.type === 'basketball' && game.basketballGame ? (
                           <BasketballGameCard key={game.id} game={game.basketballGame} />
+                        ) : game.type === 'mlb' && game.mlbGame ? (
+                          <MLBGameCard key={game.id} game={game.mlbGame} />
                         ) : null
                       ))}
                     </div>

@@ -6,6 +6,17 @@ import { LEAGUE_ID_TO_CODE, SUPPORTED_LEAGUE_IDS } from '@/lib/constants/leagues
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+// Get date in Eastern Time as YYYY-MM-DD
+function getEasternDate(date: Date): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  return formatter.format(date);
+}
+
 interface TransformedMatch {
   id: number;
   league: string;
@@ -33,8 +44,8 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const date = searchParams.get('date');
 
-  // Default to today if no date provided
-  const targetDate = date || new Date().toISOString().split('T')[0];
+  // Default to today in Eastern Time if no date provided
+  const targetDate = date || getEasternDate(new Date());
 
   console.log(`[Fixtures/All] Fetching fixtures for ${targetDate} (API-Football)`);
 
@@ -81,10 +92,25 @@ export async function GET(request: NextRequest) {
       const matchDate = new Date(fixture.fixture.date);
       const { status, time } = mapStatus(fixture.fixture.status.short, fixture.fixture.status.elapsed);
 
-      // Format date for display
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const displayDate = `${monthNames[matchDate.getUTCMonth()]} ${matchDate.getUTCDate()}`;
-      const displayTime = `${matchDate.getUTCHours().toString().padStart(2, '0')}:${matchDate.getUTCMinutes().toString().padStart(2, '0')}`;
+      // Get date in Eastern Time for proper grouping
+      const matchDateET = getEasternDate(matchDate);
+
+      // Format date for display (use Eastern Time)
+      const etFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        month: 'short',
+        day: 'numeric',
+      });
+      const displayDate = etFormatter.format(matchDate);
+
+      // Format time in Eastern Time
+      const timeFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+      const displayTime = timeFormatter.format(matchDate);
 
       // For frontend response
       allMatches.push({
@@ -104,7 +130,7 @@ export async function GET(request: NextRequest) {
         time: status === 'NS' ? displayTime : time,
         venue: fixture.fixture.venue?.name || 'TBD',
         date: displayDate,
-        fullDate: matchDate.toISOString().split('T')[0],
+        fullDate: matchDateET,
         timestamp: matchDate.getTime(),
         matchday: parseRound(fixture.league.round),
         stage: fixture.league.round,
@@ -114,7 +140,7 @@ export async function GET(request: NextRequest) {
       fixturesForDb.push({
         api_id: fixture.fixture.id,
         sport_type: 'soccer',
-        match_date: matchDate.toISOString().split('T')[0],
+        match_date: matchDateET,
         kickoff: fixture.fixture.date,
         status,
         minute: fixture.fixture.status.elapsed,

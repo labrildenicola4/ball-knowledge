@@ -1,0 +1,237 @@
+'use client';
+
+import Link from 'next/link';
+import { useTheme } from '@/lib/theme';
+import { MLBGame } from '@/lib/types/mlb';
+
+interface MLBGameCardProps {
+  game: MLBGame;
+}
+
+export function MLBGameCard({ game }: MLBGameCardProps) {
+  const { theme } = useTheme();
+  const isLive = game.status === 'in_progress';
+  const isFinal = game.status === 'final';
+  const homeWon = isFinal && (game.homeTeam.score ?? 0) > (game.awayTeam.score ?? 0);
+  const awayWon = isFinal && (game.awayTeam.score ?? 0) > (game.homeTeam.score ?? 0);
+
+  const getInningDisplay = () => {
+    if (!isLive) return null;
+    const half = game.inningHalf === 'top' ? 'Top' : 'Bot';
+    return `${half} ${game.inning}`;
+  };
+
+  return (
+    <Link href={`/mlb/game/${game.id}`}>
+      <div
+        className="card-hover cursor-pointer rounded-xl p-4 transition-theme"
+        style={{
+          backgroundColor: theme.bgSecondary,
+          border: `1px solid ${theme.border}`,
+        }}
+      >
+        {/* Header */}
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {game.broadcast && (
+              <span
+                className="text-[10px] font-medium"
+                style={{ color: theme.textSecondary }}
+              >
+                {game.broadcast}
+              </span>
+            )}
+            {game.seriesInfo && (
+              <span
+                className="text-[9px]"
+                style={{ color: theme.textSecondary }}
+              >
+                {game.seriesInfo}
+              </span>
+            )}
+          </div>
+          <span
+            className="font-mono rounded-lg px-3 py-1 text-sm"
+            style={{
+              backgroundColor: isLive ? theme.red : theme.bgTertiary,
+              color: isLive ? '#fff' : theme.textSecondary,
+            }}
+          >
+            {isLive && '● '}
+            {isLive ? getInningDisplay() : isFinal ? 'Final' : game.startTime}
+          </span>
+        </div>
+
+        {/* Teams & Score */}
+        <div className="space-y-2">
+          {/* Away Team */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {game.awayTeam.logo ? (
+                <img
+                  src={game.awayTeam.logo}
+                  alt={game.awayTeam.name}
+                  className="h-6 w-6 flex-shrink-0 object-contain"
+                  loading="lazy"
+                />
+              ) : (
+                <div
+                  className="h-6 w-6 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: game.awayTeam.color || theme.bgTertiary }}
+                />
+              )}
+              <span
+                className="text-sm font-medium truncate"
+                style={{
+                  color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
+                  fontWeight: awayWon ? 600 : 500,
+                }}
+              >
+                {game.awayTeam.shortDisplayName}
+              </span>
+              {game.awayTeam.record && (
+                <span
+                  className="text-[10px] hidden sm:inline"
+                  style={{ color: theme.textSecondary }}
+                >
+                  ({game.awayTeam.record})
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {(isLive || isFinal) && (
+                <>
+                  <span
+                    className="text-[10px] font-mono"
+                    style={{ color: theme.textSecondary }}
+                  >
+                    {game.awayTeam.hits ?? 0}H
+                  </span>
+                  <span
+                    className="font-mono text-lg font-semibold w-8 text-right"
+                    style={{
+                      color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
+                    }}
+                  >
+                    {game.awayTeam.score ?? 0}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Home Team */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {game.homeTeam.logo ? (
+                <img
+                  src={game.homeTeam.logo}
+                  alt={game.homeTeam.name}
+                  className="h-6 w-6 flex-shrink-0 object-contain"
+                  loading="lazy"
+                />
+              ) : (
+                <div
+                  className="h-6 w-6 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: game.homeTeam.color || theme.bgTertiary }}
+                />
+              )}
+              <span
+                className="text-sm font-medium truncate"
+                style={{
+                  color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
+                  fontWeight: homeWon ? 600 : 500,
+                }}
+              >
+                {game.homeTeam.shortDisplayName}
+              </span>
+              {game.homeTeam.record && (
+                <span
+                  className="text-[10px] hidden sm:inline"
+                  style={{ color: theme.textSecondary }}
+                >
+                  ({game.homeTeam.record})
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {(isLive || isFinal) && (
+                <>
+                  <span
+                    className="text-[10px] font-mono"
+                    style={{ color: theme.textSecondary }}
+                  >
+                    {game.homeTeam.hits ?? 0}H
+                  </span>
+                  <span
+                    className="font-mono text-lg font-semibold w-8 text-right"
+                    style={{
+                      color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
+                    }}
+                  >
+                    {game.homeTeam.score ?? 0}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Live Situation */}
+        {isLive && game.situation && (
+          <div
+            className="mt-3 flex items-center gap-3 rounded-lg px-3 py-2"
+            style={{ backgroundColor: theme.bgTertiary }}
+          >
+            {/* Base diagram */}
+            <div className="relative h-8 w-8 flex-shrink-0">
+              <div
+                className="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 rotate-45"
+                style={{
+                  backgroundColor: game.situation.onSecond ? theme.gold : theme.border,
+                }}
+              />
+              <div
+                className="absolute left-0 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rotate-45"
+                style={{
+                  backgroundColor: game.situation.onThird ? theme.gold : theme.border,
+                }}
+              />
+              <div
+                className="absolute right-0 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rotate-45"
+                style={{
+                  backgroundColor: game.situation.onFirst ? theme.gold : theme.border,
+                }}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 text-[10px]">
+                <span style={{ color: theme.textSecondary }}>
+                  {game.situation.balls}-{game.situation.strikes}
+                </span>
+                <span style={{ color: theme.textSecondary }}>
+                  {game.outs} out{game.outs !== 1 ? 's' : ''}
+                </span>
+              </div>
+              {game.situation.batter && (
+                <p className="text-[10px] truncate" style={{ color: theme.text }}>
+                  AB: {game.situation.batter}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Venue (optional) */}
+        {game.venue && (
+          <p
+            className="mt-2 text-[10px] truncate"
+            style={{ color: theme.textSecondary }}
+          >
+            {game.venue}
+          </p>
+        )}
+      </div>
+    </Link>
+  );
+}

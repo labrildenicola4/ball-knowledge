@@ -3,13 +3,24 @@ import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+// Get date in Eastern Time as YYYY-MM-DD
+function getEasternDate(date: Date): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  return formatter.format(date);
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const date = searchParams.get('date');
   const sport = searchParams.get('sport') || 'soccer';
 
-  // Default to today if no date provided
-  const targetDate = date || new Date().toISOString().split('T')[0];
+  // Default to today in Eastern Time if no date provided
+  const targetDate = date || getEasternDate(new Date());
 
   try {
     const { data: fixtures, error } = await supabase
@@ -27,12 +38,23 @@ export async function GET(request: NextRequest) {
     // Transform to frontend format
     const matches = (fixtures || []).map((f) => {
       const matchDate = new Date(f.kickoff);
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-      // Format time in UTC
-      const hours = matchDate.getUTCHours();
-      const minutes = matchDate.getUTCMinutes();
-      const displayTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      // Format date in Eastern Time
+      const dateFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        month: 'short',
+        day: 'numeric',
+      });
+      const displayDate = dateFormatter.format(matchDate);
+
+      // Format time in Eastern Time
+      const timeFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+      const displayTime = timeFormatter.format(matchDate);
 
       return {
         id: f.api_id,
@@ -50,7 +72,7 @@ export async function GET(request: NextRequest) {
         status: f.status,
         time: f.status === 'NS' ? displayTime : f.status === 'FT' ? 'FT' : (f.minute ? `${f.minute}'` : f.status),
         venue: f.venue || 'TBD',
-        date: `${monthNames[matchDate.getUTCMonth()]} ${matchDate.getUTCDate()}`,
+        date: displayDate,
         fullDate: f.match_date,
         timestamp: matchDate.getTime(),
         matchday: f.matchday,
