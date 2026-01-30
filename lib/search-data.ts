@@ -20,6 +20,57 @@ export interface SearchableLeague {
   logo: string;
 }
 
+// ESPN MLB logo URL pattern
+const getMLBLogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/mlb/500/${abbrev.toLowerCase()}.png`;
+
+export interface SearchableMLBTeam {
+  id: string;
+  name: string;
+  abbreviation: string;
+  league: 'AL' | 'NL';
+  division: 'East' | 'Central' | 'West';
+  logo: string;
+}
+
+export const MLB_TEAMS: SearchableMLBTeam[] = [
+  // American League East
+  { id: '1', name: 'Baltimore Orioles', abbreviation: 'BAL', league: 'AL', division: 'East', logo: getMLBLogo('bal') },
+  { id: '2', name: 'Boston Red Sox', abbreviation: 'BOS', league: 'AL', division: 'East', logo: getMLBLogo('bos') },
+  { id: '10', name: 'New York Yankees', abbreviation: 'NYY', league: 'AL', division: 'East', logo: getMLBLogo('nyy') },
+  { id: '30', name: 'Tampa Bay Rays', abbreviation: 'TB', league: 'AL', division: 'East', logo: getMLBLogo('tb') },
+  { id: '14', name: 'Toronto Blue Jays', abbreviation: 'TOR', league: 'AL', division: 'East', logo: getMLBLogo('tor') },
+  // American League Central
+  { id: '4', name: 'Chicago White Sox', abbreviation: 'CHW', league: 'AL', division: 'Central', logo: getMLBLogo('chw') },
+  { id: '5', name: 'Cleveland Guardians', abbreviation: 'CLE', league: 'AL', division: 'Central', logo: getMLBLogo('cle') },
+  { id: '6', name: 'Detroit Tigers', abbreviation: 'DET', league: 'AL', division: 'Central', logo: getMLBLogo('det') },
+  { id: '7', name: 'Kansas City Royals', abbreviation: 'KC', league: 'AL', division: 'Central', logo: getMLBLogo('kc') },
+  { id: '9', name: 'Minnesota Twins', abbreviation: 'MIN', league: 'AL', division: 'Central', logo: getMLBLogo('min') },
+  // American League West
+  { id: '18', name: 'Houston Astros', abbreviation: 'HOU', league: 'AL', division: 'West', logo: getMLBLogo('hou') },
+  { id: '3', name: 'Los Angeles Angels', abbreviation: 'LAA', league: 'AL', division: 'West', logo: getMLBLogo('laa') },
+  { id: '11', name: 'Athletics', abbreviation: 'ATH', league: 'AL', division: 'West', logo: getMLBLogo('oak') },
+  { id: '12', name: 'Seattle Mariners', abbreviation: 'SEA', league: 'AL', division: 'West', logo: getMLBLogo('sea') },
+  { id: '13', name: 'Texas Rangers', abbreviation: 'TEX', league: 'AL', division: 'West', logo: getMLBLogo('tex') },
+  // National League East
+  { id: '15', name: 'Atlanta Braves', abbreviation: 'ATL', league: 'NL', division: 'East', logo: getMLBLogo('atl') },
+  { id: '28', name: 'Miami Marlins', abbreviation: 'MIA', league: 'NL', division: 'East', logo: getMLBLogo('mia') },
+  { id: '21', name: 'New York Mets', abbreviation: 'NYM', league: 'NL', division: 'East', logo: getMLBLogo('nym') },
+  { id: '22', name: 'Philadelphia Phillies', abbreviation: 'PHI', league: 'NL', division: 'East', logo: getMLBLogo('phi') },
+  { id: '20', name: 'Washington Nationals', abbreviation: 'WSH', league: 'NL', division: 'East', logo: getMLBLogo('wsh') },
+  // National League Central
+  { id: '16', name: 'Chicago Cubs', abbreviation: 'CHC', league: 'NL', division: 'Central', logo: getMLBLogo('chc') },
+  { id: '17', name: 'Cincinnati Reds', abbreviation: 'CIN', league: 'NL', division: 'Central', logo: getMLBLogo('cin') },
+  { id: '8', name: 'Milwaukee Brewers', abbreviation: 'MIL', league: 'NL', division: 'Central', logo: getMLBLogo('mil') },
+  { id: '23', name: 'Pittsburgh Pirates', abbreviation: 'PIT', league: 'NL', division: 'Central', logo: getMLBLogo('pit') },
+  { id: '24', name: 'St. Louis Cardinals', abbreviation: 'STL', league: 'NL', division: 'Central', logo: getMLBLogo('stl') },
+  // National League West
+  { id: '29', name: 'Arizona Diamondbacks', abbreviation: 'ARI', league: 'NL', division: 'West', logo: getMLBLogo('ari') },
+  { id: '27', name: 'Colorado Rockies', abbreviation: 'COL', league: 'NL', division: 'West', logo: getMLBLogo('col') },
+  { id: '19', name: 'Los Angeles Dodgers', abbreviation: 'LAD', league: 'NL', division: 'West', logo: getMLBLogo('lad') },
+  { id: '25', name: 'San Diego Padres', abbreviation: 'SD', league: 'NL', division: 'West', logo: getMLBLogo('sd') },
+  { id: '26', name: 'San Francisco Giants', abbreviation: 'SF', league: 'NL', division: 'West', logo: getMLBLogo('sf') },
+];
+
 // Competition emblem URLs from API-Football
 const LEAGUE_LOGOS: Record<string, string> = {
   'PD': 'https://media.api-sports.io/football/leagues/140.png',
@@ -167,9 +218,10 @@ export const TEAMS: SearchableTeam[] = [
 export function searchAll(query: string): {
   teams: SearchableTeam[];
   leagues: SearchableLeague[];
+  mlbTeams: SearchableMLBTeam[];
 } {
   const q = query.toLowerCase().trim();
-  if (!q) return { teams: [], leagues: [] };
+  if (!q) return { teams: [], leagues: [], mlbTeams: [] };
 
   const teams = TEAMS.filter(
     (t) =>
@@ -184,5 +236,11 @@ export function searchAll(query: string): {
       l.country.toLowerCase().includes(q)
   ).slice(0, 5);
 
-  return { teams, leagues };
+  const mlbTeams = MLB_TEAMS.filter(
+    (t) =>
+      t.name.toLowerCase().includes(q) ||
+      t.abbreviation.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  return { teams, leagues, mlbTeams };
 }

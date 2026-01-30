@@ -4,16 +4,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trophy, Sun, Moon, Search, X } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
-import { searchAll, type SearchableTeam, type SearchableLeague } from '@/lib/search-data';
+import { searchAll, type SearchableTeam, type SearchableLeague, type SearchableMLBTeam } from '@/lib/search-data';
 
 export function Header() {
   const { darkMode, toggleDarkMode, theme } = useTheme();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<{ teams: SearchableTeam[]; leagues: SearchableLeague[] }>({
+  const [results, setResults] = useState<{ teams: SearchableTeam[]; leagues: SearchableLeague[]; mlbTeams: SearchableMLBTeam[] }>({
     teams: [],
     leagues: [],
+    mlbTeams: [],
   });
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,7 +32,7 @@ export function Header() {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setSearchOpen(false);
         setQuery('');
-        setResults({ teams: [], leagues: [] });
+        setResults({ teams: [], leagues: [], mlbTeams: [] });
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -44,7 +45,7 @@ export function Header() {
       const searchResults = searchAll(query);
       setResults(searchResults);
     } else {
-      setResults({ teams: [], leagues: [] });
+      setResults({ teams: [], leagues: [], mlbTeams: [] });
     }
   }, [query]);
 
@@ -61,7 +62,13 @@ export function Header() {
     setQuery('');
   };
 
-  const hasResults = results.teams.length > 0 || results.leagues.length > 0;
+  const handleMLBTeamClick = (team: SearchableMLBTeam) => {
+    router.push(`/mlb/team/${team.id}`);
+    setSearchOpen(false);
+    setQuery('');
+  };
+
+  const hasResults = results.teams.length > 0 || results.leagues.length > 0 || results.mlbTeams.length > 0;
 
   return (
     <header
@@ -166,14 +173,14 @@ export function Header() {
                         </div>
                       )}
 
-                      {/* Teams */}
+                      {/* Soccer Teams */}
                       {results.teams.length > 0 && (
                         <div>
                           <div
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                             style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
                           >
-                            Teams
+                            ⚽ Soccer Teams
                           </div>
                           {results.teams.map((team) => (
                             <button
@@ -194,6 +201,41 @@ export function Header() {
                                 </p>
                                 <p className="text-xs" style={{ color: theme.textSecondary }}>
                                   {team.league}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* MLB Teams */}
+                      {results.mlbTeams.length > 0 && (
+                        <div>
+                          <div
+                            className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                          >
+                            ⚾ MLB Teams
+                          </div>
+                          {results.mlbTeams.map((team) => (
+                            <button
+                              key={`mlb-${team.id}`}
+                              onClick={() => handleMLBTeamClick(team)}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              style={{ borderBottom: `1px solid ${theme.border}` }}
+                            >
+                              <img
+                                src={team.logo}
+                                alt={team.name}
+                                className="h-8 w-8 object-contain"
+                                loading="lazy"
+                              />
+                              <div>
+                                <p className="text-sm font-medium" style={{ color: theme.text }}>
+                                  {team.name}
+                                </p>
+                                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                                  {team.league} {team.division}
                                 </p>
                               </div>
                             </button>
