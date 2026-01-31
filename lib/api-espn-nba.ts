@@ -381,6 +381,258 @@ export async function getNBATeam(teamId: string): Promise<BasketballTeamInfo | n
   }
 }
 
+// Get NBA standings by conference
+export async function getNBAStandings(): Promise<NBAStandings> {
+  const url = 'https://site.api.espn.com/apis/v2/sports/basketball/nba/standings';
+  const data = await fetchESPN<ESPNStandingsResponse>(url);
+
+  const conferences: NBAConferenceStandings[] = data.children?.map((conf) => {
+    const teams: NBAStandingTeam[] = conf.standings?.entries?.map((entry) => {
+      const getStat = (name: string) => {
+        const stat = entry.stats?.find((s) => s.name === name);
+        return stat?.value ?? 0;
+      };
+
+      return {
+        id: entry.team?.id || '',
+        name: entry.team?.displayName || '',
+        abbreviation: entry.team?.abbreviation || '',
+        logo: entry.team?.logos?.[0]?.href || '',
+        seed: Math.round(getStat('playoffSeed')),
+        wins: Math.round(getStat('wins')),
+        losses: Math.round(getStat('losses')),
+        winPct: getStat('winPercent'),
+        gamesBehind: getStat('gamesBehind'),
+        streak: Math.round(getStat('streak')),
+        lastTen: entry.stats?.find(s => s.name === 'Last Ten Games')?.displayValue || '-',
+      };
+    }) || [];
+
+    // Sort by seed
+    teams.sort((a, b) => a.seed - b.seed);
+
+    return {
+      id: conf.id || '',
+      name: conf.name || '',
+      teams,
+    };
+  }) || [];
+
+  return { conferences };
+}
+
+// Get team roster
+export async function getNBARoster(teamId: string): Promise<NBAPlayer[]> {
+  const url = `${API_BASE}/teams/${teamId}/roster`;
+
+  try {
+    const data = await fetchESPN<ESPNRosterResponse>(url);
+
+    return data.athletes?.map((athlete) => ({
+      id: athlete.id,
+      name: athlete.displayName,
+      jersey: athlete.jersey || '',
+      position: athlete.position?.abbreviation || '',
+      headshot: athlete.headshot?.href || '',
+      height: athlete.displayHeight || '',
+      weight: athlete.displayWeight || '',
+      age: athlete.age,
+      experience: athlete.experience?.years || 0,
+    })) || [];
+  } catch (error) {
+    console.error(`[ESPN-NBA] Failed to fetch roster for team ${teamId}:`, error);
+    return [];
+  }
+}
+
+// Get team stats
+export async function getNBATeamStats(teamId: string): Promise<NBATeamSeasonStats | null> {
+  const url = `${API_BASE}/teams/${teamId}/statistics`;
+
+  try {
+    const data = await fetchESPN<ESPNTeamStatsResponse>(url);
+
+    const allStats = data.results?.stats?.categories?.flatMap(cat => cat.stats) || [];
+
+    const getStat = (name: string) => {
+      const stat = allStats.find(s => s.name === name);
+      return {
+        value: stat?.displayValue || '0',
+        rank: stat?.rank || undefined,
+      };
+    };
+
+    return {
+      pointsPerGame: getStat('avgPoints'),
+      reboundsPerGame: getStat('avgRebounds'),
+      assistsPerGame: getStat('avgAssists'),
+      stealsPerGame: getStat('avgSteals'),
+      blocksPerGame: getStat('avgBlocks'),
+      fieldGoalPct: getStat('fieldGoalPct'),
+      threePointPct: getStat('threePointFieldGoalPct'),
+      freeThrowPct: getStat('freeThrowPct'),
+      turnoversPerGame: getStat('avgTurnovers'),
+    };
+  } catch (error) {
+    console.error(`[ESPN-NBA] Failed to fetch stats for team ${teamId}:`, error);
+    return null;
+  }
+}
+
+// Get recent form (last 5 games)
+export async function getNBARecentForm(teamId: string): Promise<NBAGameResult[]> {
+  const url = `${API_BASE}/teams/${teamId}/schedule`;
+
+  try {
+    const data = await fetchESPN<ESPNScheduleResponse>(url);
+
+    const finishedGames = data.events?.filter(
+      event => event.competitions?.[0]?.status?.type?.name === 'STATUS_FINAL'
+    ) || [];
+
+    // Get last 5 finished games
+    const last5 = finishedGames.slice(-5);
+
+    return last5.map(event => {
+      const competition = event.competitions[0];
+      const teamComp = competition.competitors.find(c => c.id === teamId);
+      const oppComp = competition.competitors.find(c => c.id !== teamId);
+
+      const teamScore = typeof teamComp?.score === 'object'
+        ? parseInt(teamComp.score.displayValue || '0')
+        : parseInt(teamComp?.score || '0');
+      const oppScore = typeof oppComp?.score === 'object'
+        ? parseInt(oppComp.score.displayValue || '0')
+        : parseInt(oppComp?.score || '0');
+
+      return {
+        id: event.id,
+        opponent: oppComp?.team?.abbreviation || 'TBD',
+        opponentLogo: oppComp?.team?.logos?.[0]?.href || '',
+        isHome: teamComp?.homeAway === 'home',
+        win: teamScore > oppScore,
+        score: `${teamScore}-${oppScore}`,
+      };
+    });
+  } catch (error) {
+    console.error(`[ESPN-NBA] Failed to fetch recent form for team ${teamId}:`, error);
+    return [];
+  }
+}
+
+// Type exports for NBA-specific data
+export interface NBAStandings {
+  conferences: NBAConferenceStandings[];
+}
+
+export interface NBAConferenceStandings {
+  id: string;
+  name: string;
+  teams: NBAStandingTeam[];
+}
+
+export interface NBAStandingTeam {
+  id: string;
+  name: string;
+  abbreviation: string;
+  logo: string;
+  seed: number;
+  wins: number;
+  losses: number;
+  winPct: number;
+  gamesBehind: number;
+  streak: number;
+  lastTen: string;
+}
+
+export interface NBAPlayer {
+  id: string;
+  name: string;
+  jersey: string;
+  position: string;
+  headshot: string;
+  height: string;
+  weight: string;
+  age?: number;
+  experience: number;
+}
+
+export interface NBATeamSeasonStats {
+  pointsPerGame: { value: string; rank?: number };
+  reboundsPerGame: { value: string; rank?: number };
+  assistsPerGame: { value: string; rank?: number };
+  stealsPerGame: { value: string; rank?: number };
+  blocksPerGame: { value: string; rank?: number };
+  fieldGoalPct: { value: string; rank?: number };
+  threePointPct: { value: string; rank?: number };
+  freeThrowPct: { value: string; rank?: number };
+  turnoversPerGame: { value: string; rank?: number };
+}
+
+export interface NBAGameResult {
+  id: string;
+  opponent: string;
+  opponentLogo: string;
+  isHome: boolean;
+  win: boolean;
+  score: string;
+}
+
+// ESPN Standings Response Types
+interface ESPNStandingsResponse {
+  children?: Array<{
+    id: string;
+    name: string;
+    standings?: {
+      entries?: Array<{
+        team?: {
+          id: string;
+          displayName: string;
+          abbreviation: string;
+          logos?: Array<{ href: string }>;
+        };
+        stats?: Array<{
+          name: string;
+          value?: number;
+          displayValue?: string;
+        }>;
+      }>;
+    };
+  }>;
+}
+
+// ESPN Roster Response Types
+interface ESPNRosterResponse {
+  athletes?: Array<{
+    id: string;
+    displayName: string;
+    jersey?: string;
+    position?: { abbreviation: string };
+    headshot?: { href: string };
+    displayHeight?: string;
+    displayWeight?: string;
+    age?: number;
+    experience?: { years: number };
+  }>;
+}
+
+// ESPN Team Stats Response Types
+interface ESPNTeamStatsResponse {
+  results?: {
+    stats?: {
+      categories?: Array<{
+        name: string;
+        stats: Array<{
+          name: string;
+          displayValue?: string;
+          value?: number;
+          rank?: number;
+        }>;
+      }>;
+    };
+  };
+}
+
 // ESPN API Response Types
 interface ESPNRecordItem {
   type: string;

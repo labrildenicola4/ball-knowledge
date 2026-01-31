@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getNBATeam } from '@/lib/api-espn-nba';
+import {
+  getNBATeam,
+  getNBARoster,
+  getNBATeamStats,
+  getNBARecentForm,
+  getNBAStandings
+} from '@/lib/api-espn-nba';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +23,14 @@ export async function GET(
       );
     }
 
-    const team = await getNBATeam(id);
+    // Fetch all data in parallel
+    const [team, roster, stats, recentForm, standings] = await Promise.all([
+      getNBATeam(id),
+      getNBARoster(id),
+      getNBATeamStats(id),
+      getNBARecentForm(id),
+      getNBAStandings(),
+    ]);
 
     if (!team) {
       return NextResponse.json(
@@ -26,7 +39,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(team);
+    return NextResponse.json({
+      ...team,
+      roster,
+      stats,
+      recentForm,
+      standings,
+    });
   } catch (error) {
     console.error('[API] NBA team error:', error);
     return NextResponse.json(
