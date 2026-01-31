@@ -277,44 +277,101 @@ export default function NBATeamPage() {
         {activeTab === 'schedule' && (
           <section className="px-4 py-4">
             {schedule && schedule.length > 0 ? (
-              <div
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-              >
-                {schedule.slice(0, 10).map((game, index) => (
-                  <Link
-                    key={game.id}
-                    href={`/nba/game/${game.id}`}
-                    className="flex items-center justify-between px-4 py-3 hover:opacity-80 transition-opacity"
-                    style={{
-                      borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
-                    }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-medium w-14" style={{ color: theme.textSecondary }}>
-                        {game.date}
-                      </span>
-                      <span className="text-[10px] w-4" style={{ color: theme.textSecondary }}>
-                        {game.isHome ? 'vs' : '@'}
-                      </span>
-                      {game.opponent.logo && (
-                        <img src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain" />
-                      )}
-                      <span className="text-sm font-medium" style={{ color: theme.text }}>
-                        {game.opponent.shortDisplayName || game.opponent.name}
-                      </span>
-                    </div>
-                    {game.result && (
-                      <span
-                        className="text-sm font-mono"
-                        style={{ color: game.result.win ? theme.green : theme.red }}
+              <>
+                {/* Upcoming Games */}
+                {(() => {
+                  const upcomingGames = schedule.filter(g => g.status !== 'final');
+                  if (upcomingGames.length === 0) return null;
+                  return (
+                    <div className="mb-4">
+                      <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
+                        Upcoming ({upcomingGames.length})
+                      </h3>
+                      <div
+                        className="rounded-xl overflow-hidden"
+                        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                       >
-                        {game.result.win ? 'W' : 'L'} {game.result.score}
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
+                        {upcomingGames.map((game, index) => (
+                          <Link
+                            key={game.id}
+                            href={`/nba/game/${game.id}`}
+                            className="flex items-center justify-between px-4 py-3 hover:opacity-80 transition-opacity"
+                            style={{
+                              borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                            }}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-[10px] font-medium w-14" style={{ color: theme.textSecondary }}>
+                                {game.date}
+                              </span>
+                              <span className="text-[10px] w-4" style={{ color: theme.textSecondary }}>
+                                {game.isHome ? 'vs' : '@'}
+                              </span>
+                              {game.opponent.logo && (
+                                <img src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain" />
+                              )}
+                              <span className="text-sm font-medium" style={{ color: theme.text }}>
+                                {game.opponent.shortDisplayName || game.opponent.name}
+                              </span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Completed Games */}
+                {(() => {
+                  const completedGames = schedule.filter(g => g.status === 'final').reverse();
+                  if (completedGames.length === 0) return null;
+                  return (
+                    <div>
+                      <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
+                        Completed ({completedGames.length})
+                      </h3>
+                      <div
+                        className="rounded-xl overflow-hidden"
+                        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                      >
+                        {completedGames.map((game, index) => (
+                          <Link
+                            key={game.id}
+                            href={`/nba/game/${game.id}`}
+                            className="flex items-center justify-between px-4 py-3 hover:opacity-80 transition-opacity"
+                            style={{
+                              borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                            }}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-[10px] font-medium w-14" style={{ color: theme.textSecondary }}>
+                                {game.date}
+                              </span>
+                              <span className="text-[10px] w-4" style={{ color: theme.textSecondary }}>
+                                {game.isHome ? 'vs' : '@'}
+                              </span>
+                              {game.opponent.logo && (
+                                <img src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain" />
+                              )}
+                              <span className="text-sm font-medium" style={{ color: theme.text }}>
+                                {game.opponent.shortDisplayName || game.opponent.name}
+                              </span>
+                            </div>
+                            {game.result && (
+                              <span
+                                className="text-sm font-mono"
+                                style={{ color: game.result.win ? theme.green : theme.red }}
+                              >
+                                {game.result.win ? 'W' : 'L'} {game.result.score}
+                              </span>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </>
             ) : (
               <div
                 className="rounded-xl p-6 text-center"

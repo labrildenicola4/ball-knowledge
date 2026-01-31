@@ -327,7 +327,7 @@ export async function getNBATeam(teamId: string): Promise<BasketballTeamInfo | n
       const scheduleData = await fetchESPN<ESPNScheduleResponse>(scheduleUrl);
 
       if (scheduleData.events) {
-        teamInfo.schedule = scheduleData.events.slice(0, 10).map((event: ESPNScheduleEvent) => {
+        teamInfo.schedule = scheduleData.events.map((event: ESPNScheduleEvent) => {
           const competition = event.competitions[0];
           const isHome = competition.competitors.find((c: ESPNScheduleCompetitor) => c.id === teamId)?.homeAway === 'home';
           const opponent = competition.competitors.find((c: ESPNScheduleCompetitor) => c.id !== teamId);
