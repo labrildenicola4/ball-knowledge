@@ -1,7 +1,7 @@
 // ESPN API client for NBA
 // No authentication required - public endpoints
 
-import { BasketballGame, BasketballTeam, BasketballBoxScore, BasketballPlayerStats, BasketballTeamStats } from './types/basketball';
+import { BasketballGame, BasketballTeam, BasketballBoxScore, BasketballPlayerStats, BasketballTeamStats, BasketballTeamInfo } from './types/basketball';
 
 const API_BASE = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba';
 
@@ -273,7 +273,184 @@ export async function getNBAGameSummary(gameId: string): Promise<{
   };
 }
 
+// Get team info
+export async function getNBATeam(teamId: string): Promise<BasketballTeamInfo | null> {
+  try {
+    const url = `${API_BASE}/teams/${teamId}`;
+    const data = await fetchESPN<ESPNTeamResponse>(url);
+
+    if (!data.team) {
+      return null;
+    }
+
+    const team = data.team;
+
+    // Extract records
+    const overallRecord = team.record?.items?.find((r: ESPNRecordItem) => r.type === 'total');
+    const confRecord = team.record?.items?.find((r: ESPNRecordItem) => r.type === 'vsconf');
+
+    // Extract division from standingSummary (e.g., "3rd in Southeast Division")
+    const standingSummary = team.standingSummary || '';
+    const divisionMatch = standingSummary.match(/in (.+)/);
+    const divisionName = divisionMatch ? divisionMatch[1] : 'NBA';
+
+    const teamInfo: BasketballTeamInfo = {
+      team: {
+        id: team.id,
+        name: team.name,
+        abbreviation: team.abbreviation,
+        displayName: team.displayName,
+        shortDisplayName: team.shortDisplayName || team.displayName,
+        logo: team.logos?.[0]?.href || '',
+        color: team.color,
+        alternateColor: team.alternateColor,
+      },
+      conference: {
+        id: team.groups?.parent?.id || 'nba',
+        name: divisionName,
+        shortName: divisionName,
+      },
+      record: overallRecord?.summary || team.record?.items?.[0]?.summary || '-',
+      conferenceRecord: confRecord?.summary || '-',
+      rank: team.rank,
+      schedule: [],
+      venue: team.franchise?.venue ? {
+        name: team.franchise.venue.fullName,
+        city: team.franchise.venue.address?.city || '',
+        capacity: team.franchise.venue.capacity,
+      } : undefined,
+    };
+
+    // Try to get schedule
+    try {
+      const scheduleUrl = `${API_BASE}/teams/${teamId}/schedule`;
+      const scheduleData = await fetchESPN<ESPNScheduleResponse>(scheduleUrl);
+
+      if (scheduleData.events) {
+        teamInfo.schedule = scheduleData.events.slice(0, 10).map((event: ESPNScheduleEvent) => {
+          const competition = event.competitions[0];
+          const isHome = competition.competitors.find((c: ESPNScheduleCompetitor) => c.id === teamId)?.homeAway === 'home';
+          const opponent = competition.competitors.find((c: ESPNScheduleCompetitor) => c.id !== teamId);
+
+          const status = GAME_STATUS_MAP[event.competitions[0].status?.type?.name || ''] || 'scheduled';
+
+          let result: { win: boolean; score: string } | undefined;
+          if (status === 'final' && opponent) {
+            const teamComp = competition.competitors.find((c: ESPNScheduleCompetitor) => c.id === teamId);
+            const teamScore = typeof teamComp?.score === 'object'
+              ? parseInt(teamComp.score.displayValue || '0')
+              : parseInt(teamComp?.score || '0');
+            const oppScore = typeof opponent.score === 'object'
+              ? parseInt(opponent.score.displayValue || '0')
+              : parseInt(opponent.score || '0');
+            result = {
+              win: teamScore > oppScore,
+              score: `${teamScore}-${oppScore}`,
+            };
+          }
+
+          return {
+            id: event.id,
+            date: new Date(event.date).toLocaleDateString('en-US', {
+              timeZone: 'America/New_York',
+              month: 'short',
+              day: 'numeric',
+            }),
+            opponent: {
+              id: opponent?.team?.id || '',
+              name: opponent?.team?.name || 'TBD',
+              abbreviation: opponent?.team?.abbreviation || '',
+              displayName: opponent?.team?.displayName || 'TBD',
+              shortDisplayName: opponent?.team?.shortDisplayName || 'TBD',
+              logo: opponent?.team?.logos?.[0]?.href || '',
+            },
+            isHome,
+            result,
+            status,
+          };
+        });
+      }
+    } catch (e) {
+      console.error('[ESPN-NBA] Failed to fetch schedule:', e);
+    }
+
+    return teamInfo;
+  } catch (error) {
+    console.error(`[ESPN-NBA] Failed to fetch team ${teamId}:`, error);
+    return null;
+  }
+}
+
 // ESPN API Response Types
+interface ESPNRecordItem {
+  type: string;
+  summary: string;
+}
+
+interface ESPNTeamResponse {
+  team: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    displayName: string;
+    shortDisplayName?: string;
+    logos?: Array<{ href: string }>;
+    color?: string;
+    alternateColor?: string;
+    rank?: number;
+    standingSummary?: string;
+    record?: {
+      items?: ESPNRecordItem[];
+    };
+    groups?: {
+      id?: string;
+      name?: string;
+      abbreviation?: string;
+      parent?: {
+        id: string;
+        name: string;
+        abbreviation: string;
+      };
+    };
+    franchise?: {
+      venue?: {
+        fullName: string;
+        address?: { city: string };
+        capacity?: number;
+      };
+    };
+  };
+}
+
+interface ESPNScheduleCompetitor {
+  id: string;
+  homeAway: 'home' | 'away';
+  score?: string | { value: number; displayValue: string };
+  team?: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    displayName: string;
+    shortDisplayName: string;
+    logos?: Array<{ href: string }>;
+  };
+}
+
+interface ESPNScheduleEvent {
+  id: string;
+  date: string;
+  competitions: Array<{
+    competitors: ESPNScheduleCompetitor[];
+    status?: {
+      type?: { name: string };
+    };
+  }>;
+}
+
+interface ESPNScheduleResponse {
+  events?: ESPNScheduleEvent[];
+}
+
 interface ESPNTeamBase {
   id: string;
   name?: string;

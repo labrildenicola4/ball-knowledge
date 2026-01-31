@@ -105,14 +105,14 @@ export const NBA_TEAMS: SearchableNBATeam[] = [
   // Western Conference - Northwest
   { id: '7', name: 'Denver Nuggets', abbreviation: 'DEN', conference: 'Western', division: 'Northwest', logo: getNBALogo('den') },
   { id: '16', name: 'Minnesota Timberwolves', abbreviation: 'MIN', conference: 'Western', division: 'Northwest', logo: getNBALogo('min') },
-  { id: '22', name: 'Oklahoma City Thunder', abbreviation: 'OKC', conference: 'Western', division: 'Northwest', logo: getNBALogo('okc') },
-  { id: '21', name: 'Portland Trail Blazers', abbreviation: 'POR', conference: 'Western', division: 'Northwest', logo: getNBALogo('por') },
+  { id: '25', name: 'Oklahoma City Thunder', abbreviation: 'OKC', conference: 'Western', division: 'Northwest', logo: getNBALogo('okc') },
+  { id: '22', name: 'Portland Trail Blazers', abbreviation: 'POR', conference: 'Western', division: 'Northwest', logo: getNBALogo('por') },
   { id: '26', name: 'Utah Jazz', abbreviation: 'UTA', conference: 'Western', division: 'Northwest', logo: getNBALogo('utah') },
   // Western Conference - Pacific
   { id: '9', name: 'Golden State Warriors', abbreviation: 'GSW', conference: 'Western', division: 'Pacific', logo: getNBALogo('gs') },
   { id: '12', name: 'LA Clippers', abbreviation: 'LAC', conference: 'Western', division: 'Pacific', logo: getNBALogo('lac') },
   { id: '13', name: 'Los Angeles Lakers', abbreviation: 'LAL', conference: 'Western', division: 'Pacific', logo: getNBALogo('lal') },
-  { id: '23', name: 'Phoenix Suns', abbreviation: 'PHX', conference: 'Western', division: 'Pacific', logo: getNBALogo('phx') },
+  { id: '21', name: 'Phoenix Suns', abbreviation: 'PHX', conference: 'Western', division: 'Pacific', logo: getNBALogo('phx') },
   { id: '23', name: 'Sacramento Kings', abbreviation: 'SAC', conference: 'Western', division: 'Pacific', logo: getNBALogo('sac') },
   // Western Conference - Southwest
   { id: '6', name: 'Dallas Mavericks', abbreviation: 'DAL', conference: 'Western', division: 'Southwest', logo: getNBALogo('dal') },
