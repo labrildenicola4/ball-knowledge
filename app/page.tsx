@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchCard } from '@/components/MatchCard';
 import { BasketballGameCard } from '@/components/basketball/BasketballGameCard';
+import { NBAGameCard } from '@/components/nba/NBAGameCard';
 import { MLBGameCard } from '@/components/mlb/MLBGameCard';
 import { useTheme } from '@/lib/theme';
 import { useLiveFixtures } from '@/lib/use-fixtures';
@@ -445,7 +446,7 @@ export default function HomePage() {
                       ) : game.type === 'basketball' && game.basketballGame ? (
                         <BasketballGameCard key={game.id} game={game.basketballGame} />
                       ) : game.type === 'nba' && game.nbaGame ? (
-                        <BasketballGameCard key={game.id} game={game.nbaGame} />
+                        <NBAGameCard key={game.id} game={game.nbaGame} />
                       ) : game.type === 'mlb' && game.mlbGame ? (
                         <MLBGameCard key={game.id} game={game.mlbGame} />
                       ) : null
@@ -492,7 +493,7 @@ export default function HomePage() {
                       ) : game.type === 'basketball' && game.basketballGame ? (
                         <BasketballGameCard key={game.id} game={game.basketballGame} />
                       ) : game.type === 'nba' && game.nbaGame ? (
-                        <BasketballGameCard key={game.id} game={game.nbaGame} />
+                        <NBAGameCard key={game.id} game={game.nbaGame} />
                       ) : game.type === 'mlb' && game.mlbGame ? (
                         <MLBGameCard key={game.id} game={game.mlbGame} />
                       ) : null
