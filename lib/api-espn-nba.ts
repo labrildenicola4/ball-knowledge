@@ -421,14 +421,53 @@ export async function getNBAStandings(): Promise<NBAStandings> {
   return { conferences };
 }
 
-// Get team roster
+// Fetch player season stats
+async function fetchPlayerStats(playerId: string): Promise<NBAPlayerSeasonStats | null> {
+  const url = `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/${playerId}/stats`;
+
+  try {
+    const response = await fetch(url, { next: { revalidate: 300 } }); // Cache for 5 mins
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const averages = data.categories?.find((c: { name: string }) => c.name === 'averages');
+
+    if (!averages?.statistics?.length) return null;
+
+    // Get current season (last entry)
+    const currentSeason = averages.statistics[averages.statistics.length - 1];
+    const stats = currentSeason?.stats || [];
+    const labels = averages.labels || [];
+
+    const getStatByLabel = (label: string): string => {
+      const idx = labels.indexOf(label);
+      return idx >= 0 ? stats[idx] : '0';
+    };
+
+    return {
+      gamesPlayed: parseInt(getStatByLabel('GP')) || 0,
+      minutesPerGame: parseFloat(getStatByLabel('MIN')) || 0,
+      pointsPerGame: parseFloat(getStatByLabel('PTS')) || 0,
+      reboundsPerGame: parseFloat(getStatByLabel('REB')) || 0,
+      assistsPerGame: parseFloat(getStatByLabel('AST')) || 0,
+      stealsPerGame: parseFloat(getStatByLabel('STL')) || 0,
+      blocksPerGame: parseFloat(getStatByLabel('BLK')) || 0,
+      fieldGoalPct: parseFloat(getStatByLabel('FG%')) || 0,
+      threePointPct: parseFloat(getStatByLabel('3P%')) || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Get team roster with stats
 export async function getNBARoster(teamId: string): Promise<NBAPlayer[]> {
   const url = `${API_BASE}/teams/${teamId}/roster`;
 
   try {
     const data = await fetchESPN<ESPNRosterResponse>(url);
 
-    return data.athletes?.map((athlete) => ({
+    const players = data.athletes?.map((athlete) => ({
       id: athlete.id,
       name: athlete.displayName,
       jersey: athlete.jersey || '',
@@ -438,7 +477,23 @@ export async function getNBARoster(teamId: string): Promise<NBAPlayer[]> {
       weight: athlete.displayWeight || '',
       age: athlete.age,
       experience: athlete.experience?.years || 0,
+      stats: null as NBAPlayerSeasonStats | null,
     })) || [];
+
+    // Fetch stats for all players in parallel (batched)
+    const batchSize = 5;
+    for (let i = 0; i < players.length; i += batchSize) {
+      const batch = players.slice(i, i + batchSize);
+      const statsResults = await Promise.all(batch.map(p => fetchPlayerStats(p.id)));
+      batch.forEach((player, idx) => {
+        player.stats = statsResults[idx];
+      });
+    }
+
+    // Sort by PPG (highest first)
+    players.sort((a, b) => (b.stats?.pointsPerGame || 0) - (a.stats?.pointsPerGame || 0));
+
+    return players;
   } catch (error) {
     console.error(`[ESPN-NBA] Failed to fetch roster for team ${teamId}:`, error);
     return [];
@@ -666,6 +721,18 @@ export interface NBAStandingTeam {
   lastTen: string;
 }
 
+export interface NBAPlayerSeasonStats {
+  gamesPlayed: number;
+  minutesPerGame: number;
+  pointsPerGame: number;
+  reboundsPerGame: number;
+  assistsPerGame: number;
+  stealsPerGame: number;
+  blocksPerGame: number;
+  fieldGoalPct: number;
+  threePointPct: number;
+}
+
 export interface NBAPlayer {
   id: string;
   name: string;
@@ -676,6 +743,7 @@ export interface NBAPlayer {
   weight: string;
   age?: number;
   experience: number;
+  stats: NBAPlayerSeasonStats | null;
 }
 
 export interface NBATeamSeasonStats {

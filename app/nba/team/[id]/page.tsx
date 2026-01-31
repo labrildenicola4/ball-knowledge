@@ -388,6 +388,17 @@ export default function NBATeamPage() {
         {/* Roster Tab */}
         {activeTab === 'roster' && (
           <section className="px-4 py-4">
+            {/* Stats Header */}
+            <div
+              className="flex items-center px-4 py-2 mb-2 rounded-t-xl text-[9px] font-semibold uppercase"
+              style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+            >
+              <span className="flex-1">Player</span>
+              <span className="w-10 text-center">PPG</span>
+              <span className="w-10 text-center">RPG</span>
+              <span className="w-10 text-center">APG</span>
+            </div>
+
             {roster && roster.length > 0 ? (
               <div
                 className="rounded-xl overflow-hidden"
@@ -396,7 +407,7 @@ export default function NBATeamPage() {
                 {roster.map((player, index) => (
                   <div
                     key={player.id}
-                    className="flex items-center gap-3 px-4 py-3"
+                    className="flex items-center gap-2 px-4 py-3"
                     style={{
                       borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
                     }}
@@ -415,13 +426,23 @@ export default function NBATeamPage() {
                         {player.name}
                       </p>
                       <p className="text-[10px]" style={{ color: theme.textSecondary }}>
-                        #{player.jersey} • {player.position} • {player.height}
+                        #{player.jersey} • {player.position}
                       </p>
                     </div>
-                    {player.experience > 0 && (
-                      <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                        {player.experience} yr{player.experience > 1 ? 's' : ''}
-                      </span>
+                    {player.stats ? (
+                      <>
+                        <span className="w-10 text-center text-[12px] font-mono font-medium" style={{ color: theme.text }}>
+                          {player.stats.pointsPerGame.toFixed(1)}
+                        </span>
+                        <span className="w-10 text-center text-[12px] font-mono" style={{ color: theme.textSecondary }}>
+                          {player.stats.reboundsPerGame.toFixed(1)}
+                        </span>
+                        <span className="w-10 text-center text-[12px] font-mono" style={{ color: theme.textSecondary }}>
+                          {player.stats.assistsPerGame.toFixed(1)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="w-30 text-center text-[10px]" style={{ color: theme.textSecondary }}>-</span>
                     )}
                   </div>
                 ))}
