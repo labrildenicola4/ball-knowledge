@@ -445,33 +445,154 @@ export async function getNBARoster(teamId: string): Promise<NBAPlayer[]> {
   }
 }
 
-// Get team stats
-export async function getNBATeamStats(teamId: string): Promise<NBATeamSeasonStats | null> {
-  const url = `${API_BASE}/teams/${teamId}/statistics`;
+// All NBA team IDs
+const NBA_TEAM_IDS = [
+  '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+  '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
+  '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'
+];
 
+// Cache for all teams' stats (for ranking calculation)
+let allTeamsStatsCache: { data: Map<string, RawTeamStats>; timestamp: number } | null = null;
+const STATS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+interface RawTeamStats {
+  avgPoints: number;
+  avgRebounds: number;
+  avgAssists: number;
+  avgSteals: number;
+  avgBlocks: number;
+  fieldGoalPct: number;
+  threePointPct: number;
+  freeThrowPct: number;
+  avgTurnovers: number;
+}
+
+// Fetch stats for a single team (raw numbers)
+async function fetchTeamRawStats(teamId: string): Promise<RawTeamStats | null> {
+  const url = `${API_BASE}/teams/${teamId}/statistics`;
   try {
     const data = await fetchESPN<ESPNTeamStatsResponse>(url);
-
     const allStats = data.results?.stats?.categories?.flatMap(cat => cat.stats) || [];
 
-    const getStat = (name: string) => {
+    const getStatValue = (name: string): number => {
       const stat = allStats.find(s => s.name === name);
-      return {
-        value: stat?.displayValue || '0',
-        rank: stat?.rank || undefined,
-      };
+      return stat?.value || 0;
     };
 
     return {
-      pointsPerGame: getStat('avgPoints'),
-      reboundsPerGame: getStat('avgRebounds'),
-      assistsPerGame: getStat('avgAssists'),
-      stealsPerGame: getStat('avgSteals'),
-      blocksPerGame: getStat('avgBlocks'),
-      fieldGoalPct: getStat('fieldGoalPct'),
-      threePointPct: getStat('threePointFieldGoalPct'),
-      freeThrowPct: getStat('freeThrowPct'),
-      turnoversPerGame: getStat('avgTurnovers'),
+      avgPoints: getStatValue('avgPoints'),
+      avgRebounds: getStatValue('avgRebounds'),
+      avgAssists: getStatValue('avgAssists'),
+      avgSteals: getStatValue('avgSteals'),
+      avgBlocks: getStatValue('avgBlocks'),
+      fieldGoalPct: getStatValue('fieldGoalPct'),
+      threePointPct: getStatValue('threePointFieldGoalPct'),
+      freeThrowPct: getStatValue('freeThrowPct'),
+      avgTurnovers: getStatValue('avgTurnovers'),
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Get all teams' stats (cached)
+async function getAllTeamsStats(): Promise<Map<string, RawTeamStats>> {
+  // Check cache
+  if (allTeamsStatsCache && Date.now() - allTeamsStatsCache.timestamp < STATS_CACHE_TTL) {
+    return allTeamsStatsCache.data;
+  }
+
+  console.log('[ESPN-NBA] Fetching all teams stats for rankings...');
+
+  const statsMap = new Map<string, RawTeamStats>();
+
+  // Fetch all teams in parallel (batched to avoid rate limiting)
+  const batchSize = 10;
+  for (let i = 0; i < NBA_TEAM_IDS.length; i += batchSize) {
+    const batch = NBA_TEAM_IDS.slice(i, i + batchSize);
+    const results = await Promise.all(batch.map(id => fetchTeamRawStats(id)));
+    batch.forEach((id, idx) => {
+      if (results[idx]) {
+        statsMap.set(id, results[idx]!);
+      }
+    });
+  }
+
+  allTeamsStatsCache = { data: statsMap, timestamp: Date.now() };
+  return statsMap;
+}
+
+// Calculate rank for a stat (higher is better, except turnovers)
+function calculateRank(
+  teamId: string,
+  statName: keyof RawTeamStats,
+  allStats: Map<string, RawTeamStats>,
+  lowerIsBetter = false
+): number {
+  const values: { id: string; value: number }[] = [];
+  allStats.forEach((stats, id) => {
+    values.push({ id, value: stats[statName] });
+  });
+
+  // Sort: higher is better by default, lower is better for turnovers
+  values.sort((a, b) => lowerIsBetter ? a.value - b.value : b.value - a.value);
+
+  const rank = values.findIndex(v => v.id === teamId) + 1;
+  return rank || 30;
+}
+
+// Get team stats with rankings
+export async function getNBATeamStats(teamId: string): Promise<NBATeamSeasonStats | null> {
+  try {
+    // Get all teams stats for ranking
+    const allStats = await getAllTeamsStats();
+    const teamStats = allStats.get(teamId);
+
+    if (!teamStats) {
+      return null;
+    }
+
+    const formatValue = (val: number, decimals = 1) => val.toFixed(decimals);
+    const formatPct = (val: number) => (val * 100).toFixed(1);
+
+    return {
+      pointsPerGame: {
+        value: formatValue(teamStats.avgPoints),
+        rank: calculateRank(teamId, 'avgPoints', allStats),
+      },
+      reboundsPerGame: {
+        value: formatValue(teamStats.avgRebounds),
+        rank: calculateRank(teamId, 'avgRebounds', allStats),
+      },
+      assistsPerGame: {
+        value: formatValue(teamStats.avgAssists),
+        rank: calculateRank(teamId, 'avgAssists', allStats),
+      },
+      stealsPerGame: {
+        value: formatValue(teamStats.avgSteals),
+        rank: calculateRank(teamId, 'avgSteals', allStats),
+      },
+      blocksPerGame: {
+        value: formatValue(teamStats.avgBlocks),
+        rank: calculateRank(teamId, 'avgBlocks', allStats),
+      },
+      fieldGoalPct: {
+        value: formatPct(teamStats.fieldGoalPct),
+        rank: calculateRank(teamId, 'fieldGoalPct', allStats),
+      },
+      threePointPct: {
+        value: formatPct(teamStats.threePointPct),
+        rank: calculateRank(teamId, 'threePointPct', allStats),
+      },
+      freeThrowPct: {
+        value: formatPct(teamStats.freeThrowPct),
+        rank: calculateRank(teamId, 'freeThrowPct', allStats),
+      },
+      turnoversPerGame: {
+        value: formatValue(teamStats.avgTurnovers),
+        rank: calculateRank(teamId, 'avgTurnovers', allStats, true), // Lower is better
+      },
     };
   } catch (error) {
     console.error(`[ESPN-NBA] Failed to fetch stats for team ${teamId}:`, error);
