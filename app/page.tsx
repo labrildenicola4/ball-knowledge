@@ -58,7 +58,7 @@ function getTodayET(): string {
 
 // Combined game type for chronological display
 interface CombinedGame {
-  type: 'soccer' | 'basketball' | 'mlb';
+  type: 'soccer' | 'basketball' | 'nba' | 'mlb';
   id: string;
   time: string;
   timeValue: number; // For sorting
@@ -66,6 +66,7 @@ interface CombinedGame {
   isFinished?: boolean;
   soccerMatch?: Match;
   basketballGame?: BasketballGame;
+  nbaGame?: BasketballGame;
   mlbGame?: MLBGame;
 }
 
@@ -82,12 +83,17 @@ export default function HomePage() {
   const [basketballLoading, setBasketballLoading] = useState(true);
   const [basketballError, setBasketballError] = useState(false);
 
+  // NBA games state
+  const [nbaGames, setNbaGames] = useState<BasketballGame[]>([]);
+  const [nbaLoading, setNbaLoading] = useState(true);
+  const [nbaError, setNbaError] = useState(false);
+
   // MLB games state
   const [mlbGames, setMlbGames] = useState<MLBGame[]>([]);
   const [mlbLoading, setMlbLoading] = useState(true);
   const [mlbError, setMlbError] = useState(false);
 
-  // Fetch basketball games for today
+  // Fetch basketball games for today (NCAA)
   useEffect(() => {
     setBasketballLoading(true);
     const todayStr = getTodayET();
@@ -100,6 +106,22 @@ export default function HomePage() {
       .catch(() => {
         setBasketballError(true);
         setBasketballLoading(false);
+      });
+  }, []);
+
+  // Fetch NBA games for today
+  useEffect(() => {
+    setNbaLoading(true);
+    const todayStr = getTodayET();
+    fetch(`/api/nba/games?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setNbaGames(data.games || []);
+        setNbaLoading(false);
+      })
+      .catch(() => {
+        setNbaError(true);
+        setNbaLoading(false);
       });
   }, []);
 
@@ -133,6 +155,17 @@ export default function HomePage() {
         setBasketballError(true);
         setBasketballLoading(false);
       });
+    setNbaLoading(true);
+    fetch(`/api/nba/games?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setNbaGames(data.games || []);
+        setNbaLoading(false);
+      })
+      .catch(() => {
+        setNbaError(true);
+        setNbaLoading(false);
+      });
     setMlbLoading(true);
     fetch(`/api/mlb/games?date=${todayStr}`)
       .then(res => res.json())
@@ -146,8 +179,8 @@ export default function HomePage() {
       });
   };
 
-  const isLoading = soccerLoading && basketballLoading && mlbLoading;
-  const isError = soccerError && basketballError && mlbError;
+  const isLoading = soccerLoading && basketballLoading && nbaLoading && mlbLoading;
+  const isError = soccerError && basketballError && nbaError && mlbError;
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', {
@@ -189,7 +222,7 @@ export default function HomePage() {
       });
     });
 
-    // Add basketball games
+    // Add basketball games (NCAA)
     basketballGames.forEach(game => {
       const isLive = game.status === 'in_progress';
       const isFinished = game.status === 'final';
@@ -201,6 +234,21 @@ export default function HomePage() {
         isLive,
         isFinished,
         basketballGame: game,
+      });
+    });
+
+    // Add NBA games
+    nbaGames.forEach(game => {
+      const isLive = game.status === 'in_progress';
+      const isFinished = game.status === 'final';
+      combined.push({
+        type: 'nba',
+        id: `nba-${game.id}`,
+        time: game.startTime,
+        timeValue: parseTimeToEST(game.startTime),
+        isLive,
+        isFinished,
+        nbaGame: game,
       });
     });
 
@@ -220,7 +268,7 @@ export default function HomePage() {
     });
 
     return combined;
-  }, [matches, basketballGames, mlbGames]);
+  }, [matches, basketballGames, nbaGames, mlbGames]);
 
   // Separate live, finished, and upcoming games
   const liveGames = allGames.filter(g => g.isLive);
@@ -255,7 +303,7 @@ export default function HomePage() {
     return groups;
   }, [upcomingGames]);
 
-  const totalGames = matches.length + basketballGames.length + mlbGames.length;
+  const totalGames = matches.length + basketballGames.length + nbaGames.length + mlbGames.length;
 
   return (
     <div
@@ -286,11 +334,11 @@ export default function HomePage() {
               color: theme.textSecondary,
             }}
           >
-            <RefreshCw size={16} className={isRefreshing || basketballLoading || mlbLoading ? 'animate-spin' : ''} />
+            <RefreshCw size={16} className={isRefreshing || basketballLoading || nbaLoading || mlbLoading ? 'animate-spin' : ''} />
             Refresh
           </button>
         </div>
-        {(isRefreshing || basketballLoading || mlbLoading) && (
+        {(isRefreshing || basketballLoading || nbaLoading || mlbLoading) && (
           <p className="mt-1 text-sm" style={{ color: theme.textSecondary }}>
             Updating...
           </p>
@@ -301,7 +349,10 @@ export default function HomePage() {
             ⚽ {matches.length} soccer
           </span>
           <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
-            🏀 {basketballGames.length} basketball
+            🏀 {basketballGames.length} NCAA
+          </span>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
+            🏀 {nbaGames.length} NBA
           </span>
           <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
             ⚾ {mlbGames.length} baseball
@@ -393,6 +444,8 @@ export default function HomePage() {
                         <MatchCard key={game.id} match={game.soccerMatch} />
                       ) : game.type === 'basketball' && game.basketballGame ? (
                         <BasketballGameCard key={game.id} game={game.basketballGame} />
+                      ) : game.type === 'nba' && game.nbaGame ? (
+                        <BasketballGameCard key={game.id} game={game.nbaGame} />
                       ) : game.type === 'mlb' && game.mlbGame ? (
                         <MLBGameCard key={game.id} game={game.mlbGame} />
                       ) : null
@@ -438,6 +491,8 @@ export default function HomePage() {
                         <MatchCard key={game.id} match={game.soccerMatch} />
                       ) : game.type === 'basketball' && game.basketballGame ? (
                         <BasketballGameCard key={game.id} game={game.basketballGame} />
+                      ) : game.type === 'nba' && game.nbaGame ? (
+                        <BasketballGameCard key={game.id} game={game.nbaGame} />
                       ) : game.type === 'mlb' && game.mlbGame ? (
                         <MLBGameCard key={game.id} game={game.mlbGame} />
                       ) : null
@@ -486,6 +541,8 @@ export default function HomePage() {
                           <MatchCard key={game.id} match={game.soccerMatch} />
                         ) : game.type === 'basketball' && game.basketballGame ? (
                           <BasketballGameCard key={game.id} game={game.basketballGame} />
+                        ) : game.type === 'nba' && game.nbaGame ? (
+                          <BasketballGameCard key={game.id} game={game.nbaGame} />
                         ) : game.type === 'mlb' && game.mlbGame ? (
                           <MLBGameCard key={game.id} game={game.mlbGame} />
                         ) : null
