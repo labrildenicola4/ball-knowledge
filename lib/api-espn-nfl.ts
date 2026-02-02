@@ -175,6 +175,50 @@ export async function getNFLGameSummary(gameId: string): Promise<{
   return { game, boxScore, drives: data.drives?.previous };
 }
 
+// Division mapping by team ID
+const TEAM_DIVISIONS: Record<string, { division: string; conference: 'AFC' | 'NFC' }> = {
+  // AFC East
+  '2': { division: 'East', conference: 'AFC' },
+  '15': { division: 'East', conference: 'AFC' },
+  '17': { division: 'East', conference: 'AFC' },
+  '20': { division: 'East', conference: 'AFC' },
+  // AFC North
+  '33': { division: 'North', conference: 'AFC' },
+  '4': { division: 'North', conference: 'AFC' },
+  '5': { division: 'North', conference: 'AFC' },
+  '23': { division: 'North', conference: 'AFC' },
+  // AFC South
+  '34': { division: 'South', conference: 'AFC' },
+  '11': { division: 'South', conference: 'AFC' },
+  '30': { division: 'South', conference: 'AFC' },
+  '10': { division: 'South', conference: 'AFC' },
+  // AFC West
+  '7': { division: 'West', conference: 'AFC' },
+  '12': { division: 'West', conference: 'AFC' },
+  '13': { division: 'West', conference: 'AFC' },
+  '24': { division: 'West', conference: 'AFC' },
+  // NFC East
+  '6': { division: 'East', conference: 'NFC' },
+  '19': { division: 'East', conference: 'NFC' },
+  '21': { division: 'East', conference: 'NFC' },
+  '28': { division: 'East', conference: 'NFC' },
+  // NFC North
+  '3': { division: 'North', conference: 'NFC' },
+  '8': { division: 'North', conference: 'NFC' },
+  '9': { division: 'North', conference: 'NFC' },
+  '16': { division: 'North', conference: 'NFC' },
+  // NFC South
+  '1': { division: 'South', conference: 'NFC' },
+  '29': { division: 'South', conference: 'NFC' },
+  '18': { division: 'South', conference: 'NFC' },
+  '27': { division: 'South', conference: 'NFC' },
+  // NFC West
+  '22': { division: 'West', conference: 'NFC' },
+  '14': { division: 'West', conference: 'NFC' },
+  '25': { division: 'West', conference: 'NFC' },
+  '26': { division: 'West', conference: 'NFC' },
+};
+
 // Get NFL standings
 export async function getNFLStandings(): Promise<NFLStandings> {
   const url = `${API_V2_BASE}/standings`;
@@ -182,57 +226,84 @@ export async function getNFLStandings(): Promise<NFLStandings> {
 
   const conferences: NFLStandings['conferences'] = [];
 
+  // ESPN API returns conferences with standings.entries (flat, no division nesting)
   data.children?.forEach((conf: any) => {
-    const divisions: any[] = [];
+    const confName = conf.name || 'Unknown';
+    const isAFC = confName.includes('American') || confName.includes('AFC');
+    const confAbbrev = isAFC ? 'AFC' : 'NFC';
 
-    conf.children?.forEach((div: any) => {
-      const teams: NFLStanding[] = div.standings?.entries?.map((entry: any) => {
-        const getStatValue = (name: string) => {
-          const stat = entry.stats?.find((s: any) => s.name === name || s.type === name);
-          return stat?.value ?? stat?.displayValue ?? 0;
-        };
+    // Parse all teams from the conference standings
+    const allTeams: NFLStanding[] = conf.standings?.entries?.map((entry: any) => {
+      const getStatValue = (name: string): number | string => {
+        const stat = entry.stats?.find((s: any) =>
+          s.name === name || s.type === name || s.abbreviation === name
+        );
+        return stat?.value ?? stat?.displayValue ?? 0;
+      };
 
-        return {
-          team: {
-            id: entry.team.id,
-            name: entry.team.name || entry.team.displayName,
-            abbreviation: entry.team.abbreviation || '',
-            displayName: entry.team.displayName || entry.team.name,
-            shortDisplayName: entry.team.shortDisplayName || entry.team.name,
-            logo: entry.team.logos?.[0]?.href || '',
-          },
-          wins: parseInt(getStatValue('wins')) || 0,
-          losses: parseInt(getStatValue('losses')) || 0,
-          ties: parseInt(getStatValue('ties')) || 0,
-          pct: String(getStatValue('winPercent') || getStatValue('gamesBehind') || '.000'),
-          divisionWins: parseInt(getStatValue('divisionWins')) || 0,
-          divisionLosses: parseInt(getStatValue('divisionLosses')) || 0,
-          conferenceWins: parseInt(getStatValue('vsconf_wins')) || 0,
-          conferenceLosses: parseInt(getStatValue('vsconf_losses')) || 0,
-          pointsFor: parseInt(getStatValue('pointsFor')) || 0,
-          pointsAgainst: parseInt(getStatValue('pointsAgainst')) || 0,
-          streak: String(getStatValue('streak') || '-'),
-          seed: parseInt(getStatValue('playoffSeed')) || undefined,
-        };
-      }) || [];
+      const getStatDisplay = (name: string): string => {
+        const stat = entry.stats?.find((s: any) =>
+          s.name === name || s.type === name || s.abbreviation === name
+        );
+        return stat?.displayValue || String(stat?.value || '0');
+      };
 
-      // Sort by seed or wins
+      return {
+        team: {
+          id: entry.team.id,
+          name: entry.team.name || entry.team.displayName,
+          abbreviation: entry.team.abbreviation || '',
+          displayName: entry.team.displayName || entry.team.name,
+          shortDisplayName: entry.team.shortDisplayName || entry.team.name,
+          logo: entry.team.logos?.[0]?.href || '',
+        },
+        wins: parseInt(String(getStatValue('wins'))) || 0,
+        losses: parseInt(String(getStatValue('losses'))) || 0,
+        ties: parseInt(String(getStatValue('ties'))) || 0,
+        pct: getStatDisplay('winPercent') || '.000',
+        divisionWins: parseInt(String(getStatValue('divisionWins'))) || 0,
+        divisionLosses: parseInt(String(getStatValue('divisionLosses'))) || 0,
+        conferenceWins: parseInt(String(getStatValue('vsconf_wins'))) || 0,
+        conferenceLosses: parseInt(String(getStatValue('vsconf_losses'))) || 0,
+        pointsFor: parseInt(String(getStatValue('pointsFor'))) || 0,
+        pointsAgainst: parseInt(String(getStatValue('pointsAgainst'))) || 0,
+        streak: getStatDisplay('streak') || '-',
+        seed: parseInt(String(getStatValue('playoffSeed'))) || undefined,
+      };
+    }) || [];
+
+    // Group teams by division
+    const divisionMap = new Map<string, NFLStanding[]>();
+    allTeams.forEach(team => {
+      const teamDiv = TEAM_DIVISIONS[team.team.id];
+      if (teamDiv && teamDiv.conference === confAbbrev) {
+        const divName = teamDiv.division;
+        if (!divisionMap.has(divName)) {
+          divisionMap.set(divName, []);
+        }
+        divisionMap.get(divName)!.push(team);
+      }
+    });
+
+    // Create divisions array with sorted teams
+    const divisions = ['East', 'North', 'South', 'West'].map(divName => {
+      const teams = divisionMap.get(divName) || [];
+      // Sort by wins, then losses
       teams.sort((a, b) => {
-        if (a.seed && b.seed) return a.seed - b.seed;
         if (b.wins !== a.wins) return b.wins - a.wins;
-        return a.losses - b.losses;
+        if (a.losses !== b.losses) return a.losses - b.losses;
+        return (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst);
       });
-
-      divisions.push({
-        id: String(div.id),
-        name: div.name || 'Unknown',
+      return {
+        id: `${confAbbrev.toLowerCase()}-${divName.toLowerCase()}`,
+        name: divName,
         teams,
-      });
+      };
     });
 
     conferences.push({
-      id: String(conf.id),
-      name: conf.name || 'Unknown',
+      id: String(conf.id || confAbbrev.toLowerCase()),
+      name: confAbbrev,
       divisions,
     });
   });
@@ -282,11 +353,17 @@ export async function getNFLTeam(teamId: string): Promise<NFLTeamInfo | null> {
 
 // Get team schedule
 export async function getNFLTeamSchedule(teamId: string): Promise<NFLTeamScheduleGame[]> {
-  const url = `${API_BASE}/teams/${teamId}/schedule`;
+  // Get both regular season and postseason games
+  const regularSeasonUrl = `${API_BASE}/teams/${teamId}/schedule?seasontype=2&season=2025`;
+  const postseasonUrl = `${API_BASE}/teams/${teamId}/schedule?seasontype=3&season=2025`;
 
   try {
-    const data = await fetchESPN<any>(url);
-    const events = data.events || [];
+    const [regularData, postData] = await Promise.all([
+      fetchESPN<any>(regularSeasonUrl),
+      fetchESPN<any>(postseasonUrl).catch(() => ({ events: [] })),
+    ]);
+
+    const events = [...(regularData.events || []), ...(postData.events || [])];
 
     return events.map((event: any) => {
       const competition = event.competitions?.[0];
