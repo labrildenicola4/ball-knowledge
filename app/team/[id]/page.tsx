@@ -206,7 +206,7 @@ export default function TeamPage() {
           .eq('user_id', user.id)
           .eq('favorite_type', 'team')
           .eq('favorite_id', Number(teamId))
-          .single();
+          .maybeSingle();
 
         setIsFavorite(!!data);
       }
@@ -218,28 +218,37 @@ export default function TeamPage() {
   // Toggle favorite
   const toggleFavorite = async () => {
     if (!user) {
-      // Redirect to login or show message
       alert('Please sign in to save favorites');
       return;
     }
 
     if (isFavorite) {
-      // Remove favorite
-      await supabase
+      const { error } = await supabase
         .from('user_favorites')
         .delete()
         .eq('user_id', user.id)
         .eq('favorite_type', 'team')
         .eq('favorite_id', Number(teamId));
+
+      if (error) {
+        console.error('Error removing favorite:', error);
+        return;
+      }
     } else {
-      // Add favorite
-      await supabase
+      const { error } = await supabase
         .from('user_favorites')
-        .insert({
+        .upsert({
           user_id: user.id,
           favorite_type: 'team',
           favorite_id: Number(teamId),
+        }, {
+          onConflict: 'user_id,favorite_type,favorite_id',
         });
+
+      if (error) {
+        console.error('Error adding favorite:', error);
+        return;
+      }
     }
 
     setIsFavorite(!isFavorite);

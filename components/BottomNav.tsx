@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Calendar, User } from 'lucide-react';
+import { Home, Calendar, User, Menu } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -9,6 +9,7 @@ const navItems = [
   { id: 'home', href: '/', icon: Home, label: 'Home' },
   { id: 'calendar', href: '/calendar', icon: Calendar, label: 'Calendar' },
   { id: 'mystuff', href: '/favorites', icon: User, label: 'My Stuff' },
+  { id: 'all', href: '/all', icon: Menu, label: 'All' },
 ];
 
 export function BottomNav() {

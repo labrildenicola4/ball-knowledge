@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { ChevronLeft, MapPin, Sun, Moon, TrendingUp, Users, BarChart3, Trophy } from 'lucide-react';
+import { ChevronLeft, MapPin, Sun, Moon, TrendingUp, Users, BarChart3, Trophy, Heart } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 import { BasketballTeamInfo } from '@/lib/types/basketball';
+import { createBrowserClient } from '@supabase/ssr';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
   NBAPlayer,
   NBATeamSeasonStats,
@@ -35,6 +37,76 @@ export default function NBATeamPage() {
 
   const [activeTab, setActiveTab] = useState<'schedule' | 'roster' | 'stats'>('schedule');
   const [selectedConference, setSelectedConference] = useState<'Eastern' | 'Western'>('Eastern');
+
+  // Favorites state
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  // Check auth and load favorite status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user && teamId) {
+        const { data } = await supabase
+          .from('user_favorites')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('favorite_type', 'nba_team')
+          .eq('favorite_id', Number(teamId))
+          .maybeSingle();
+
+        setIsFavorite(!!data);
+      }
+    };
+
+    checkAuth();
+  }, [teamId]);
+
+  // Toggle favorite
+  const toggleFavorite = async () => {
+    if (!user) {
+      alert('Please sign in to save favorites');
+      return;
+    }
+
+    if (isFavorite) {
+      const { error } = await supabase
+        .from('user_favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('favorite_type', 'nba_team')
+        .eq('favorite_id', Number(teamId));
+
+      if (error) {
+        console.error('Error removing favorite:', error);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from('user_favorites')
+        .upsert({
+          user_id: user.id,
+          favorite_type: 'nba_team',
+          favorite_id: Number(teamId),
+        }, {
+          onConflict: 'user_id,favorite_type,favorite_id',
+        });
+
+      if (error) {
+        console.error('Error adding favorite:', error);
+        return;
+      }
+    }
+
+    setIsFavorite(!isFavorite);
+  };
 
   const { data: teamInfo, error, isLoading } = useSWR<ExtendedTeamInfo>(
     teamId ? `/api/nba/team/${teamId}` : null,
@@ -135,9 +207,19 @@ export default function NBATeamPage() {
           )}
         </div>
 
-        <h1 className="text-xl font-bold mb-1" style={{ color: theme.text }}>
-          {team.displayName}
-        </h1>
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <div className="w-[26px]" /> {/* Spacer for balance */}
+          <h1 className="text-xl font-bold" style={{ color: theme.text }}>
+            {team.displayName}
+          </h1>
+          <button onClick={toggleFavorite} className="p-1">
+            <Heart
+              size={18}
+              fill={isFavorite ? '#d68b94' : 'none'}
+              style={{ color: '#d68b94' }}
+            />
+          </button>
+        </div>
 
         <p className="text-sm mb-3" style={{ color: theme.textSecondary }}>
           {conference.shortName}
@@ -388,64 +470,107 @@ export default function NBATeamPage() {
         {/* Roster Tab */}
         {activeTab === 'roster' && (
           <section className="px-4 py-4">
-            {/* Stats Header */}
-            <div
-              className="flex items-center px-4 py-2 mb-2 rounded-t-xl text-[9px] font-semibold uppercase"
-              style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
-            >
-              <span className="flex-1">Player</span>
-              <span className="w-10 text-center">PPG</span>
-              <span className="w-10 text-center">RPG</span>
-              <span className="w-10 text-center">APG</span>
-            </div>
-
             {roster && roster.length > 0 ? (
-              <div
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-              >
-                {roster.map((player, index) => (
+              <div className="overflow-x-auto">
+                <div className="min-w-[720px]">
+                  {/* Stats Header */}
                   <div
-                    key={player.id}
-                    className="flex items-center gap-2 px-4 py-3"
-                    style={{
-                      borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
-                    }}
+                    className="flex items-center px-3 py-2 rounded-t-xl text-[8px] font-semibold uppercase"
+                    style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                   >
-                    <div className="h-10 w-10 rounded-full overflow-hidden flex-shrink-0" style={{ backgroundColor: theme.bgTertiary }}>
-                      {player.headshot ? (
-                        <img src={player.headshot} alt={player.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center text-[10px]" style={{ color: theme.textSecondary }}>
-                          #{player.jersey}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
-                        {player.name}
-                      </p>
-                      <p className="text-[10px]" style={{ color: theme.textSecondary }}>
-                        #{player.jersey} • {player.position}
-                      </p>
-                    </div>
-                    {player.stats ? (
-                      <>
-                        <span className="w-10 text-center text-[12px] font-mono font-medium" style={{ color: theme.text }}>
-                          {player.stats.pointsPerGame.toFixed(1)}
-                        </span>
-                        <span className="w-10 text-center text-[12px] font-mono" style={{ color: theme.textSecondary }}>
-                          {player.stats.reboundsPerGame.toFixed(1)}
-                        </span>
-                        <span className="w-10 text-center text-[12px] font-mono" style={{ color: theme.textSecondary }}>
-                          {player.stats.assistsPerGame.toFixed(1)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="w-30 text-center text-[10px]" style={{ color: theme.textSecondary }}>-</span>
-                    )}
+                    <span className="w-[140px] flex-shrink-0">Player</span>
+                    <span className="w-8 text-center">GP</span>
+                    <span className="w-10 text-center">MIN</span>
+                    <span className="w-10 text-center">PPG</span>
+                    <span className="w-10 text-center">RPG</span>
+                    <span className="w-10 text-center">APG</span>
+                    <span className="w-10 text-center">STL</span>
+                    <span className="w-10 text-center">BLK</span>
+                    <span className="w-10 text-center">TO</span>
+                    <span className="w-12 text-center">FG%</span>
+                    <span className="w-12 text-center">3P%</span>
+                    <span className="w-12 text-center">FT%</span>
                   </div>
-                ))}
+
+                  <div
+                    className="rounded-b-xl overflow-hidden"
+                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}`, borderTop: 'none' }}
+                  >
+                    {roster.map((player, index) => (
+                      <div
+                        key={player.id}
+                        className="flex items-center px-3 py-2.5"
+                        style={{
+                          borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                        }}
+                      >
+                        {/* Player Info */}
+                        <div className="w-[140px] flex-shrink-0 flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0" style={{ backgroundColor: theme.bgTertiary }}>
+                            {player.headshot ? (
+                              <img src={player.headshot} alt={player.name} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-[9px]" style={{ color: theme.textSecondary }}>
+                                #{player.jersey}
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[11px] font-medium truncate" style={{ color: theme.text }}>
+                              {player.name}
+                            </p>
+                            <p className="text-[9px]" style={{ color: theme.textSecondary }}>
+                              #{player.jersey} • {player.position}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Stats */}
+                        {player.stats ? (
+                          <>
+                            <span className="w-8 text-center text-[11px] font-mono" style={{ color: theme.textSecondary }}>
+                              {player.stats.gamesPlayed}
+                            </span>
+                            <span className="w-10 text-center text-[11px] font-mono" style={{ color: theme.textSecondary }}>
+                              {player.stats.minutesPerGame.toFixed(1)}
+                            </span>
+                            <span className="w-10 text-center text-[11px] font-mono font-semibold" style={{ color: theme.accent }}>
+                              {player.stats.pointsPerGame.toFixed(1)}
+                            </span>
+                            <span className="w-10 text-center text-[11px] font-mono" style={{ color: theme.text }}>
+                              {player.stats.reboundsPerGame.toFixed(1)}
+                            </span>
+                            <span className="w-10 text-center text-[11px] font-mono" style={{ color: theme.text }}>
+                              {player.stats.assistsPerGame.toFixed(1)}
+                            </span>
+                            <span className="w-10 text-center text-[11px] font-mono" style={{ color: theme.textSecondary }}>
+                              {player.stats.stealsPerGame.toFixed(1)}
+                            </span>
+                            <span className="w-10 text-center text-[11px] font-mono" style={{ color: theme.textSecondary }}>
+                              {player.stats.blocksPerGame.toFixed(1)}
+                            </span>
+                            <span className="w-10 text-center text-[11px] font-mono" style={{ color: theme.textSecondary }}>
+                              {player.stats.turnoversPerGame.toFixed(1)}
+                            </span>
+                            <span className="w-12 text-center text-[11px] font-mono" style={{ color: theme.text }}>
+                              {player.stats.fieldGoalPct.toFixed(1)}
+                            </span>
+                            <span className="w-12 text-center text-[11px] font-mono" style={{ color: theme.text }}>
+                              {player.stats.threePointPct.toFixed(1)}
+                            </span>
+                            <span className="w-12 text-center text-[11px] font-mono" style={{ color: theme.text }}>
+                              {player.stats.freeThrowPct.toFixed(1)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="flex-1 text-center text-[10px]" style={{ color: theme.textSecondary }}>
+                            No stats available
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             ) : (
               <div

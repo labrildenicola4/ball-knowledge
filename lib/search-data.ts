@@ -1,4 +1,6 @@
 // Searchable data for teams and leagues
+import { ALL_CONFERENCES } from './constants/unified-conferences';
+import { LEAGUES as LEAGUE_CONFIGS } from './constants/leagues';
 
 export interface SearchableTeam {
   id: number;
@@ -26,6 +28,9 @@ const getMLBLogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/mlb/50
 // ESPN NBA logo URL pattern
 const getNBALogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/nba/500/${abbrev.toLowerCase()}.png`;
 
+// ESPN NFL logo URL pattern
+const getNFLLogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/nfl/500/${abbrev.toLowerCase()}.png`;
+
 export interface SearchableMLBTeam {
   id: string;
   name: string;
@@ -43,6 +48,71 @@ export interface SearchableNBATeam {
   division: string;
   logo: string;
 }
+
+export interface SearchableCollegeBasketballTeam {
+  id: string;
+  name: string;
+  abbreviation: string;
+  conference: string;
+  logo: string;
+}
+
+export interface SearchableCollegeFootballTeam {
+  id: string;
+  name: string;
+  abbreviation: string;
+  conference: string;
+  logo: string;
+}
+
+export interface SearchableNFLTeam {
+  id: string;
+  name: string;
+  abbreviation: string;
+  conference: 'AFC' | 'NFC';
+  division: 'East' | 'North' | 'South' | 'West';
+  logo: string;
+}
+
+export interface SearchableConference {
+  id: string;
+  name: string;
+  shortName: string;
+  sports: ('basketball' | 'football')[];
+}
+
+export interface SearchableSoccerLeague {
+  id: string;
+  slug: string;
+  name: string;
+  shortName: string;
+  country: string;
+  type: 'league' | 'cup';
+}
+
+// Generate searchable conferences from unified data
+export const SEARCHABLE_CONFERENCES: SearchableConference[] = ALL_CONFERENCES.map(c => ({
+  id: c.id,
+  name: c.name,
+  shortName: c.shortName,
+  sports: [
+    ...(c.basketball ? ['basketball' as const] : []),
+    ...(c.football ? ['football' as const] : []),
+  ],
+}));
+
+// Generate searchable soccer leagues from league configs
+export const SEARCHABLE_SOCCER_LEAGUES: SearchableSoccerLeague[] = LEAGUE_CONFIGS.map(l => ({
+  id: l.key,
+  slug: l.slug,
+  name: l.name,
+  shortName: l.shortName,
+  country: l.country,
+  type: l.type,
+}));
+
+// ESPN College Basketball logo URL pattern
+const getCollegeLogo = (id: string) => `https://a.espncdn.com/i/teamlogos/ncaa/500/${id}.png`;
 
 export const MLB_TEAMS: SearchableMLBTeam[] = [
   // American League East
@@ -120,6 +190,226 @@ export const NBA_TEAMS: SearchableNBATeam[] = [
   { id: '29', name: 'Memphis Grizzlies', abbreviation: 'MEM', conference: 'Western', division: 'Southwest', logo: getNBALogo('mem') },
   { id: '3', name: 'New Orleans Pelicans', abbreviation: 'NOP', conference: 'Western', division: 'Southwest', logo: getNBALogo('no') },
   { id: '24', name: 'San Antonio Spurs', abbreviation: 'SAS', conference: 'Western', division: 'Southwest', logo: getNBALogo('sa') },
+];
+
+export const NFL_TEAMS: SearchableNFLTeam[] = [
+  // AFC East
+  { id: '2', name: 'Buffalo Bills', abbreviation: 'BUF', conference: 'AFC', division: 'East', logo: getNFLLogo('buf') },
+  { id: '15', name: 'Miami Dolphins', abbreviation: 'MIA', conference: 'AFC', division: 'East', logo: getNFLLogo('mia') },
+  { id: '17', name: 'New England Patriots', abbreviation: 'NE', conference: 'AFC', division: 'East', logo: getNFLLogo('ne') },
+  { id: '20', name: 'New York Jets', abbreviation: 'NYJ', conference: 'AFC', division: 'East', logo: getNFLLogo('nyj') },
+  // AFC North
+  { id: '33', name: 'Baltimore Ravens', abbreviation: 'BAL', conference: 'AFC', division: 'North', logo: getNFLLogo('bal') },
+  { id: '4', name: 'Cincinnati Bengals', abbreviation: 'CIN', conference: 'AFC', division: 'North', logo: getNFLLogo('cin') },
+  { id: '5', name: 'Cleveland Browns', abbreviation: 'CLE', conference: 'AFC', division: 'North', logo: getNFLLogo('cle') },
+  { id: '23', name: 'Pittsburgh Steelers', abbreviation: 'PIT', conference: 'AFC', division: 'North', logo: getNFLLogo('pit') },
+  // AFC South
+  { id: '34', name: 'Houston Texans', abbreviation: 'HOU', conference: 'AFC', division: 'South', logo: getNFLLogo('hou') },
+  { id: '11', name: 'Indianapolis Colts', abbreviation: 'IND', conference: 'AFC', division: 'South', logo: getNFLLogo('ind') },
+  { id: '30', name: 'Jacksonville Jaguars', abbreviation: 'JAX', conference: 'AFC', division: 'South', logo: getNFLLogo('jax') },
+  { id: '10', name: 'Tennessee Titans', abbreviation: 'TEN', conference: 'AFC', division: 'South', logo: getNFLLogo('ten') },
+  // AFC West
+  { id: '7', name: 'Denver Broncos', abbreviation: 'DEN', conference: 'AFC', division: 'West', logo: getNFLLogo('den') },
+  { id: '12', name: 'Kansas City Chiefs', abbreviation: 'KC', conference: 'AFC', division: 'West', logo: getNFLLogo('kc') },
+  { id: '13', name: 'Las Vegas Raiders', abbreviation: 'LV', conference: 'AFC', division: 'West', logo: getNFLLogo('lv') },
+  { id: '24', name: 'Los Angeles Chargers', abbreviation: 'LAC', conference: 'AFC', division: 'West', logo: getNFLLogo('lac') },
+  // NFC East
+  { id: '6', name: 'Dallas Cowboys', abbreviation: 'DAL', conference: 'NFC', division: 'East', logo: getNFLLogo('dal') },
+  { id: '19', name: 'New York Giants', abbreviation: 'NYG', conference: 'NFC', division: 'East', logo: getNFLLogo('nyg') },
+  { id: '21', name: 'Philadelphia Eagles', abbreviation: 'PHI', conference: 'NFC', division: 'East', logo: getNFLLogo('phi') },
+  { id: '28', name: 'Washington Commanders', abbreviation: 'WSH', conference: 'NFC', division: 'East', logo: getNFLLogo('wsh') },
+  // NFC North
+  { id: '3', name: 'Chicago Bears', abbreviation: 'CHI', conference: 'NFC', division: 'North', logo: getNFLLogo('chi') },
+  { id: '8', name: 'Detroit Lions', abbreviation: 'DET', conference: 'NFC', division: 'North', logo: getNFLLogo('det') },
+  { id: '9', name: 'Green Bay Packers', abbreviation: 'GB', conference: 'NFC', division: 'North', logo: getNFLLogo('gb') },
+  { id: '16', name: 'Minnesota Vikings', abbreviation: 'MIN', conference: 'NFC', division: 'North', logo: getNFLLogo('min') },
+  // NFC South
+  { id: '1', name: 'Atlanta Falcons', abbreviation: 'ATL', conference: 'NFC', division: 'South', logo: getNFLLogo('atl') },
+  { id: '29', name: 'Carolina Panthers', abbreviation: 'CAR', conference: 'NFC', division: 'South', logo: getNFLLogo('car') },
+  { id: '18', name: 'New Orleans Saints', abbreviation: 'NO', conference: 'NFC', division: 'South', logo: getNFLLogo('no') },
+  { id: '27', name: 'Tampa Bay Buccaneers', abbreviation: 'TB', conference: 'NFC', division: 'South', logo: getNFLLogo('tb') },
+  // NFC West
+  { id: '22', name: 'Arizona Cardinals', abbreviation: 'ARI', conference: 'NFC', division: 'West', logo: getNFLLogo('ari') },
+  { id: '14', name: 'Los Angeles Rams', abbreviation: 'LAR', conference: 'NFC', division: 'West', logo: getNFLLogo('lar') },
+  { id: '25', name: 'San Francisco 49ers', abbreviation: 'SF', conference: 'NFC', division: 'West', logo: getNFLLogo('sf') },
+  { id: '26', name: 'Seattle Seahawks', abbreviation: 'SEA', conference: 'NFC', division: 'West', logo: getNFLLogo('sea') },
+];
+
+export const COLLEGE_BASKETBALL_TEAMS: SearchableCollegeBasketballTeam[] = [
+  // ACC
+  { id: '150', name: 'Duke Blue Devils', abbreviation: 'DUKE', conference: 'ACC', logo: getCollegeLogo('150') },
+  { id: '153', name: 'North Carolina Tar Heels', abbreviation: 'UNC', conference: 'ACC', logo: getCollegeLogo('153') },
+  { id: '152', name: 'NC State Wolfpack', abbreviation: 'NCSU', conference: 'ACC', logo: getCollegeLogo('152') },
+  { id: '258', name: 'Virginia Cavaliers', abbreviation: 'UVA', conference: 'ACC', logo: getCollegeLogo('258') },
+  { id: '154', name: 'Wake Forest Demon Deacons', abbreviation: 'WAKE', conference: 'ACC', logo: getCollegeLogo('154') },
+  { id: '52', name: 'Florida State Seminoles', abbreviation: 'FSU', conference: 'ACC', logo: getCollegeLogo('52') },
+  { id: '183', name: 'Syracuse Orange', abbreviation: 'SYR', conference: 'ACC', logo: getCollegeLogo('183') },
+  { id: '228', name: 'Clemson Tigers', abbreviation: 'CLEM', conference: 'ACC', logo: getCollegeLogo('228') },
+  { id: '87', name: 'Notre Dame Fighting Irish', abbreviation: 'ND', conference: 'ACC', logo: getCollegeLogo('87') },
+  { id: '221', name: 'Pittsburgh Panthers', abbreviation: 'PITT', conference: 'ACC', logo: getCollegeLogo('221') },
+  { id: '97', name: 'Louisville Cardinals', abbreviation: 'LOU', conference: 'ACC', logo: getCollegeLogo('97') },
+  { id: '259', name: 'Virginia Tech Hokies', abbreviation: 'VT', conference: 'ACC', logo: getCollegeLogo('259') },
+  { id: '59', name: 'Georgia Tech Yellow Jackets', abbreviation: 'GT', conference: 'ACC', logo: getCollegeLogo('59') },
+  { id: '2390', name: 'Miami Hurricanes', abbreviation: 'MIA', conference: 'ACC', logo: getCollegeLogo('2390') },
+  { id: '103', name: 'Boston College Eagles', abbreviation: 'BC', conference: 'ACC', logo: getCollegeLogo('103') },
+  { id: '2567', name: 'SMU Mustangs', abbreviation: 'SMU', conference: 'ACC', logo: getCollegeLogo('2567') },
+  // Big 12
+  { id: '2305', name: 'Kansas Jayhawks', abbreviation: 'KU', conference: 'Big 12', logo: getCollegeLogo('2305') },
+  { id: '239', name: 'Baylor Bears', abbreviation: 'BAY', conference: 'Big 12', logo: getCollegeLogo('239') },
+  { id: '251', name: 'Texas Longhorns', abbreviation: 'TEX', conference: 'Big 12', logo: getCollegeLogo('251') },
+  { id: '66', name: 'Iowa State Cyclones', abbreviation: 'ISU', conference: 'Big 12', logo: getCollegeLogo('66') },
+  { id: '2641', name: 'Texas Tech Red Raiders', abbreviation: 'TTU', conference: 'Big 12', logo: getCollegeLogo('2641') },
+  { id: '197', name: 'Oklahoma State Cowboys', abbreviation: 'OKST', conference: 'Big 12', logo: getCollegeLogo('197') },
+  { id: '2306', name: 'Kansas State Wildcats', abbreviation: 'KSU', conference: 'Big 12', logo: getCollegeLogo('2306') },
+  { id: '2628', name: 'TCU Horned Frogs', abbreviation: 'TCU', conference: 'Big 12', logo: getCollegeLogo('2628') },
+  { id: '277', name: 'West Virginia Mountaineers', abbreviation: 'WVU', conference: 'Big 12', logo: getCollegeLogo('277') },
+  { id: '201', name: 'Oklahoma Sooners', abbreviation: 'OU', conference: 'Big 12', logo: getCollegeLogo('201') },
+  { id: '2116', name: 'UCF Knights', abbreviation: 'UCF', conference: 'Big 12', logo: getCollegeLogo('2116') },
+  { id: '248', name: 'Houston Cougars', abbreviation: 'HOU', conference: 'Big 12', logo: getCollegeLogo('248') },
+  { id: '2132', name: 'Cincinnati Bearcats', abbreviation: 'CIN', conference: 'Big 12', logo: getCollegeLogo('2132') },
+  { id: '252', name: 'BYU Cougars', abbreviation: 'BYU', conference: 'Big 12', logo: getCollegeLogo('252') },
+  { id: '12', name: 'Arizona Wildcats', abbreviation: 'ARIZ', conference: 'Big 12', logo: getCollegeLogo('12') },
+  { id: '9', name: 'Arizona State Sun Devils', abbreviation: 'ASU', conference: 'Big 12', logo: getCollegeLogo('9') },
+  { id: '38', name: 'Colorado Buffaloes', abbreviation: 'COLO', conference: 'Big 12', logo: getCollegeLogo('38') },
+  { id: '254', name: 'Utah Utes', abbreviation: 'UTAH', conference: 'Big 12', logo: getCollegeLogo('254') },
+  // Big Ten
+  { id: '2509', name: 'Purdue Boilermakers', abbreviation: 'PUR', conference: 'Big Ten', logo: getCollegeLogo('2509') },
+  { id: '127', name: 'Michigan State Spartans', abbreviation: 'MSU', conference: 'Big Ten', logo: getCollegeLogo('127') },
+  { id: '130', name: 'Michigan Wolverines', abbreviation: 'MICH', conference: 'Big Ten', logo: getCollegeLogo('130') },
+  { id: '84', name: 'Indiana Hoosiers', abbreviation: 'IU', conference: 'Big Ten', logo: getCollegeLogo('84') },
+  { id: '194', name: 'Ohio State Buckeyes', abbreviation: 'OSU', conference: 'Big Ten', logo: getCollegeLogo('194') },
+  { id: '356', name: 'Illinois Fighting Illini', abbreviation: 'ILL', conference: 'Big Ten', logo: getCollegeLogo('356') },
+  { id: '275', name: 'Wisconsin Badgers', abbreviation: 'WIS', conference: 'Big Ten', logo: getCollegeLogo('275') },
+  { id: '135', name: 'Minnesota Golden Gophers', abbreviation: 'MINN', conference: 'Big Ten', logo: getCollegeLogo('135') },
+  { id: '2294', name: 'Iowa Hawkeyes', abbreviation: 'IOWA', conference: 'Big Ten', logo: getCollegeLogo('2294') },
+  { id: '120', name: 'Maryland Terrapins', abbreviation: 'MD', conference: 'Big Ten', logo: getCollegeLogo('120') },
+  { id: '77', name: 'Northwestern Wildcats', abbreviation: 'NU', conference: 'Big Ten', logo: getCollegeLogo('77') },
+  { id: '164', name: 'Rutgers Scarlet Knights', abbreviation: 'RUTG', conference: 'Big Ten', logo: getCollegeLogo('164') },
+  { id: '213', name: 'Penn State Nittany Lions', abbreviation: 'PSU', conference: 'Big Ten', logo: getCollegeLogo('213') },
+  { id: '158', name: 'Nebraska Cornhuskers', abbreviation: 'NEB', conference: 'Big Ten', logo: getCollegeLogo('158') },
+  { id: '26', name: 'UCLA Bruins', abbreviation: 'UCLA', conference: 'Big Ten', logo: getCollegeLogo('26') },
+  { id: '30', name: 'USC Trojans', abbreviation: 'USC', conference: 'Big Ten', logo: getCollegeLogo('30') },
+  { id: '2483', name: 'Oregon Ducks', abbreviation: 'ORE', conference: 'Big Ten', logo: getCollegeLogo('2483') },
+  { id: '264', name: 'Washington Huskies', abbreviation: 'WASH', conference: 'Big Ten', logo: getCollegeLogo('264') },
+  // SEC
+  { id: '96', name: 'Kentucky Wildcats', abbreviation: 'UK', conference: 'SEC', logo: getCollegeLogo('96') },
+  { id: '2633', name: 'Tennessee Volunteers', abbreviation: 'TENN', conference: 'SEC', logo: getCollegeLogo('2633') },
+  { id: '2', name: 'Auburn Tigers', abbreviation: 'AUB', conference: 'SEC', logo: getCollegeLogo('2') },
+  { id: '333', name: 'Alabama Crimson Tide', abbreviation: 'ALA', conference: 'SEC', logo: getCollegeLogo('333') },
+  { id: '57', name: 'Florida Gators', abbreviation: 'FLA', conference: 'SEC', logo: getCollegeLogo('57') },
+  { id: '8', name: 'Arkansas Razorbacks', abbreviation: 'ARK', conference: 'SEC', logo: getCollegeLogo('8') },
+  { id: '99', name: 'LSU Tigers', abbreviation: 'LSU', conference: 'SEC', logo: getCollegeLogo('99') },
+  { id: '344', name: 'Mississippi State Bulldogs', abbreviation: 'MSST', conference: 'SEC', logo: getCollegeLogo('344') },
+  { id: '145', name: 'Ole Miss Rebels', abbreviation: 'MISS', conference: 'SEC', logo: getCollegeLogo('145') },
+  { id: '61', name: 'Georgia Bulldogs', abbreviation: 'UGA', conference: 'SEC', logo: getCollegeLogo('61') },
+  { id: '2579', name: 'South Carolina Gamecocks', abbreviation: 'SC', conference: 'SEC', logo: getCollegeLogo('2579') },
+  { id: '142', name: 'Missouri Tigers', abbreviation: 'MIZ', conference: 'SEC', logo: getCollegeLogo('142') },
+  { id: '245', name: 'Texas A&M Aggies', abbreviation: 'TAMU', conference: 'SEC', logo: getCollegeLogo('245') },
+  { id: '238', name: 'Vanderbilt Commodores', abbreviation: 'VAN', conference: 'SEC', logo: getCollegeLogo('238') },
+  // Big East
+  { id: '41', name: 'UConn Huskies', abbreviation: 'CONN', conference: 'Big East', logo: getCollegeLogo('41') },
+  { id: '269', name: 'Marquette Golden Eagles', abbreviation: 'MARQ', conference: 'Big East', logo: getCollegeLogo('269') },
+  { id: '156', name: 'Creighton Bluejays', abbreviation: 'CREI', conference: 'Big East', logo: getCollegeLogo('156') },
+  { id: '222', name: 'Villanova Wildcats', abbreviation: 'VILL', conference: 'Big East', logo: getCollegeLogo('222') },
+  { id: '2550', name: 'Seton Hall Pirates', abbreviation: 'HALL', conference: 'Big East', logo: getCollegeLogo('2550') },
+  { id: '46', name: 'Georgetown Hoyas', abbreviation: 'GTWN', conference: 'Big East', logo: getCollegeLogo('46') },
+  { id: '2599', name: 'St. Johns Red Storm', abbreviation: 'SJU', conference: 'Big East', logo: getCollegeLogo('2599') },
+  { id: '2086', name: 'Butler Bulldogs', abbreviation: 'BUT', conference: 'Big East', logo: getCollegeLogo('2086') },
+  { id: '2752', name: 'Xavier Musketeers', abbreviation: 'XAV', conference: 'Big East', logo: getCollegeLogo('2752') },
+  { id: '2507', name: 'Providence Friars', abbreviation: 'PROV', conference: 'Big East', logo: getCollegeLogo('2507') },
+  { id: '305', name: 'DePaul Blue Demons', abbreviation: 'DEP', conference: 'Big East', logo: getCollegeLogo('305') },
+  // West Coast Conference
+  { id: '2250', name: 'Gonzaga Bulldogs', abbreviation: 'GONZ', conference: 'WCC', logo: getCollegeLogo('2250') },
+  { id: '2608', name: 'Saint Marys Gaels', abbreviation: 'SMC', conference: 'WCC', logo: getCollegeLogo('2608') },
+  { id: '2539', name: 'San Francisco Dons', abbreviation: 'SF', conference: 'WCC', logo: getCollegeLogo('2539') },
+  { id: '2541', name: 'Santa Clara Broncos', abbreviation: 'SCU', conference: 'WCC', logo: getCollegeLogo('2541') },
+  // Mountain West
+  { id: '21', name: 'San Diego State Aztecs', abbreviation: 'SDSU', conference: 'MWC', logo: getCollegeLogo('21') },
+  { id: '2440', name: 'Nevada Wolf Pack', abbreviation: 'NEV', conference: 'MWC', logo: getCollegeLogo('2440') },
+  { id: '36', name: 'Colorado State Rams', abbreviation: 'CSU', conference: 'MWC', logo: getCollegeLogo('36') },
+  // AAC
+  { id: '235', name: 'Memphis Tigers', abbreviation: 'MEM', conference: 'AAC', logo: getCollegeLogo('235') },
+  { id: '2724', name: 'Wichita State Shockers', abbreviation: 'WICH', conference: 'AAC', logo: getCollegeLogo('2724') },
+  // Atlantic 10
+  { id: '2670', name: 'VCU Rams', abbreviation: 'VCU', conference: 'A-10', logo: getCollegeLogo('2670') },
+  { id: '2168', name: 'Dayton Flyers', abbreviation: 'DAY', conference: 'A-10', logo: getCollegeLogo('2168') },
+  { id: '179', name: 'St. Bonaventure Bonnies', abbreviation: 'SBU', conference: 'A-10', logo: getCollegeLogo('179') },
+];
+
+export const COLLEGE_FOOTBALL_TEAMS: SearchableCollegeFootballTeam[] = [
+  // ACC
+  { id: '228', name: 'Clemson Tigers', abbreviation: 'CLEM', conference: 'ACC', logo: getCollegeLogo('228') },
+  { id: '52', name: 'Florida State Seminoles', abbreviation: 'FSU', conference: 'ACC', logo: getCollegeLogo('52') },
+  { id: '2390', name: 'Miami Hurricanes', abbreviation: 'MIA', conference: 'ACC', logo: getCollegeLogo('2390') },
+  { id: '153', name: 'North Carolina Tar Heels', abbreviation: 'UNC', conference: 'ACC', logo: getCollegeLogo('153') },
+  { id: '152', name: 'NC State Wolfpack', abbreviation: 'NCSU', conference: 'ACC', logo: getCollegeLogo('152') },
+  { id: '258', name: 'Virginia Cavaliers', abbreviation: 'UVA', conference: 'ACC', logo: getCollegeLogo('258') },
+  { id: '259', name: 'Virginia Tech Hokies', abbreviation: 'VT', conference: 'ACC', logo: getCollegeLogo('259') },
+  { id: '154', name: 'Wake Forest Demon Deacons', abbreviation: 'WAKE', conference: 'ACC', logo: getCollegeLogo('154') },
+  { id: '150', name: 'Duke Blue Devils', abbreviation: 'DUKE', conference: 'ACC', logo: getCollegeLogo('150') },
+  { id: '97', name: 'Louisville Cardinals', abbreviation: 'LOU', conference: 'ACC', logo: getCollegeLogo('97') },
+  { id: '221', name: 'Pittsburgh Panthers', abbreviation: 'PITT', conference: 'ACC', logo: getCollegeLogo('221') },
+  { id: '183', name: 'Syracuse Orange', abbreviation: 'SYR', conference: 'ACC', logo: getCollegeLogo('183') },
+  { id: '103', name: 'Boston College Eagles', abbreviation: 'BC', conference: 'ACC', logo: getCollegeLogo('103') },
+  { id: '59', name: 'Georgia Tech Yellow Jackets', abbreviation: 'GT', conference: 'ACC', logo: getCollegeLogo('59') },
+  { id: '2567', name: 'SMU Mustangs', abbreviation: 'SMU', conference: 'ACC', logo: getCollegeLogo('2567') },
+  { id: '25', name: 'California Golden Bears', abbreviation: 'CAL', conference: 'ACC', logo: getCollegeLogo('25') },
+  { id: '2608', name: 'Stanford Cardinal', abbreviation: 'STAN', conference: 'ACC', logo: getCollegeLogo('2608') },
+  // Big Ten
+  { id: '130', name: 'Michigan Wolverines', abbreviation: 'MICH', conference: 'Big Ten', logo: getCollegeLogo('130') },
+  { id: '194', name: 'Ohio State Buckeyes', abbreviation: 'OSU', conference: 'Big Ten', logo: getCollegeLogo('194') },
+  { id: '213', name: 'Penn State Nittany Lions', abbreviation: 'PSU', conference: 'Big Ten', logo: getCollegeLogo('213') },
+  { id: '127', name: 'Michigan State Spartans', abbreviation: 'MSU', conference: 'Big Ten', logo: getCollegeLogo('127') },
+  { id: '275', name: 'Wisconsin Badgers', abbreviation: 'WIS', conference: 'Big Ten', logo: getCollegeLogo('275') },
+  { id: '84', name: 'Indiana Hoosiers', abbreviation: 'IU', conference: 'Big Ten', logo: getCollegeLogo('84') },
+  { id: '356', name: 'Illinois Fighting Illini', abbreviation: 'ILL', conference: 'Big Ten', logo: getCollegeLogo('356') },
+  { id: '2294', name: 'Iowa Hawkeyes', abbreviation: 'IOWA', conference: 'Big Ten', logo: getCollegeLogo('2294') },
+  { id: '135', name: 'Minnesota Golden Gophers', abbreviation: 'MINN', conference: 'Big Ten', logo: getCollegeLogo('135') },
+  { id: '158', name: 'Nebraska Cornhuskers', abbreviation: 'NEB', conference: 'Big Ten', logo: getCollegeLogo('158') },
+  { id: '77', name: 'Northwestern Wildcats', abbreviation: 'NU', conference: 'Big Ten', logo: getCollegeLogo('77') },
+  { id: '2509', name: 'Purdue Boilermakers', abbreviation: 'PUR', conference: 'Big Ten', logo: getCollegeLogo('2509') },
+  { id: '120', name: 'Maryland Terrapins', abbreviation: 'MD', conference: 'Big Ten', logo: getCollegeLogo('120') },
+  { id: '164', name: 'Rutgers Scarlet Knights', abbreviation: 'RUTG', conference: 'Big Ten', logo: getCollegeLogo('164') },
+  { id: '26', name: 'UCLA Bruins', abbreviation: 'UCLA', conference: 'Big Ten', logo: getCollegeLogo('26') },
+  { id: '30', name: 'USC Trojans', abbreviation: 'USC', conference: 'Big Ten', logo: getCollegeLogo('30') },
+  { id: '2483', name: 'Oregon Ducks', abbreviation: 'ORE', conference: 'Big Ten', logo: getCollegeLogo('2483') },
+  { id: '264', name: 'Washington Huskies', abbreviation: 'WASH', conference: 'Big Ten', logo: getCollegeLogo('264') },
+  // SEC
+  { id: '333', name: 'Alabama Crimson Tide', abbreviation: 'ALA', conference: 'SEC', logo: getCollegeLogo('333') },
+  { id: '61', name: 'Georgia Bulldogs', abbreviation: 'UGA', conference: 'SEC', logo: getCollegeLogo('61') },
+  { id: '99', name: 'LSU Tigers', abbreviation: 'LSU', conference: 'SEC', logo: getCollegeLogo('99') },
+  { id: '57', name: 'Florida Gators', abbreviation: 'FLA', conference: 'SEC', logo: getCollegeLogo('57') },
+  { id: '2', name: 'Auburn Tigers', abbreviation: 'AUB', conference: 'SEC', logo: getCollegeLogo('2') },
+  { id: '2633', name: 'Tennessee Volunteers', abbreviation: 'TENN', conference: 'SEC', logo: getCollegeLogo('2633') },
+  { id: '245', name: 'Texas A&M Aggies', abbreviation: 'TAMU', conference: 'SEC', logo: getCollegeLogo('245') },
+  { id: '142', name: 'Missouri Tigers', abbreviation: 'MIZ', conference: 'SEC', logo: getCollegeLogo('142') },
+  { id: '8', name: 'Arkansas Razorbacks', abbreviation: 'ARK', conference: 'SEC', logo: getCollegeLogo('8') },
+  { id: '96', name: 'Kentucky Wildcats', abbreviation: 'UK', conference: 'SEC', logo: getCollegeLogo('96') },
+  { id: '344', name: 'Mississippi State Bulldogs', abbreviation: 'MSST', conference: 'SEC', logo: getCollegeLogo('344') },
+  { id: '145', name: 'Ole Miss Rebels', abbreviation: 'MISS', conference: 'SEC', logo: getCollegeLogo('145') },
+  { id: '2579', name: 'South Carolina Gamecocks', abbreviation: 'SC', conference: 'SEC', logo: getCollegeLogo('2579') },
+  { id: '238', name: 'Vanderbilt Commodores', abbreviation: 'VAN', conference: 'SEC', logo: getCollegeLogo('238') },
+  { id: '251', name: 'Texas Longhorns', abbreviation: 'TEX', conference: 'SEC', logo: getCollegeLogo('251') },
+  { id: '201', name: 'Oklahoma Sooners', abbreviation: 'OU', conference: 'SEC', logo: getCollegeLogo('201') },
+  // Big 12
+  { id: '2305', name: 'Kansas Jayhawks', abbreviation: 'KU', conference: 'Big 12', logo: getCollegeLogo('2305') },
+  { id: '2306', name: 'Kansas State Wildcats', abbreviation: 'KSU', conference: 'Big 12', logo: getCollegeLogo('2306') },
+  { id: '239', name: 'Baylor Bears', abbreviation: 'BAY', conference: 'Big 12', logo: getCollegeLogo('239') },
+  { id: '2628', name: 'TCU Horned Frogs', abbreviation: 'TCU', conference: 'Big 12', logo: getCollegeLogo('2628') },
+  { id: '2641', name: 'Texas Tech Red Raiders', abbreviation: 'TTU', conference: 'Big 12', logo: getCollegeLogo('2641') },
+  { id: '197', name: 'Oklahoma State Cowboys', abbreviation: 'OKST', conference: 'Big 12', logo: getCollegeLogo('197') },
+  { id: '277', name: 'West Virginia Mountaineers', abbreviation: 'WVU', conference: 'Big 12', logo: getCollegeLogo('277') },
+  { id: '66', name: 'Iowa State Cyclones', abbreviation: 'ISU', conference: 'Big 12', logo: getCollegeLogo('66') },
+  { id: '2116', name: 'UCF Knights', abbreviation: 'UCF', conference: 'Big 12', logo: getCollegeLogo('2116') },
+  { id: '2132', name: 'Cincinnati Bearcats', abbreviation: 'CIN', conference: 'Big 12', logo: getCollegeLogo('2132') },
+  { id: '248', name: 'Houston Cougars', abbreviation: 'HOU', conference: 'Big 12', logo: getCollegeLogo('248') },
+  { id: '252', name: 'BYU Cougars', abbreviation: 'BYU', conference: 'Big 12', logo: getCollegeLogo('252') },
+  { id: '12', name: 'Arizona Wildcats', abbreviation: 'ARIZ', conference: 'Big 12', logo: getCollegeLogo('12') },
+  { id: '9', name: 'Arizona State Sun Devils', abbreviation: 'ASU', conference: 'Big 12', logo: getCollegeLogo('9') },
+  { id: '38', name: 'Colorado Buffaloes', abbreviation: 'COLO', conference: 'Big 12', logo: getCollegeLogo('38') },
+  { id: '254', name: 'Utah Utes', abbreviation: 'UTAH', conference: 'Big 12', logo: getCollegeLogo('254') },
+  // Independent
+  { id: '87', name: 'Notre Dame Fighting Irish', abbreviation: 'ND', conference: 'Independent', logo: getCollegeLogo('87') },
 ];
 
 // Competition emblem URLs from API-Football
@@ -271,9 +561,24 @@ export function searchAll(query: string): {
   leagues: SearchableLeague[];
   mlbTeams: SearchableMLBTeam[];
   nbaTeams: SearchableNBATeam[];
+  nflTeams: SearchableNFLTeam[];
+  collegeBasketballTeams: SearchableCollegeBasketballTeam[];
+  collegeFootballTeams: SearchableCollegeFootballTeam[];
+  conferences: SearchableConference[];
+  soccerLeagues: SearchableSoccerLeague[];
 } {
   const q = query.toLowerCase().trim();
-  if (!q) return { teams: [], leagues: [], mlbTeams: [], nbaTeams: [] };
+  if (!q) return {
+    teams: [],
+    leagues: [],
+    mlbTeams: [],
+    nbaTeams: [],
+    nflTeams: [],
+    collegeBasketballTeams: [],
+    collegeFootballTeams: [],
+    conferences: [],
+    soccerLeagues: [],
+  };
 
   const teams = TEAMS.filter(
     (t) =>
@@ -300,5 +605,38 @@ export function searchAll(query: string): {
       t.abbreviation.toLowerCase().includes(q)
   ).slice(0, 10);
 
-  return { teams, leagues, mlbTeams, nbaTeams };
+  const nflTeams = NFL_TEAMS.filter(
+    (t) =>
+      t.name.toLowerCase().includes(q) ||
+      t.abbreviation.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  const collegeBasketballTeams = COLLEGE_BASKETBALL_TEAMS.filter(
+    (t) =>
+      t.name.toLowerCase().includes(q) ||
+      t.abbreviation.toLowerCase().includes(q) ||
+      t.conference.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  const collegeFootballTeams = COLLEGE_FOOTBALL_TEAMS.filter(
+    (t) =>
+      t.name.toLowerCase().includes(q) ||
+      t.abbreviation.toLowerCase().includes(q) ||
+      t.conference.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  const conferences = SEARCHABLE_CONFERENCES.filter(
+    (c) =>
+      c.name.toLowerCase().includes(q) ||
+      c.shortName.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  const soccerLeagues = SEARCHABLE_SOCCER_LEAGUES.filter(
+    (l) =>
+      l.name.toLowerCase().includes(q) ||
+      l.shortName.toLowerCase().includes(q) ||
+      l.country.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  return { teams, leagues, mlbTeams, nbaTeams, nflTeams, collegeBasketballTeams, collegeFootballTeams, conferences, soccerLeagues };
 }

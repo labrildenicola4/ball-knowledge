@@ -301,17 +301,21 @@ export async function getBasketballStandings(conferenceGroupId?: number): Promis
 
   const results: { conference: string; standings: BasketballStanding[] }[] = [];
 
-  data.children?.forEach(child => {
-    const confName = child.name || CONFERENCE_BY_GROUP_ID[child.id]?.name || 'Unknown';
-
-    const standings: BasketballStanding[] = child.standings?.entries?.map(entry => {
-      const getStatValue = (name: string) => {
-        const stat = entry.stats?.find((s: ESPNStandingStat) => s.name === name || s.abbreviation === name);
+  // Helper to parse standings entries
+  const parseStandings = (entries: ESPNStandingsEntry[] | undefined): BasketballStanding[] => {
+    const standings = entries?.map(entry => {
+      const getStatValue = (nameOrType: string) => {
+        const stat = entry.stats?.find((s: ESPNStandingStat) =>
+          s.name === nameOrType || s.abbreviation === nameOrType || s.type === nameOrType
+        );
         return stat?.value ?? stat?.displayValue ?? '0';
       };
 
       const teamName = entry.team.name || entry.team.displayName || 'Unknown';
+      const seed = parseInt(getStatValue('playoffseed') as string) || 999;
+
       return {
+        seed,
         team: {
           id: entry.team.id,
           name: teamName,
@@ -321,21 +325,38 @@ export async function getBasketballStandings(conferenceGroupId?: number): Promis
           logo: entry.team.logos?.[0]?.href || '',
         },
         conferenceRecord: {
-          wins: parseInt(getStatValue('conferenceWins') as string) || 0,
-          losses: parseInt(getStatValue('conferenceLosses') as string) || 0,
+          wins: parseInt(getStatValue('vsconf_wins') as string) || 0,
+          losses: parseInt(getStatValue('vsconf_losses') as string) || 0,
         },
         overallRecord: {
-          wins: parseInt(getStatValue('wins') as string) || parseInt(getStatValue('overall') as string) || 0,
+          wins: parseInt(getStatValue('wins') as string) || 0,
           losses: parseInt(getStatValue('losses') as string) || 0,
         },
         streak: String(getStatValue('streak')) || '-',
       };
     }) || [];
 
+    // Sort by seed (conference position)
+    return standings.sort((a, b) => a.seed - b.seed);
+  };
+
+  // When a specific conference is requested, ESPN returns data directly (not in children)
+  if (conferenceGroupId && data.standings?.entries) {
+    const confName = data.name || (data.id ? CONFERENCE_BY_GROUP_ID[data.id]?.name : undefined) || 'Unknown';
+    const standings = parseStandings(data.standings.entries);
     if (standings.length > 0) {
       results.push({ conference: confName, standings });
     }
-  });
+  } else {
+    // When no conference specified, data has children array
+    data.children?.forEach(child => {
+      const confName = child.name || CONFERENCE_BY_GROUP_ID[child.id]?.name || 'Unknown';
+      const standings = parseStandings(child.standings?.entries);
+      if (standings.length > 0) {
+        results.push({ conference: confName, standings });
+      }
+    });
+  }
 
   return results;
 }
@@ -365,8 +386,8 @@ export async function getBasketballTeam(teamId: string): Promise<BasketballTeamI
       },
       conference: {
         id: team.groups?.id || '',
-        name: team.groups?.name || 'Independent',
-        shortName: team.groups?.abbreviation || team.groups?.name || '',
+        name: team.groups?.name || team.standingSummary?.match(/in (.+)$/)?.[1] || 'Independent',
+        shortName: team.groups?.abbreviation || team.standingSummary?.match(/in (.+)$/)?.[1] || '',
       },
       record: team.record?.items?.[0]?.summary || '',
       conferenceRecord: team.record?.items?.find((r: ESPNRecordItem) => r.type === 'vsconf')?.summary || '',
@@ -398,6 +419,347 @@ export async function getBasketballTeam(teamId: string): Promise<BasketballTeamI
     };
   } catch (error) {
     console.error(`[ESPN-Basketball] Error fetching team ${teamId}:`, error);
+    return null;
+  }
+}
+
+// Type exports for College Basketball-specific data
+export interface CollegeBasketballPlayer {
+  id: string;
+  name: string;
+  jersey: string;
+  position: string;
+  headshot: string;
+  height: string;
+  weight: string;
+  year?: string;
+  stats: CollegeBasketballPlayerStats | null;
+}
+
+export interface CollegeBasketballPlayerStats {
+  gamesPlayed: number;
+  minutesPerGame: number;
+  pointsPerGame: number;
+  reboundsPerGame: number;
+  assistsPerGame: number;
+  stealsPerGame: number;
+  blocksPerGame: number;
+  fieldGoalPct: number;
+  threePointPct: number;
+  freeThrowPct: number;
+  turnoversPerGame: number;
+}
+
+export interface CollegeBasketballTeamSeasonStats {
+  pointsPerGame: { value: string };
+  reboundsPerGame: { value: string };
+  assistsPerGame: { value: string };
+  fieldGoalPct: { value: string };
+  threePointPct: { value: string };
+  freeThrowPct: { value: string };
+}
+
+export interface CollegeBasketballGameResult {
+  id: string;
+  opponent: string;
+  opponentLogo: string;
+  isHome: boolean;
+  win: boolean;
+  score: string;
+}
+
+export interface CollegeBasketballConferenceStandings {
+  id: string;
+  name: string;
+  teams: CollegeBasketballStandingTeam[];
+}
+
+export interface CollegeBasketballStandingTeam {
+  id: string;
+  name: string;
+  abbreviation: string;
+  logo: string;
+  conferenceWins: number;
+  conferenceLosses: number;
+  overallWins: number;
+  overallLosses: number;
+  seed?: number;
+}
+
+// Fetch player season stats for college basketball
+async function fetchCollegePlayerStats(playerId: string): Promise<CollegeBasketballPlayerStats | null> {
+  const url = `https://site.web.api.espn.com/apis/common/v3/sports/basketball/mens-college-basketball/athletes/${playerId}/stats`;
+
+  try {
+    const response = await fetch(url, { next: { revalidate: 300 } });
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const averages = data.categories?.find((c: { name: string }) => c.name === 'averages');
+
+    if (!averages?.statistics?.length) return null;
+
+    const currentSeason = averages.statistics[averages.statistics.length - 1];
+    const stats = currentSeason?.stats || [];
+    const labels = averages.labels || [];
+
+    const getStatByLabel = (label: string): string => {
+      const idx = labels.indexOf(label);
+      return idx >= 0 ? stats[idx] : '0';
+    };
+
+    return {
+      gamesPlayed: parseInt(getStatByLabel('GP')) || 0,
+      minutesPerGame: parseFloat(getStatByLabel('MIN')) || 0,
+      pointsPerGame: parseFloat(getStatByLabel('PTS')) || 0,
+      reboundsPerGame: parseFloat(getStatByLabel('REB')) || 0,
+      assistsPerGame: parseFloat(getStatByLabel('AST')) || 0,
+      stealsPerGame: parseFloat(getStatByLabel('STL')) || 0,
+      blocksPerGame: parseFloat(getStatByLabel('BLK')) || 0,
+      fieldGoalPct: parseFloat(getStatByLabel('FG%')) || 0,
+      threePointPct: parseFloat(getStatByLabel('3P%')) || 0,
+      freeThrowPct: parseFloat(getStatByLabel('FT%')) || 0,
+      turnoversPerGame: parseFloat(getStatByLabel('TO')) || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Get college basketball team roster with stats
+export async function getCollegeBasketballRoster(teamId: string): Promise<CollegeBasketballPlayer[]> {
+  const url = `${API_BASE}/teams/${teamId}/roster`;
+
+  try {
+    const data = await fetchESPN<ESPNRosterResponse>(url);
+
+    const players = data.athletes?.map((athlete) => ({
+      id: athlete.id,
+      name: athlete.displayName,
+      jersey: athlete.jersey || '',
+      position: athlete.position?.abbreviation || '',
+      headshot: athlete.headshot?.href || '',
+      height: athlete.displayHeight || '',
+      weight: athlete.displayWeight || '',
+      year: athlete.experience?.displayValue || '',
+      stats: null as CollegeBasketballPlayerStats | null,
+    })) || [];
+
+    // Fetch stats for all players in parallel (batched)
+    const batchSize = 5;
+    for (let i = 0; i < players.length; i += batchSize) {
+      const batch = players.slice(i, i + batchSize);
+      const statsResults = await Promise.all(batch.map(p => fetchCollegePlayerStats(p.id)));
+      batch.forEach((player, idx) => {
+        player.stats = statsResults[idx];
+      });
+    }
+
+    // Sort by PPG (highest first)
+    players.sort((a, b) => (b.stats?.pointsPerGame || 0) - (a.stats?.pointsPerGame || 0));
+
+    return players;
+  } catch (error) {
+    console.error(`[ESPN-Basketball] Failed to fetch roster for team ${teamId}:`, error);
+    return [];
+  }
+}
+
+// Get college basketball team stats
+export async function getCollegeBasketballTeamStats(teamId: string): Promise<CollegeBasketballTeamSeasonStats | null> {
+  const url = `${API_BASE}/teams/${teamId}/statistics`;
+
+  try {
+    const data = await fetchESPN<ESPNTeamStatsResponse>(url);
+    const allStats = data.results?.stats?.categories?.flatMap(cat => cat.stats) || [];
+
+    const getStatValue = (name: string): number => {
+      const stat = allStats.find(s => s.name === name);
+      return stat?.value || 0;
+    };
+
+    const formatValue = (val: number) => val.toFixed(1);
+
+    return {
+      pointsPerGame: { value: formatValue(getStatValue('avgPoints')) },
+      reboundsPerGame: { value: formatValue(getStatValue('avgRebounds')) },
+      assistsPerGame: { value: formatValue(getStatValue('avgAssists')) },
+      fieldGoalPct: { value: formatValue(getStatValue('fieldGoalPct')) },
+      threePointPct: { value: formatValue(getStatValue('threePointFieldGoalPct')) },
+      freeThrowPct: { value: formatValue(getStatValue('freeThrowPct')) },
+    };
+  } catch (error) {
+    console.error(`[ESPN-Basketball] Failed to fetch stats for team ${teamId}:`, error);
+    return null;
+  }
+}
+
+// Get recent form (last 5 games)
+export async function getCollegeBasketballRecentForm(teamId: string): Promise<CollegeBasketballGameResult[]> {
+  const url = `${API_BASE}/teams/${teamId}/schedule`;
+
+  try {
+    const data = await fetchESPN<ESPNScheduleResponse>(url);
+
+    const finishedGames = data.events?.filter(
+      event => event.competitions?.[0]?.status?.type?.name === 'STATUS_FINAL'
+    ) || [];
+
+    // Get last 5 finished games
+    const last5 = finishedGames.slice(-5);
+
+    return last5.map(event => {
+      const competition = event.competitions[0];
+      const teamComp = competition.competitors.find(c => c.id === teamId);
+      const oppComp = competition.competitors.find(c => c.id !== teamId);
+
+      const teamScore = typeof teamComp?.score === 'object'
+        ? parseInt((teamComp.score as { displayValue?: string }).displayValue || '0')
+        : parseInt(teamComp?.score || '0');
+      const oppScore = typeof oppComp?.score === 'object'
+        ? parseInt((oppComp.score as { displayValue?: string }).displayValue || '0')
+        : parseInt(oppComp?.score || '0');
+
+      return {
+        id: event.id,
+        opponent: oppComp?.team?.abbreviation || 'TBD',
+        opponentLogo: oppComp?.team?.logos?.[0]?.href || '',
+        isHome: teamComp?.homeAway === 'home',
+        win: teamScore > oppScore,
+        score: `${teamScore}-${oppScore}`,
+      };
+    });
+  } catch (error) {
+    console.error(`[ESPN-Basketball] Failed to fetch recent form for team ${teamId}:`, error);
+    return [];
+  }
+}
+
+// Schedule game type for team page
+export interface CollegeBasketballScheduleGame {
+  id: string;
+  date: string;
+  opponent: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    displayName: string;
+    shortDisplayName: string;
+    logo: string;
+  };
+  isHome: boolean;
+  status: 'scheduled' | 'in_progress' | 'final';
+  result?: {
+    win: boolean;
+    score: string;
+  };
+}
+
+// Get full schedule for a team
+export async function getCollegeBasketballSchedule(teamId: string): Promise<CollegeBasketballScheduleGame[]> {
+  const url = `${API_BASE}/teams/${teamId}/schedule`;
+
+  try {
+    const data = await fetchESPN<ESPNScheduleResponse>(url);
+
+    if (!data.events) return [];
+
+    return data.events.map(event => {
+      const competition = event.competitions[0];
+      const teamComp = competition.competitors.find(c => c.id === teamId);
+      const oppComp = competition.competitors.find(c => c.id !== teamId);
+
+      const statusName = competition.status?.type?.name || '';
+      const isFinal = statusName === 'STATUS_FINAL';
+      const isInProgress = statusName === 'STATUS_IN_PROGRESS' || statusName === 'STATUS_HALFTIME';
+
+      let result: { win: boolean; score: string } | undefined;
+      if (isFinal) {
+        const teamScore = typeof teamComp?.score === 'object'
+          ? parseInt((teamComp.score as { displayValue?: string }).displayValue || '0')
+          : parseInt(teamComp?.score || '0');
+        const oppScore = typeof oppComp?.score === 'object'
+          ? parseInt((oppComp.score as { displayValue?: string }).displayValue || '0')
+          : parseInt(oppComp?.score || '0');
+        result = {
+          win: teamScore > oppScore,
+          score: `${teamScore}-${oppScore}`,
+        };
+      }
+
+      return {
+        id: event.id,
+        date: new Date(event.date).toLocaleDateString('en-US', {
+          timeZone: 'America/New_York',
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        }),
+        opponent: {
+          id: oppComp?.team?.id || '',
+          name: oppComp?.team?.name || 'TBD',
+          abbreviation: oppComp?.team?.abbreviation || '',
+          displayName: oppComp?.team?.displayName || 'TBD',
+          shortDisplayName: oppComp?.team?.shortDisplayName || 'TBD',
+          logo: oppComp?.team?.logos?.[0]?.href || '',
+        },
+        isHome: teamComp?.homeAway === 'home',
+        status: isFinal ? 'final' : isInProgress ? 'in_progress' : 'scheduled',
+        result,
+      };
+    });
+  } catch (error) {
+    console.error(`[ESPN-Basketball] Failed to fetch schedule for team ${teamId}:`, error);
+    return [];
+  }
+}
+
+// Get conference standings for a team's conference
+export async function getCollegeBasketballConferenceStandings(conferenceGroupId: string): Promise<CollegeBasketballConferenceStandings | null> {
+  // Query the specific conference directly
+  const url = `${API_V2_BASE}/standings?group=${conferenceGroupId}`;
+
+  try {
+    const data = await fetchESPN<ESPNStandingsResponse>(url);
+
+    // When querying a specific conference, data is at top level (not in children)
+    const entries = data.standings?.entries;
+    if (!entries || entries.length === 0) {
+      console.log(`[ESPN-Basketball] No standings found for conference ${conferenceGroupId}`);
+      return null;
+    }
+
+    const teams: CollegeBasketballStandingTeam[] = entries.map(entry => {
+      const getStatValue = (nameOrType: string) => {
+        const stat = entry.stats?.find((s: ESPNStandingStat) =>
+          s.name === nameOrType || s.abbreviation === nameOrType || s.type === nameOrType
+        );
+        return stat?.value ?? 0;
+      };
+
+      return {
+        id: entry.team.id,
+        name: entry.team.displayName || entry.team.name || '',
+        abbreviation: entry.team.abbreviation || '',
+        logo: entry.team.logos?.[0]?.href || '',
+        conferenceWins: Math.round(getStatValue('vsconf_wins')),
+        conferenceLosses: Math.round(getStatValue('vsconf_losses')),
+        overallWins: Math.round(getStatValue('wins')),
+        overallLosses: Math.round(getStatValue('losses')),
+        seed: Math.round(getStatValue('playoffseed')) || 999,
+      };
+    });
+
+    // Sort by playoff seed (conference position)
+    teams.sort((a, b) => (a.seed || 999) - (b.seed || 999));
+
+    return {
+      id: String(data.id || conferenceGroupId),
+      name: data.name || 'Unknown',
+      teams,
+    };
+  } catch (error) {
+    console.error(`[ESPN-Basketball] Failed to fetch standings for conference ${conferenceGroupId}:`, error);
     return null;
   }
 }
@@ -548,6 +910,7 @@ interface ESPNGameSummary {
 interface ESPNStandingStat {
   name?: string;
   abbreviation?: string;
+  type?: string;
   value?: number;
   displayValue?: string;
 }
@@ -558,6 +921,11 @@ interface ESPNStandingsEntry {
 }
 
 interface ESPNStandingsResponse {
+  id?: number;
+  name?: string;
+  standings?: {
+    entries?: ESPNStandingsEntry[];
+  };
   children?: Array<{
     id: number;
     name?: string;
@@ -583,6 +951,7 @@ interface ESPNTeamResponse {
       abbreviation?: string;
     };
     rank?: number;
+    standingSummary?: string;
     franchise?: {
       venue?: {
         fullName: string;
@@ -609,6 +978,62 @@ interface ESPNRankingsResponse {
       previous: number;
       team: ESPNTeamBase;
       recordSummary?: string;
+    }>;
+  }>;
+}
+
+// Roster response types
+interface ESPNRosterResponse {
+  athletes?: Array<{
+    id: string;
+    displayName: string;
+    jersey?: string;
+    position?: { abbreviation: string };
+    headshot?: { href: string };
+    displayHeight?: string;
+    displayWeight?: string;
+    experience?: { displayValue: string };
+  }>;
+}
+
+// Team stats response types
+interface ESPNTeamStatsResponse {
+  results?: {
+    stats?: {
+      categories?: Array<{
+        name: string;
+        stats: Array<{
+          name: string;
+          displayValue?: string;
+          value?: number;
+        }>;
+      }>;
+    };
+  };
+}
+
+// Schedule response types
+interface ESPNScheduleResponse {
+  events?: Array<{
+    id: string;
+    date: string;
+    competitions: Array<{
+      competitors: Array<{
+        id: string;
+        homeAway: 'home' | 'away';
+        score?: string | { displayValue?: string };
+        team?: {
+          id: string;
+          name: string;
+          abbreviation: string;
+          displayName: string;
+          shortDisplayName: string;
+          logos?: Array<{ href: string }>;
+        };
+      }>;
+      status?: {
+        type?: { name: string };
+      };
     }>;
   }>;
 }

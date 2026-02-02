@@ -454,6 +454,8 @@ async function fetchPlayerStats(playerId: string): Promise<NBAPlayerSeasonStats 
       blocksPerGame: parseFloat(getStatByLabel('BLK')) || 0,
       fieldGoalPct: parseFloat(getStatByLabel('FG%')) || 0,
       threePointPct: parseFloat(getStatByLabel('3P%')) || 0,
+      freeThrowPct: parseFloat(getStatByLabel('FT%')) || 0,
+      turnoversPerGame: parseFloat(getStatByLabel('TO')) || 0,
     };
   } catch {
     return null;
@@ -609,7 +611,7 @@ export async function getNBATeamStats(teamId: string): Promise<NBATeamSeasonStat
     }
 
     const formatValue = (val: number, decimals = 1) => val.toFixed(decimals);
-    const formatPct = (val: number) => (val * 100).toFixed(1);
+    const formatPct = (val: number) => val.toFixed(1); // ESPN already returns as percentage
 
     return {
       pointsPerGame: {
@@ -731,6 +733,8 @@ export interface NBAPlayerSeasonStats {
   blocksPerGame: number;
   fieldGoalPct: number;
   threePointPct: number;
+  freeThrowPct: number;
+  turnoversPerGame: number;
 }
 
 export interface NBAPlayer {
@@ -989,4 +993,199 @@ interface ESPNGameSummary {
     teams?: ESPNBoxscoreTeamStats[];
   };
   plays?: Array<{ text: string }>;
+}
+
+// Stat leaders types
+export interface NBAStatLeader {
+  player: {
+    id: string;
+    name: string;
+    headshot: string;
+  };
+  team: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    logo: string;
+  };
+  value: number;
+  displayValue: string;
+}
+
+export interface NBALeaders {
+  points: NBAStatLeader[];
+  rebounds: NBAStatLeader[];
+  assists: NBAStatLeader[];
+  steals: NBAStatLeader[];
+  blocks: NBAStatLeader[];
+}
+
+// Get NBA stat leaders
+export async function getNBALeaders(): Promise<NBALeaders> {
+  // Use v3 endpoint which has the correct response format
+  const url = 'https://site.api.espn.com/apis/site/v3/sports/basketball/nba/leaders';
+
+  try {
+    const data = await fetchESPN<ESPNLeadersResponse>(url);
+
+    const extractLeaders = (categoryName: string): NBAStatLeader[] => {
+      const category = data.leaders?.categories?.find(c =>
+        c.name?.toLowerCase().includes(categoryName.toLowerCase()) ||
+        c.abbreviation?.toLowerCase() === categoryName.toLowerCase()
+      );
+
+      if (!category?.leaders) return [];
+
+      return category.leaders.slice(0, 5).map(leader => ({
+        player: {
+          id: leader.athlete?.id || '',
+          name: leader.athlete?.displayName || '',
+          headshot: leader.athlete?.headshot?.href || '',
+        },
+        team: {
+          id: leader.team?.id || '',
+          name: leader.team?.name || '',
+          abbreviation: leader.team?.abbreviation || '',
+          logo: leader.team?.logos?.[0]?.href || '',
+        },
+        value: leader.value || 0,
+        displayValue: leader.displayValue || String(leader.value || 0),
+      }));
+    };
+
+    return {
+      points: extractLeaders('pointsPerGame'),
+      rebounds: extractLeaders('reboundsPerGame'),
+      assists: extractLeaders('assistsPerGame'),
+      steals: extractLeaders('stealsPerGame'),
+      blocks: extractLeaders('blocksPerGame'),
+    };
+  } catch (error) {
+    console.error('[ESPN-NBA] Failed to fetch leaders:', error);
+    return { points: [], rebounds: [], assists: [], steals: [], blocks: [] };
+  }
+}
+
+// ESPN Leaders Response (v3 API)
+interface ESPNLeadersResponse {
+  leaders?: {
+    categories?: Array<{
+      name?: string;
+      displayName?: string;
+      abbreviation?: string;
+      leaders?: Array<{
+        athlete?: {
+          id: string;
+          displayName: string;
+          headshot?: { href: string };
+        };
+        team?: {
+          id: string;
+          name: string;
+          abbreviation: string;
+          logos?: Array<{ href: string }>;
+        };
+        value?: number;
+        displayValue?: string;
+      }>;
+    }>;
+  };
+}
+
+// Team ranking types
+export interface NBATeamRanking {
+  team: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    logo: string;
+  };
+  value: number;
+  displayValue: string;
+}
+
+export interface NBATeamRankings {
+  points: NBATeamRanking[];
+  rebounds: NBATeamRanking[];
+  assists: NBATeamRanking[];
+  fieldGoalPct: NBATeamRanking[];
+  threePointPct: NBATeamRanking[];
+}
+
+// Get NBA team rankings
+export async function getNBATeamRankings(): Promise<NBATeamRankings> {
+  const teamIds = [
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+    '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
+    '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'
+  ];
+
+  try {
+    // Fetch all team stats in parallel
+    const teamStatsPromises = teamIds.map(async (teamId) => {
+      try {
+        const teamUrl = `${API_BASE}/teams/${teamId}`;
+        const statsUrl = `${API_BASE}/teams/${teamId}/statistics`;
+
+        const [teamData, statsData] = await Promise.all([
+          fetchESPN<{ team: { id: string; displayName: string; abbreviation: string; logos?: Array<{ href: string }> } }>(teamUrl),
+          fetchESPN<ESPNTeamStatsResponse>(statsUrl),
+        ]);
+
+        const allStats = statsData.results?.stats?.categories?.flatMap(cat => cat.stats) || [];
+        const getStatValue = (name: string): number => {
+          const stat = allStats.find(s => s.name === name);
+          return stat?.value || 0;
+        };
+
+        return {
+          team: {
+            id: teamData.team.id,
+            name: teamData.team.displayName,
+            abbreviation: teamData.team.abbreviation,
+            logo: teamData.team.logos?.[0]?.href || '',
+          },
+          stats: {
+            points: getStatValue('avgPoints'),
+            rebounds: getStatValue('avgRebounds'),
+            assists: getStatValue('avgAssists'),
+            fieldGoalPct: getStatValue('fieldGoalPct'),
+            threePointPct: getStatValue('threePointPct'),
+          },
+        };
+      } catch {
+        return null;
+      }
+    });
+
+    const allTeamStats = (await Promise.all(teamStatsPromises)).filter(Boolean) as Array<{
+      team: { id: string; name: string; abbreviation: string; logo: string };
+      stats: { points: number; rebounds: number; assists: number; fieldGoalPct: number; threePointPct: number };
+    }>;
+
+    // Helper to rank and get top 5
+    const getRankings = (statKey: keyof typeof allTeamStats[0]['stats']): NBATeamRanking[] => {
+      return [...allTeamStats]
+        .sort((a, b) => b.stats[statKey] - a.stats[statKey])
+        .slice(0, 5)
+        .map(t => ({
+          team: t.team,
+          value: t.stats[statKey],
+          displayValue: statKey.includes('Pct')
+            ? t.stats[statKey].toFixed(1) + '%'
+            : t.stats[statKey].toFixed(1),
+        }));
+    };
+
+    return {
+      points: getRankings('points'),
+      rebounds: getRankings('rebounds'),
+      assists: getRankings('assists'),
+      fieldGoalPct: getRankings('fieldGoalPct'),
+      threePointPct: getRankings('threePointPct'),
+    };
+  } catch (error) {
+    console.error('[ESPN-NBA] Failed to fetch team rankings:', error);
+    return { points: [], rebounds: [], assists: [], fieldGoalPct: [], threePointPct: [] };
+  }
 }

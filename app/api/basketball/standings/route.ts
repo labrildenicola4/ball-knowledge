@@ -20,12 +20,15 @@ export async function GET(request: Request) {
     }
 
     const [standingsData, rankings] = await Promise.all([
-      getBasketballStandings(conferenceGroupId),
+      conferenceGroupId ? getBasketballStandings(conferenceGroupId) : Promise.resolve([]),
       includeRankings ? getBasketballRankings() : Promise.resolve([]),
     ]);
 
+    // Flatten standings from all conferences
+    const standings = standingsData.flatMap(conf => conf.standings || []);
+
     return NextResponse.json({
-      standings: standingsData,
+      standings,
       rankings,
     });
   } catch (error) {

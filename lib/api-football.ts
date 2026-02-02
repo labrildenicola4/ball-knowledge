@@ -855,3 +855,69 @@ export async function getTeamTrophies(teamId: number): Promise<{ name: string; c
   // For now, return empty - this would need a different data source
   return [];
 }
+
+// Top Scorers types
+export interface TopScorer {
+  player: {
+    id: number;
+    name: string;
+    firstname: string;
+    lastname: string;
+    age: number;
+    nationality: string;
+    photo: string;
+  };
+  statistics: Array<{
+    team: { id: number; name: string; logo: string };
+    league: { id: number; name: string; country: string; logo: string; season: number };
+    games: {
+      appearances: number | null;
+      lineups: number | null;
+      minutes: number | null;
+      position: string | null;
+    };
+    goals: { total: number | null; assists: number | null };
+    penalty: { scored: number | null; missed: number | null };
+  }>;
+}
+
+// Get top scorers for a league
+export async function getTopScorers(leagueId: number, season?: number): Promise<TopScorer[]> {
+  return fetchApi<TopScorer>('/players/topscorers', {
+    league: leagueId,
+    season: season || getSeason(),
+  });
+}
+
+// Get top assists for a league
+export async function getTopAssists(leagueId: number, season?: number): Promise<TopScorer[]> {
+  return fetchApi<TopScorer>('/players/topassists', {
+    league: leagueId,
+    season: season || getSeason(),
+  });
+}
+
+// Get league fixtures (upcoming and recent)
+export async function getLeagueFixtures(
+  leagueId: number,
+  options?: {
+    next?: number;
+    last?: number;
+    from?: string;
+    to?: string;
+    round?: string;
+  }
+): Promise<Fixture[]> {
+  const params: Record<string, string | number> = {
+    league: leagueId,
+    season: getSeason(),
+  };
+
+  if (options?.next) params.next = options.next;
+  if (options?.last) params.last = options.last;
+  if (options?.from) params.from = options.from;
+  if (options?.to) params.to = options.to;
+  if (options?.round) params.round = options.round;
+
+  return fetchApi<Fixture>('/fixtures', params);
+}

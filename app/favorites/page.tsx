@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Star, Heart, LogOut, User } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -8,6 +9,13 @@ import { useTheme } from '@/lib/theme';
 import { createBrowserClient } from '@supabase/ssr';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import LoginButton from '@/components/LoginButton';
+import {
+  MLB_TEAMS,
+  NBA_TEAMS,
+  COLLEGE_BASKETBALL_TEAMS,
+  COLLEGE_FOOTBALL_TEAMS,
+  SEARCHABLE_SOCCER_LEAGUES,
+} from '@/lib/search-data';
 
 interface TeamInfo {
   teamId: number;
@@ -18,11 +26,16 @@ interface TeamInfo {
   form: string[];
 }
 
+interface Favorite {
+  favorite_type: string;
+  favorite_id: number;
+}
+
 export default function MyStuffPage() {
   const { theme } = useTheme();
   const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [teams, setTeams] = useState<TeamInfo[]>([]);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [soccerTeams, setSoccerTeams] = useState<TeamInfo[]>([]);
   const [loading, setLoading] = useState(false);
 
   const supabase = createBrowserClient(
@@ -37,17 +50,26 @@ export default function MyStuffPage() {
         setUser(user);
 
         if (user) {
-          const { data } = await supabase
+          // Fetch ALL favorites (not just teams)
+          const { data, error } = await supabase
             .from('user_favorites')
-            .select('favorite_id')
-            .eq('favorite_type', 'team');
+            .select('favorite_type, favorite_id');
 
-          if (data) {
-            const favIds = data.map(f => f.favorite_id);
-            setFavorites(favIds);
+          if (error) {
+            console.error('Error fetching favorites:', error);
+            return;
+          }
 
-            if (favIds.length > 0) {
-              await fetchTeamDetails(favIds);
+          if (data && data.length > 0) {
+            setFavorites(data);
+
+            // Fetch soccer team details (needs API call for standings info)
+            const soccerTeamIds = data
+              .filter(f => f.favorite_type === 'team')
+              .map(f => f.favorite_id);
+
+            if (soccerTeamIds.length > 0) {
+              await fetchSoccerTeamDetails(soccerTeamIds);
             }
           }
         }
@@ -62,14 +84,14 @@ export default function MyStuffPage() {
       setUser(session?.user ?? null);
       if (!session?.user) {
         setFavorites([]);
-        setTeams([]);
+        setSoccerTeams([]);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchTeamDetails = async (favoriteIds: number[]) => {
+  const fetchSoccerTeamDetails = async (favoriteIds: number[]) => {
     setLoading(true);
     try {
       const leagueIds = ['laliga', 'premier', 'seriea', 'bundesliga', 'ligue1'];
@@ -83,7 +105,7 @@ export default function MyStuffPage() {
 
       const allTeams: TeamInfo[] = responses.flatMap(r => r.standings || []);
       const favoriteTeams = allTeams.filter(team => favoriteIds.includes(team.teamId));
-      setTeams(favoriteTeams);
+      setSoccerTeams(favoriteTeams);
     } catch (error) {
       console.error('Error fetching teams:', error);
     } finally {
@@ -91,19 +113,21 @@ export default function MyStuffPage() {
     }
   };
 
-  const removeFavorite = async (teamId: number) => {
+  const removeFavorite = async (favoriteType: string, favoriteId: number) => {
     if (!user) return;
 
     const { error } = await supabase
       .from('user_favorites')
       .delete()
       .eq('user_id', user.id)
-      .eq('favorite_type', 'team')
-      .eq('favorite_id', teamId);
+      .eq('favorite_type', favoriteType)
+      .eq('favorite_id', favoriteId);
 
     if (!error) {
-      setFavorites(prev => prev.filter(id => id !== teamId));
-      setTeams(prev => prev.filter(t => t.teamId !== teamId));
+      setFavorites(prev => prev.filter(f => !(f.favorite_type === favoriteType && f.favorite_id === favoriteId)));
+      if (favoriteType === 'team') {
+        setSoccerTeams(prev => prev.filter(t => t.teamId !== favoriteId));
+      }
     }
   };
 
@@ -111,8 +135,31 @@ export default function MyStuffPage() {
     await supabase.auth.signOut();
     setUser(null);
     setFavorites([]);
-    setTeams([]);
+    setSoccerTeams([]);
   };
+
+  // Get favorites by type - handle both string and number IDs
+  const getFavoriteIds = (type: string): (string | number)[] =>
+    favorites.filter(f => f.favorite_type === type).map(f => f.favorite_id);
+
+  const mlbFavoriteIds = getFavoriteIds('mlb_team');
+  const nbaFavoriteIds = getFavoriteIds('nba_team');
+  const ncaabFavoriteIds = getFavoriteIds('ncaab_team');
+  const ncaafFavoriteIds = getFavoriteIds('ncaaf_team');
+  const leagueFavoriteIds = getFavoriteIds('league');
+
+  // Helper to check if ID matches (handles string/number comparison)
+  const idMatches = (teamId: string, favoriteIds: (string | number)[]) =>
+    favoriteIds.some(fid => String(fid) === teamId || Number(fid) === Number(teamId));
+
+  // Get favorite data from static lists
+  const mlbFavorites = MLB_TEAMS.filter(t => idMatches(t.id, mlbFavoriteIds));
+  const nbaFavorites = NBA_TEAMS.filter(t => idMatches(t.id, nbaFavoriteIds));
+  const ncaabFavorites = COLLEGE_BASKETBALL_TEAMS.filter(t => idMatches(t.id, ncaabFavoriteIds));
+  const ncaafFavorites = COLLEGE_FOOTBALL_TEAMS.filter(t => idMatches(t.id, ncaafFavoriteIds));
+  const leagueFavorites = SEARCHABLE_SOCCER_LEAGUES.filter(l => idMatches(l.id, leagueFavoriteIds));
+
+  const hasAnyFavorites = favorites.length > 0;
 
   // Show sign-in screen if not logged in
   if (!user) {
@@ -185,14 +232,6 @@ export default function MyStuffPage() {
           </button>
         </div>
 
-        {/* Favorite Teams Section */}
-        <h2
-          className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-          style={{ color: theme.textSecondary }}
-        >
-          Favorite Teams
-        </h2>
-
         {loading ? (
           <div className="py-8 text-center">
             <div
@@ -203,82 +242,329 @@ export default function MyStuffPage() {
               Loading favorites...
             </p>
           </div>
-        ) : favorites.length === 0 ? (
+        ) : !hasAnyFavorites ? (
           <div
             className="flex flex-col items-center justify-center rounded-xl py-12"
             style={{ backgroundColor: theme.bgSecondary }}
           >
             <Star size={48} color={theme.textSecondary} />
             <p className="mt-4 text-[14px] font-medium" style={{ color: theme.text }}>
-              No favorite teams yet
+              No favorites yet
             </p>
             <p className="mt-2 text-center text-[12px]" style={{ color: theme.textSecondary }}>
-              Go to the standings table and tap the heart icon<br />next to a team to add it to your favorites
+              Tap the heart icon on any team or league<br />to add it to your favorites
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
-            {teams.map((team) => (
-              <div
-                key={team.teamId}
-                className="flex items-center gap-3 rounded-xl p-4"
-                style={{
-                  backgroundColor: theme.bgSecondary,
-                  border: `1px solid ${theme.border}`,
-                }}
-              >
-                {team.logo && (
-                  <img
-                    src={team.logo}
-                    alt={team.team}
-                    className="h-10 w-10 object-contain"
-                  />
-                )}
-                <div className="flex-1">
-                  <p className="text-[13px] font-medium" style={{ color: theme.text }}>
-                    {team.team}
-                  </p>
-                  <p className="text-[11px]" style={{ color: theme.textSecondary }}>
-                    {team.position}{team.position === 1 ? 'st' : team.position === 2 ? 'nd' : team.position === 3 ? 'rd' : 'th'} place
-                    {' '}&bull;{' '}
-                    {team.points} pts
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {team.form && (
-                    <div className="flex gap-1">
-                      {team.form.slice(0, 5).map((result, i) => (
-                        <span
-                          key={i}
-                          className="flex h-5 w-5 items-center justify-center rounded text-[9px] font-semibold text-white"
-                          style={{
-                            backgroundColor:
-                              result === 'W'
-                                ? theme.green
-                                : result === 'D'
-                                ? theme.gold
-                                : theme.red,
-                          }}
+          <div className="flex flex-col gap-6">
+            {/* Soccer Teams Section */}
+            {soccerTeams.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: theme.textSecondary }}
+                >
+                  ⚽ Soccer Teams
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {soccerTeams.map((team) => (
+                    <div
+                      key={team.teamId}
+                      className="flex items-center gap-3 rounded-xl p-4"
+                      style={{
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href={`/team/${team.teamId}`} className="flex items-center gap-3 flex-1">
+                        {team.logo && (
+                          <img
+                            src={team.logo}
+                            alt={team.team}
+                            className="h-10 w-10 object-contain"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {team.team}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {team.position}{team.position === 1 ? 'st' : team.position === 2 ? 'nd' : team.position === 3 ? 'rd' : 'th'} place
+                            {' '}&bull;{' '}
+                            {team.points} pts
+                          </p>
+                        </div>
+                      </Link>
+                      <div className="flex items-center gap-2">
+                        {team.form && (
+                          <div className="flex gap-1">
+                            {team.form.slice(0, 5).map((result, i) => (
+                              <span
+                                key={i}
+                                className="flex h-5 w-5 items-center justify-center rounded text-[9px] font-semibold text-white"
+                                style={{
+                                  backgroundColor:
+                                    result === 'W'
+                                      ? theme.green
+                                      : result === 'D'
+                                      ? theme.gold
+                                      : theme.red,
+                                }}
+                              >
+                                {result}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <button
+                          onClick={() => removeFavorite('team', team.teamId)}
+                          className="ml-2 flex h-8 w-8 items-center justify-center rounded-full"
+                          style={{ backgroundColor: theme.bgTertiary }}
                         >
-                          {result}
-                        </span>
-                      ))}
+                          <Heart size={16} color={theme.gold} fill={theme.gold} />
+                        </button>
+                      </div>
                     </div>
-                  )}
-                  <button
-                    onClick={() => removeFavorite(team.teamId)}
-                    className="ml-2 flex h-8 w-8 items-center justify-center rounded-full"
-                    style={{ backgroundColor: theme.bgTertiary }}
-                  >
-                    <Heart
-                      size={16}
-                      color={theme.gold}
-                      fill={theme.gold}
-                    />
-                  </button>
+                  ))}
                 </div>
-              </div>
-            ))}
+              </section>
+            )}
+
+            {/* MLB Teams Section */}
+            {mlbFavorites.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: theme.textSecondary }}
+                >
+                  ⚾ MLB Teams
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {mlbFavorites.map((team) => (
+                    <div
+                      key={team.id}
+                      className="flex items-center gap-3 rounded-xl p-4"
+                      style={{
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href={`/mlb/team/${team.id}`} className="flex items-center gap-3 flex-1">
+                        <img
+                          src={team.logo}
+                          alt={team.name}
+                          className="h-10 w-10 object-contain"
+                        />
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {team.name}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {team.league} {team.division}
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => removeFavorite('mlb_team', Number(team.id))}
+                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        style={{ backgroundColor: theme.bgTertiary }}
+                      >
+                        <Heart size={16} color={theme.gold} fill={theme.gold} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* NBA Teams Section */}
+            {nbaFavorites.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: theme.textSecondary }}
+                >
+                  🏀 NBA Teams
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {nbaFavorites.map((team) => (
+                    <div
+                      key={team.id}
+                      className="flex items-center gap-3 rounded-xl p-4"
+                      style={{
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href={`/nba/team/${team.id}`} className="flex items-center gap-3 flex-1">
+                        <img
+                          src={team.logo}
+                          alt={team.name}
+                          className="h-10 w-10 object-contain"
+                        />
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {team.name}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {team.conference} &bull; {team.division}
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => removeFavorite('nba_team', Number(team.id))}
+                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        style={{ backgroundColor: theme.bgTertiary }}
+                      >
+                        <Heart size={16} color={theme.gold} fill={theme.gold} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* NCAA Basketball Teams Section */}
+            {ncaabFavorites.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: theme.textSecondary }}
+                >
+                  🏀 NCAA Basketball
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {ncaabFavorites.map((team) => (
+                    <div
+                      key={team.id}
+                      className="flex items-center gap-3 rounded-xl p-4"
+                      style={{
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href={`/basketball/team/${team.id}`} className="flex items-center gap-3 flex-1">
+                        <img
+                          src={team.logo}
+                          alt={team.name}
+                          className="h-10 w-10 object-contain"
+                        />
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {team.name}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {team.conference}
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => removeFavorite('ncaab_team', Number(team.id))}
+                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        style={{ backgroundColor: theme.bgTertiary }}
+                      >
+                        <Heart size={16} color={theme.gold} fill={theme.gold} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* NCAA Football Teams Section */}
+            {ncaafFavorites.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: theme.textSecondary }}
+                >
+                  🏈 NCAA Football
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {ncaafFavorites.map((team) => (
+                    <div
+                      key={team.id}
+                      className="flex items-center gap-3 rounded-xl p-4"
+                      style={{
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href={`/football/team/${team.id}`} className="flex items-center gap-3 flex-1">
+                        <img
+                          src={team.logo}
+                          alt={team.name}
+                          className="h-10 w-10 object-contain"
+                        />
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {team.name}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {team.conference}
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => removeFavorite('ncaaf_team', Number(team.id))}
+                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        style={{ backgroundColor: theme.bgTertiary }}
+                      >
+                        <Heart size={16} color={theme.gold} fill={theme.gold} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Leagues Section */}
+            {leagueFavorites.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: theme.textSecondary }}
+                >
+                  🏆 Leagues
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {leagueFavorites.map((league) => (
+                    <div
+                      key={league.id}
+                      className="flex items-center gap-3 rounded-xl p-4"
+                      style={{
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href={`/standings?league=${league.slug}`} className="flex items-center gap-3 flex-1">
+                        <div
+                          className="h-10 w-10 rounded-lg flex items-center justify-center text-lg"
+                          style={{ backgroundColor: theme.bgTertiary }}
+                        >
+                          ⚽
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {league.name}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {league.country} &bull; {league.type === 'cup' ? 'Cup' : 'League'}
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => removeFavorite('league', Number(league.id) || 0)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        style={{ backgroundColor: theme.bgTertiary }}
+                      >
+                        <Heart size={16} color={theme.gold} fill={theme.gold} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         )}
       </main>

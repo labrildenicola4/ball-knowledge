@@ -1,12 +1,15 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { ChevronLeft, MapPin, Calendar, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, MapPin, Calendar, Sun, Moon, Heart } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 import { MLBTeamInfo } from '@/lib/types/mlb';
+import { createBrowserClient } from '@supabase/ssr';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'Team not found' : 'Failed to fetch');
@@ -18,6 +21,76 @@ export default function MLBTeamPage() {
   const router = useRouter();
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const teamId = params.id as string;
+
+  // Favorites state
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  // Check auth and load favorite status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user && teamId) {
+        const { data } = await supabase
+          .from('user_favorites')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('favorite_type', 'mlb_team')
+          .eq('favorite_id', Number(teamId))
+          .maybeSingle();
+
+        setIsFavorite(!!data);
+      }
+    };
+
+    checkAuth();
+  }, [teamId]);
+
+  // Toggle favorite
+  const toggleFavorite = async () => {
+    if (!user) {
+      alert('Please sign in to save favorites');
+      return;
+    }
+
+    if (isFavorite) {
+      const { error } = await supabase
+        .from('user_favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('favorite_type', 'mlb_team')
+        .eq('favorite_id', Number(teamId));
+
+      if (error) {
+        console.error('Error removing favorite:', error);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from('user_favorites')
+        .upsert({
+          user_id: user.id,
+          favorite_type: 'mlb_team',
+          favorite_id: Number(teamId),
+        }, {
+          onConflict: 'user_id,favorite_type,favorite_id',
+        });
+
+      if (error) {
+        console.error('Error adding favorite:', error);
+        return;
+      }
+    }
+
+    setIsFavorite(!isFavorite);
+  };
 
   const { data: teamInfo, error, isLoading } = useSWR<MLBTeamInfo>(
     teamId ? `/api/mlb/team/${teamId}` : null,
@@ -95,9 +168,18 @@ export default function MLBTeamPage() {
             )}
           </div>
           <div className="flex-1">
-            <h1 className="text-xl font-semibold" style={{ color: theme.text }}>
-              {team.displayName}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-semibold" style={{ color: theme.text }}>
+                {team.displayName}
+              </h1>
+              <button onClick={toggleFavorite} className="p-1">
+                <Heart
+                  size={18}
+                  fill={isFavorite ? '#d68b94' : 'none'}
+                  style={{ color: '#d68b94' }}
+                />
+              </button>
+            </div>
             <p className="text-[12px] mt-1" style={{ color: theme.textSecondary }}>
               {division.name}
             </p>
