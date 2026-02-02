@@ -142,3 +142,45 @@ export interface NFLTeamScheduleGame {
   status: 'scheduled' | 'in_progress' | 'final';
   week?: number;
 }
+
+// Stat Leaders
+export interface NFLStatLeader {
+  player: {
+    id: string;
+    name: string;
+    headshot: string;
+    position: string;
+  };
+  team: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    logo: string;
+  };
+  value: number;
+  displayValue: string;
+}
+
+export interface NFLLeaders {
+  passingYards: NFLStatLeader[];
+  rushingYards: NFLStatLeader[];
+  receivingYards: NFLStatLeader[];
+  passingTouchdowns: NFLStatLeader[];
+  rushingTouchdowns: NFLStatLeader[];
+  receivingTouchdowns: NFLStatLeader[];
+  sacks: NFLStatLeader[];
+  interceptions: NFLStatLeader[];
+  tackles: NFLStatLeader[];
+}
+
+// Team Stats Rankings
+export interface NFLTeamRanking {
+  team: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    logo: string;
+  };
+  value: number;
+  displayValue: string;
+}

@@ -8,7 +8,15 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { NFLGameCard } from '@/components/nfl/NFLGameCard';
 import { useTheme } from '@/lib/theme';
-import { NFLGame, NFLStandings, NFLStanding } from '@/lib/types/nfl';
+import { NFLGame, NFLStandings, NFLStanding, NFLStatLeader } from '@/lib/types/nfl';
+
+interface NFLLeadersData {
+  passing: NFLStatLeader[];
+  rushing: NFLStatLeader[];
+  receiving: NFLStatLeader[];
+  touchdowns: NFLStatLeader[];
+  sacks: NFLStatLeader[];
+}
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -102,6 +110,12 @@ export default function NFLHomePage() {
   // Fetch standings
   const { data: standingsData, isLoading: standingsLoading } = useSWR<NFLStandings>(
     activeTab === 'standings' ? '/api/nfl/standings' : null,
+    fetcher
+  );
+
+  // Fetch player leaders
+  const { data: leadersData, isLoading: leadersLoading } = useSWR<NFLLeadersData>(
+    activeTab === 'stats' ? '/api/nfl/leaders' : null,
     fetcher
   );
 
@@ -362,18 +376,60 @@ export default function NFLHomePage() {
 
         {/* Stats Tab */}
         {activeTab === 'stats' && (
-          <div
-            className="rounded-xl p-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-          >
-            <BarChart3 size={48} style={{ color: theme.textSecondary, margin: '0 auto 16px' }} />
-            <p className="text-base font-medium mb-2" style={{ color: theme.text }}>
-              Stats Available During Season
-            </p>
-            <p className="text-sm" style={{ color: theme.textSecondary }}>
-              Player and team statistics will be available during the NFL season.
-            </p>
-          </div>
+          <>
+            {leadersLoading ? (
+              <div className="py-8 text-center">
+                <div
+                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                  style={{ color: theme.accent }}
+                />
+                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
+                  Loading player leaders...
+                </p>
+              </div>
+            ) : !leadersData?.passing?.length && !leadersData?.rushing?.length ? (
+              <div
+                className="rounded-xl p-8 text-center"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <BarChart3 size={48} style={{ color: theme.textSecondary, margin: '0 auto 16px' }} />
+                <p className="text-base font-medium mb-2" style={{ color: theme.text }}>
+                  Stats Available During Season
+                </p>
+                <p className="text-sm" style={{ color: theme.textSecondary }}>
+                  Player statistics will be available during the NFL season.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <LeaderCard
+                  title="Passing Yards"
+                  leaders={leadersData?.passing || []}
+                  theme={theme}
+                />
+                <LeaderCard
+                  title="Rushing Yards"
+                  leaders={leadersData?.rushing || []}
+                  theme={theme}
+                />
+                <LeaderCard
+                  title="Receiving Yards"
+                  leaders={leadersData?.receiving || []}
+                  theme={theme}
+                />
+                <LeaderCard
+                  title="Passing Touchdowns"
+                  leaders={leadersData?.touchdowns || []}
+                  theme={theme}
+                />
+                <LeaderCard
+                  title="Sacks"
+                  leaders={leadersData?.sacks || []}
+                  theme={theme}
+                />
+              </div>
+            )}
+          </>
         )}
 
         {/* Standings Tab */}
@@ -561,5 +617,84 @@ export default function NFLHomePage() {
 
       <BottomNav />
     </div>
+  );
+}
+
+// Leader Card Component
+function LeaderCard({
+  title,
+  leaders,
+  theme,
+}: {
+  title: string;
+  leaders: NFLStatLeader[];
+  theme: ReturnType<typeof useTheme>['theme'];
+}) {
+  if (leaders.length === 0) return null;
+
+  return (
+    <section
+      className="rounded-xl overflow-hidden"
+      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+    >
+      <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+        <h3 className="text-sm font-semibold" style={{ color: theme.text }}>
+          {title}
+        </h3>
+      </div>
+
+      {leaders.map((leader, index) => (
+        <Link
+          key={leader.player.id}
+          href={`/nfl/team/${leader.team.id}`}
+          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5"
+          style={{ borderBottom: index < leaders.length - 1 ? `1px solid ${theme.border}` : 'none' }}
+        >
+          <span
+            className="w-5 text-center text-sm font-bold"
+            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+          >
+            {index + 1}
+          </span>
+          <div className="relative">
+            {leader.player.headshot ? (
+              <img
+                src={leader.player.headshot}
+                alt={leader.player.name}
+                className="h-10 w-10 rounded-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                className="h-10 w-10 rounded-full"
+                style={{ backgroundColor: theme.bgTertiary }}
+              />
+            )}
+            {leader.team.logo && (
+              <img
+                src={leader.team.logo}
+                alt={leader.team.abbreviation}
+                className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-white object-contain p-0.5"
+                loading="lazy"
+              />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
+              {leader.player.name}
+            </p>
+            <p className="text-xs" style={{ color: theme.textSecondary }}>
+              {leader.team.abbreviation}
+            </p>
+          </div>
+          <span
+            className="text-lg font-bold tabular-nums"
+            style={{ color: index === 0 ? theme.gold : theme.text }}
+          >
+            {leader.displayValue}
+          </span>
+        </Link>
+      ))}
+    </section>
   );
 }

@@ -417,3 +417,72 @@ export async function getNFLTeamSchedule(teamId: string): Promise<NFLTeamSchedul
     return [];
   }
 }
+
+// Get NFL stat leaders
+export async function getNFLLeaders(): Promise<{
+  passingYards: any[];
+  rushingYards: any[];
+  receivingYards: any[];
+  passingTouchdowns: any[];
+  rushingTouchdowns: any[];
+  receivingTouchdowns: any[];
+  sacks: any[];
+  interceptions: any[];
+  tackles: any[];
+}> {
+  const url = 'https://site.api.espn.com/apis/site/v3/sports/football/nfl/leaders';
+
+  try {
+    const data = await fetchESPN<any>(url);
+
+    const extractLeaders = (categoryName: string) => {
+      const category = data.leaders?.categories?.find((c: any) =>
+        c.name?.toLowerCase() === categoryName.toLowerCase()
+      );
+
+      if (!category?.leaders) return [];
+
+      return category.leaders.slice(0, 5).map((leader: any) => ({
+        player: {
+          id: leader.athlete?.id || '',
+          name: leader.athlete?.displayName || '',
+          headshot: leader.athlete?.headshot?.href || '',
+          position: leader.athlete?.position?.abbreviation || '',
+        },
+        team: {
+          id: leader.team?.id || '',
+          name: leader.team?.name || '',
+          abbreviation: leader.team?.abbreviation || '',
+          logo: leader.team?.logos?.[0]?.href || '',
+        },
+        value: leader.value || 0,
+        displayValue: leader.displayValue || String(leader.value || 0),
+      }));
+    };
+
+    return {
+      passingYards: extractLeaders('passingYards'),
+      rushingYards: extractLeaders('rushingYards'),
+      receivingYards: extractLeaders('receivingYards'),
+      passingTouchdowns: extractLeaders('passingTouchdowns'),
+      rushingTouchdowns: extractLeaders('rushingTouchdowns'),
+      receivingTouchdowns: extractLeaders('receivingTouchdowns'),
+      sacks: extractLeaders('sacks'),
+      interceptions: extractLeaders('interceptions'),
+      tackles: extractLeaders('totalTackles'),
+    };
+  } catch (error) {
+    console.error('[ESPN-NFL] Failed to fetch leaders:', error);
+    return {
+      passingYards: [],
+      rushingYards: [],
+      receivingYards: [],
+      passingTouchdowns: [],
+      rushingTouchdowns: [],
+      receivingTouchdowns: [],
+      sacks: [],
+      interceptions: [],
+      tackles: [],
+    };
+  }
+}

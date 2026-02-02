@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { ChevronLeft, MapPin, Sun, Moon, TrendingUp, Trophy, Heart } from 'lucide-react';
+import { ChevronLeft, MapPin, Sun, Moon, TrendingUp, Trophy, Heart, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
-import { NFLTeamInfo, NFLTeamScheduleGame, NFLStandings, NFLStanding } from '@/lib/types/nfl';
+import { NFLTeamInfo, NFLTeamScheduleGame, NFLStandings, NFLStanding, NFLStatLeader } from '@/lib/types/nfl';
 import { createBrowserClient } from '@supabase/ssr';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -36,7 +36,7 @@ export default function NFLTeamPage() {
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const teamId = params.id as string;
 
-  const [activeTab, setActiveTab] = useState<'schedule' | 'standings'>('schedule');
+  const [activeTab, setActiveTab] = useState<'schedule' | 'stats' | 'standings'>('schedule');
   const [selectedConference, setSelectedConference] = useState<'AFC' | 'NFC'>('AFC');
 
   // Favorites state
@@ -116,6 +116,23 @@ export default function NFLTeamPage() {
       revalidateOnFocus: false,
       dedupingInterval: 60000,
     }
+  );
+
+  // Fetch leaders when Stats tab is active
+  const { data: leaders } = useSWR<{
+    passingYards: NFLStatLeader[];
+    rushingYards: NFLStatLeader[];
+    receivingYards: NFLStatLeader[];
+    passingTouchdowns: NFLStatLeader[];
+    rushingTouchdowns: NFLStatLeader[];
+    receivingTouchdowns: NFLStatLeader[];
+    sacks: NFLStatLeader[];
+    interceptions: NFLStatLeader[];
+    tackles: NFLStatLeader[];
+  }>(
+    activeTab === 'stats' ? '/api/nfl/leaders' : null,
+    fetcher,
+    { revalidateOnFocus: false }
   );
 
   // Set selected conference based on team's conference
@@ -296,6 +313,7 @@ export default function NFLTeamPage() {
       <div className="flex" style={{ borderBottom: `1px solid ${theme.border}` }}>
         {[
           { key: 'schedule', label: 'Schedule', icon: TrendingUp },
+          { key: 'stats', label: 'Stats', icon: BarChart3 },
           { key: 'standings', label: 'Standings', icon: Trophy },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -440,6 +458,282 @@ export default function NFLTeamPage() {
           </section>
         )}
 
+        {/* Stats Tab */}
+        {activeTab === 'stats' && (
+          <section className="px-4 py-4">
+            {leaders ? (
+              <div className="space-y-4">
+                {/* Passing Leaders */}
+                {leaders.passingYards.length > 0 && (
+                  <div
+                    className="rounded-xl overflow-hidden"
+                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  >
+                    <div
+                      className="px-4 py-2 text-[10px] font-semibold uppercase"
+                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    >
+                      Passing Yards
+                    </div>
+                    {leaders.passingYards.map((leader, index) => (
+                      <div
+                        key={leader.player.id}
+                        className="flex items-center gap-3 px-4 py-3"
+                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
+                      >
+                        <span
+                          className="w-5 text-center text-[11px] font-bold"
+                          style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                        >
+                          {index + 1}
+                        </span>
+                        {leader.player.headshot && (
+                          <img
+                            src={leader.player.headshot}
+                            alt={leader.player.name}
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
+                            {leader.player.name}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            {leader.team.logo && (
+                              <img src={leader.team.logo} alt={leader.team.abbreviation} className="h-3 w-3" />
+                            )}
+                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                              {leader.team.abbreviation} · {leader.player.position}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
+                          {leader.displayValue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Rushing Leaders */}
+                {leaders.rushingYards.length > 0 && (
+                  <div
+                    className="rounded-xl overflow-hidden"
+                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  >
+                    <div
+                      className="px-4 py-2 text-[10px] font-semibold uppercase"
+                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    >
+                      Rushing Yards
+                    </div>
+                    {leaders.rushingYards.map((leader, index) => (
+                      <div
+                        key={leader.player.id}
+                        className="flex items-center gap-3 px-4 py-3"
+                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
+                      >
+                        <span
+                          className="w-5 text-center text-[11px] font-bold"
+                          style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                        >
+                          {index + 1}
+                        </span>
+                        {leader.player.headshot && (
+                          <img
+                            src={leader.player.headshot}
+                            alt={leader.player.name}
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
+                            {leader.player.name}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            {leader.team.logo && (
+                              <img src={leader.team.logo} alt={leader.team.abbreviation} className="h-3 w-3" />
+                            )}
+                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                              {leader.team.abbreviation} · {leader.player.position}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
+                          {leader.displayValue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Receiving Leaders */}
+                {leaders.receivingYards.length > 0 && (
+                  <div
+                    className="rounded-xl overflow-hidden"
+                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  >
+                    <div
+                      className="px-4 py-2 text-[10px] font-semibold uppercase"
+                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    >
+                      Receiving Yards
+                    </div>
+                    {leaders.receivingYards.map((leader, index) => (
+                      <div
+                        key={leader.player.id}
+                        className="flex items-center gap-3 px-4 py-3"
+                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
+                      >
+                        <span
+                          className="w-5 text-center text-[11px] font-bold"
+                          style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                        >
+                          {index + 1}
+                        </span>
+                        {leader.player.headshot && (
+                          <img
+                            src={leader.player.headshot}
+                            alt={leader.player.name}
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
+                            {leader.player.name}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            {leader.team.logo && (
+                              <img src={leader.team.logo} alt={leader.team.abbreviation} className="h-3 w-3" />
+                            )}
+                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                              {leader.team.abbreviation} · {leader.player.position}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
+                          {leader.displayValue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Sacks Leaders */}
+                {leaders.sacks.length > 0 && (
+                  <div
+                    className="rounded-xl overflow-hidden"
+                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  >
+                    <div
+                      className="px-4 py-2 text-[10px] font-semibold uppercase"
+                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    >
+                      Sacks
+                    </div>
+                    {leaders.sacks.map((leader, index) => (
+                      <div
+                        key={leader.player.id}
+                        className="flex items-center gap-3 px-4 py-3"
+                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
+                      >
+                        <span
+                          className="w-5 text-center text-[11px] font-bold"
+                          style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                        >
+                          {index + 1}
+                        </span>
+                        {leader.player.headshot && (
+                          <img
+                            src={leader.player.headshot}
+                            alt={leader.player.name}
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
+                            {leader.player.name}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            {leader.team.logo && (
+                              <img src={leader.team.logo} alt={leader.team.abbreviation} className="h-3 w-3" />
+                            )}
+                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                              {leader.team.abbreviation} · {leader.player.position}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
+                          {leader.displayValue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Interceptions Leaders */}
+                {leaders.interceptions.length > 0 && (
+                  <div
+                    className="rounded-xl overflow-hidden"
+                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  >
+                    <div
+                      className="px-4 py-2 text-[10px] font-semibold uppercase"
+                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    >
+                      Interceptions
+                    </div>
+                    {leaders.interceptions.map((leader, index) => (
+                      <div
+                        key={leader.player.id}
+                        className="flex items-center gap-3 px-4 py-3"
+                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
+                      >
+                        <span
+                          className="w-5 text-center text-[11px] font-bold"
+                          style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                        >
+                          {index + 1}
+                        </span>
+                        {leader.player.headshot && (
+                          <img
+                            src={leader.player.headshot}
+                            alt={leader.player.name}
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
+                            {leader.player.name}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            {leader.team.logo && (
+                              <img src={leader.team.logo} alt={leader.team.abbreviation} className="h-3 w-3" />
+                            )}
+                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                              {leader.team.abbreviation} · {leader.player.position}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
+                          {leader.displayValue}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-12">
+                <div
+                  className="h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                  style={{ color: theme.accent }}
+                />
+              </div>
+            )}
+          </section>
+        )}
+
         {/* Standings Tab */}
         {activeTab === 'standings' && standings && (
           <section className="px-4 py-4">
@@ -493,6 +787,8 @@ export default function NFLTeamPage() {
                 {division.teams.map((standingTeam, index) => {
                   const isCurrentTeam = standingTeam.team.id === teamId;
                   const isDivisionLeader = index === 0;
+                  // NFL playoffs: 7 teams per conference (4 division winners + 3 wild cards)
+                  const isPlayoffTeam = standingTeam.seed !== undefined && standingTeam.seed >= 1 && standingTeam.seed <= 7;
 
                   return (
                     <div key={standingTeam.team.id}>
@@ -505,6 +801,15 @@ export default function NFLTeamPage() {
                         }}
                       >
                         <div className="flex-1 flex items-center gap-2 min-w-0">
+                          {/* Playoff Seed Badge */}
+                          {isPlayoffTeam && (
+                            <span
+                              className="flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+                              style={{ backgroundColor: theme.green, color: '#fff' }}
+                            >
+                              {standingTeam.seed}
+                            </span>
+                          )}
                           <img
                             src={standingTeam.team.logo}
                             alt={standingTeam.team.name}
@@ -557,6 +862,15 @@ export default function NFLTeamPage() {
             <div
               className="flex items-center justify-center gap-4 py-2 text-[9px]"
             >
+              <div className="flex items-center gap-1">
+                <div
+                  className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold"
+                  style={{ backgroundColor: theme.green, color: '#fff' }}
+                >
+                  #
+                </div>
+                <span style={{ color: theme.textSecondary }}>Playoff Seed</span>
+              </div>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: theme.green }} />
                 <span style={{ color: theme.textSecondary }}>Division Leader</span>
