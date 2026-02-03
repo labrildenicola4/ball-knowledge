@@ -172,19 +172,44 @@ export async function GET(
     const teamStats = transformedStandings
       .filter(s => s.played > 0)
       .map(s => {
-        const detailedStats = teamDetailedStats.find(ts => ts.team.id === s.team.id);
+        const d = teamDetailedStats.find(ts => ts.team.id === s.team.id);
+        const homePlayed = d?.fixtures?.played?.home || 0;
+        const awayPlayed = d?.fixtures?.played?.away || 0;
+        const homeWins = d?.fixtures?.wins?.home || 0;
+        const awayWins = d?.fixtures?.wins?.away || 0;
+        const homeGoalsFor = d?.goals?.for?.total?.home || 0;
+        const awayGoalsFor = d?.goals?.for?.total?.away || 0;
+        const draws = d?.fixtures?.draws?.total || s.drawn;
+        const losses = d?.fixtures?.loses?.total || s.lost;
+
         return {
           team: s.team,
           played: s.played,
+          // Basic stats
           ppg: Number((s.points / s.played).toFixed(2)),
           goalsPerGame: Number((s.goalsFor / s.played).toFixed(2)),
           goalsAgainstPerGame: Number((s.goalsAgainst / s.played).toFixed(2)),
           winPct: Number(((s.won / s.played) * 100).toFixed(1)),
           goalDiffPerGame: Number((s.goalDiff / s.played).toFixed(2)),
-          cleanSheets: detailedStats?.clean_sheet?.total || 0,
-          homeWins: s.won, // From standings we only have total, but detailedStats has breakdown
-          awayWins: detailedStats?.fixtures?.wins?.away || 0,
-          form: s.form,
+          // Clean sheets
+          cleanSheets: d?.clean_sheet?.total || 0,
+          homeCleanSheets: d?.clean_sheet?.home || 0,
+          awayCleanSheets: d?.clean_sheet?.away || 0,
+          // Home/Away win %
+          homeWinPct: homePlayed > 0 ? Number(((homeWins / homePlayed) * 100).toFixed(1)) : 0,
+          awayWinPct: awayPlayed > 0 ? Number(((awayWins / awayPlayed) * 100).toFixed(1)) : 0,
+          // Home/Away goals per game
+          homeGoalsPerGame: homePlayed > 0 ? Number((homeGoalsFor / homePlayed).toFixed(2)) : 0,
+          awayGoalsPerGame: awayPlayed > 0 ? Number((awayGoalsFor / awayPlayed).toFixed(2)) : 0,
+          // Draw and Loss %
+          drawPct: Number(((draws / s.played) * 100).toFixed(1)),
+          lossPct: Number(((losses / s.played) * 100).toFixed(1)),
+          // Total goals
+          goalsScored: s.goalsFor,
+          goalsConceded: s.goalsAgainst,
+          // Biggest wins
+          biggestHomeWin: d?.biggest?.wins?.home || null,
+          biggestAwayWin: d?.biggest?.wins?.away || null,
         };
       });
 

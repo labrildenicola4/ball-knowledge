@@ -44,7 +44,18 @@ interface TeamStatRow {
   winPct: number;
   goalDiffPerGame: number;
   cleanSheets: number;
-  form: string;
+  homeCleanSheets: number;
+  awayCleanSheets: number;
+  homeWinPct: number;
+  awayWinPct: number;
+  homeGoalsPerGame: number;
+  awayGoalsPerGame: number;
+  drawPct: number;
+  lossPct: number;
+  goalsScored: number;
+  goalsConceded: number;
+  biggestHomeWin: string | null;
+  biggestAwayWin: string | null;
 }
 
 interface PlayerStats {
@@ -442,6 +453,67 @@ export default function LeaguePage() {
     );
   };
 
+  // Biggest Win Card Component (for string values like "5-0")
+  const BiggestWinCard = ({
+    title,
+    teams,
+    statKey,
+  }: {
+    title: string;
+    teams: TeamStatRow[];
+    statKey: 'biggestHomeWin' | 'biggestAwayWin';
+  }) => {
+    // Filter teams with valid biggest wins and sort by goal difference
+    const teamsWithWins = teams
+      .filter(t => t[statKey] !== null && t[statKey] !== '')
+      .map(t => {
+        const score = t[statKey] as string;
+        const [goals, against] = score.split('-').map(Number);
+        return { ...t, scoreDiff: (goals || 0) - (against || 0), score };
+      })
+      .sort((a, b) => b.scoreDiff - a.scoreDiff);
+
+    return (
+      <section
+        className="rounded-xl overflow-hidden"
+        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      >
+        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+          <h3 className="text-sm font-semibold" style={{ color: theme.text }}>{title}</h3>
+        </div>
+        <div>
+          {teamsWithWins.slice(0, 5).map((team, index) => (
+            <Link
+              key={team.team.id}
+              href={`/team/${team.team.id}`}
+              className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
+              style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+            >
+              <span
+                className="text-sm font-bold w-5"
+                style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+              >
+                {index + 1}
+              </span>
+              <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
+              <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
+                {team.team.name}
+              </span>
+              <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
+                {team.score}
+              </span>
+            </Link>
+          ))}
+          {teamsWithWins.length === 0 && (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm" style={{ color: theme.textSecondary }}>No data available</p>
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  };
+
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
@@ -789,6 +861,7 @@ export default function LeaguePage() {
             {/* Team Stats */}
             {statsView === 'teams' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Basic Stats */}
                 <TeamStatCard
                   title="Points Per Game"
                   teams={data.teamStats || []}
@@ -796,6 +869,44 @@ export default function LeaguePage() {
                   formatter={(v) => v.toFixed(2)}
                 />
 
+                <TeamStatCard
+                  title="Win %"
+                  teams={data.teamStats || []}
+                  statKey="winPct"
+                  formatter={(v) => `${v.toFixed(1)}%`}
+                />
+
+                <TeamStatCard
+                  title="Draw %"
+                  teams={data.teamStats || []}
+                  statKey="drawPct"
+                  formatter={(v) => `${v.toFixed(1)}%`}
+                />
+
+                <TeamStatCard
+                  title="Loss %"
+                  teams={data.teamStats || []}
+                  statKey="lossPct"
+                  sortAsc={true}
+                  formatter={(v) => `${v.toFixed(1)}%`}
+                />
+
+                {/* Home/Away Win % */}
+                <TeamStatCard
+                  title="Home Win %"
+                  teams={data.teamStats || []}
+                  statKey="homeWinPct"
+                  formatter={(v) => `${v.toFixed(1)}%`}
+                />
+
+                <TeamStatCard
+                  title="Away Win %"
+                  teams={data.teamStats || []}
+                  statKey="awayWinPct"
+                  formatter={(v) => `${v.toFixed(1)}%`}
+                />
+
+                {/* Goals */}
                 <TeamStatCard
                   title="Goals Per Game"
                   teams={data.teamStats || []}
@@ -812,12 +923,41 @@ export default function LeaguePage() {
                 />
 
                 <TeamStatCard
-                  title="Win %"
+                  title="Goal Difference/Game"
                   teams={data.teamStats || []}
-                  statKey="winPct"
-                  formatter={(v) => `${v.toFixed(1)}%`}
+                  statKey="goalDiffPerGame"
+                  formatter={(v) => (v >= 0 ? '+' : '') + v.toFixed(2)}
                 />
 
+                <TeamStatCard
+                  title="Total Goals Scored"
+                  teams={data.teamStats || []}
+                  statKey="goalsScored"
+                />
+
+                <TeamStatCard
+                  title="Total Goals Conceded"
+                  teams={data.teamStats || []}
+                  statKey="goalsConceded"
+                  sortAsc={true}
+                />
+
+                {/* Home/Away Goals */}
+                <TeamStatCard
+                  title="Home Goals/Game"
+                  teams={data.teamStats || []}
+                  statKey="homeGoalsPerGame"
+                  formatter={(v) => v.toFixed(2)}
+                />
+
+                <TeamStatCard
+                  title="Away Goals/Game"
+                  teams={data.teamStats || []}
+                  statKey="awayGoalsPerGame"
+                  formatter={(v) => v.toFixed(2)}
+                />
+
+                {/* Clean Sheets */}
                 <TeamStatCard
                   title="Clean Sheets"
                   teams={data.teamStats || []}
@@ -825,10 +965,28 @@ export default function LeaguePage() {
                 />
 
                 <TeamStatCard
-                  title="Goal Difference/Game"
+                  title="Home Clean Sheets"
                   teams={data.teamStats || []}
-                  statKey="goalDiffPerGame"
-                  formatter={(v) => (v >= 0 ? '+' : '') + v.toFixed(2)}
+                  statKey="homeCleanSheets"
+                />
+
+                <TeamStatCard
+                  title="Away Clean Sheets"
+                  teams={data.teamStats || []}
+                  statKey="awayCleanSheets"
+                />
+
+                {/* Biggest Wins */}
+                <BiggestWinCard
+                  title="Biggest Home Win"
+                  teams={data.teamStats || []}
+                  statKey="biggestHomeWin"
+                />
+
+                <BiggestWinCard
+                  title="Biggest Away Win"
+                  teams={data.teamStats || []}
+                  statKey="biggestAwayWin"
                 />
               </div>
             )}
