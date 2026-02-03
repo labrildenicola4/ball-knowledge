@@ -207,9 +207,6 @@ export async function GET(
           // Total goals
           goalsScored: s.goalsFor,
           goalsConceded: s.goalsAgainst,
-          // Biggest wins
-          biggestHomeWin: d?.biggest?.wins?.home || null,
-          biggestAwayWin: d?.biggest?.wins?.away || null,
         };
       });
 
