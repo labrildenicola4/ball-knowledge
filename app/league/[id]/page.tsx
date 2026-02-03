@@ -530,9 +530,13 @@ export default function LeaguePage() {
                   <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
                     <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Top Scorers</h3>
                   </div>
-                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                  <div>
                     {data.topScorers.slice(0, 5).map((scorer, index) => (
-                      <div key={scorer.player.id} className="flex items-center gap-3 px-4 py-2.5">
+                      <div
+                        key={scorer.player.id}
+                        className="flex items-center gap-3 px-4 py-2.5"
+                        style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+                      >
                         <span
                           className="text-sm font-bold w-5"
                           style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
@@ -555,7 +559,7 @@ export default function LeaguePage() {
                             </span>
                           </div>
                         </div>
-                        <span className="text-lg font-bold" style={{ color: theme.accent }}>
+                        <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
                           {scorer.goals}
                         </span>
                       </div>
@@ -576,12 +580,16 @@ export default function LeaguePage() {
                   <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
                     <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Top Assists</h3>
                   </div>
-                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                  <div>
                     {[...data.topScorers]
                       .sort((a, b) => b.assists - a.assists)
                       .slice(0, 5)
                       .map((scorer, index) => (
-                        <div key={scorer.player.id} className="flex items-center gap-3 px-4 py-2.5">
+                        <div
+                          key={scorer.player.id}
+                          className="flex items-center gap-3 px-4 py-2.5"
+                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+                        >
                           <span
                             className="text-sm font-bold w-5"
                             style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
@@ -604,8 +612,116 @@ export default function LeaguePage() {
                               </span>
                             </div>
                           </div>
-                          <span className="text-lg font-bold" style={{ color: theme.accent }}>
+                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
                             {scorer.assists}
+                          </span>
+                        </div>
+                      ))}
+                    {data.topScorers.length === 0 && (
+                      <div className="px-4 py-6 text-center">
+                        <p className="text-sm" style={{ color: theme.textSecondary }}>No data available</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* Most Appearances */}
+                <section
+                  className="rounded-xl overflow-hidden"
+                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                >
+                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Most Appearances</h3>
+                  </div>
+                  <div>
+                    {[...data.topScorers]
+                      .sort((a, b) => b.appearances - a.appearances)
+                      .slice(0, 5)
+                      .map((scorer, index) => (
+                        <div
+                          key={scorer.player.id}
+                          className="flex items-center gap-3 px-4 py-2.5"
+                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+                        >
+                          <span
+                            className="text-sm font-bold w-5"
+                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                          >
+                            {index + 1}
+                          </span>
+                          <img
+                            src={scorer.player.photo}
+                            alt=""
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                              {scorer.player.name}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <img src={scorer.team.logo} alt="" className="h-3 w-3 object-contain" />
+                              <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                                {scorer.team.name}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
+                            {scorer.appearances}
+                          </span>
+                        </div>
+                      ))}
+                    {data.topScorers.length === 0 && (
+                      <div className="px-4 py-6 text-center">
+                        <p className="text-sm" style={{ color: theme.textSecondary }}>No data available</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* Goals Per Game */}
+                <section
+                  className="rounded-xl overflow-hidden"
+                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                >
+                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Goals Per Game</h3>
+                  </div>
+                  <div>
+                    {[...data.topScorers]
+                      .filter(s => s.appearances > 0)
+                      .map(s => ({ ...s, gpg: s.goals / s.appearances }))
+                      .sort((a, b) => b.gpg - a.gpg)
+                      .slice(0, 5)
+                      .map((scorer, index) => (
+                        <div
+                          key={scorer.player.id}
+                          className="flex items-center gap-3 px-4 py-2.5"
+                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+                        >
+                          <span
+                            className="text-sm font-bold w-5"
+                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                          >
+                            {index + 1}
+                          </span>
+                          <img
+                            src={scorer.player.photo}
+                            alt=""
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                              {scorer.player.name}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <img src={scorer.team.logo} alt="" className="h-3 w-3 object-contain" />
+                              <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                                {scorer.team.name}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
+                            {scorer.gpg.toFixed(2)}
                           </span>
                         </div>
                       ))}
@@ -630,12 +746,17 @@ export default function LeaguePage() {
                   <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
                     <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Points Per Game</h3>
                   </div>
-                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                  <div>
                     {[...(data.teamStats || [])]
                       .sort((a, b) => b.ppg - a.ppg)
                       .slice(0, 5)
                       .map((team, index) => (
-                        <Link key={team.team.id} href={`/team/${team.team.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5">
+                        <Link
+                          key={team.team.id}
+                          href={`/team/${team.team.id}`}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
+                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+                        >
                           <span
                             className="text-sm font-bold w-5"
                             style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
@@ -646,7 +767,7 @@ export default function LeaguePage() {
                           <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
                             {team.team.name}
                           </span>
-                          <span className="text-lg font-bold" style={{ color: theme.accent }}>
+                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
                             {team.ppg.toFixed(2)}
                           </span>
                         </Link>
@@ -662,12 +783,17 @@ export default function LeaguePage() {
                   <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
                     <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Goals Per Game</h3>
                   </div>
-                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                  <div>
                     {[...(data.teamStats || [])]
                       .sort((a, b) => b.goalsPerGame - a.goalsPerGame)
                       .slice(0, 5)
                       .map((team, index) => (
-                        <Link key={team.team.id} href={`/team/${team.team.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5">
+                        <Link
+                          key={team.team.id}
+                          href={`/team/${team.team.id}`}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
+                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+                        >
                           <span
                             className="text-sm font-bold w-5"
                             style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
@@ -678,7 +804,7 @@ export default function LeaguePage() {
                           <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
                             {team.team.name}
                           </span>
-                          <span className="text-lg font-bold" style={{ color: theme.accent }}>
+                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
                             {team.goalsPerGame.toFixed(2)}
                           </span>
                         </Link>
@@ -694,12 +820,17 @@ export default function LeaguePage() {
                   <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
                     <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Best Defense (GA/G)</h3>
                   </div>
-                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                  <div>
                     {[...(data.teamStats || [])]
                       .sort((a, b) => a.goalsAgainstPerGame - b.goalsAgainstPerGame)
                       .slice(0, 5)
                       .map((team, index) => (
-                        <Link key={team.team.id} href={`/team/${team.team.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5">
+                        <Link
+                          key={team.team.id}
+                          href={`/team/${team.team.id}`}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
+                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+                        >
                           <span
                             className="text-sm font-bold w-5"
                             style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
@@ -710,7 +841,7 @@ export default function LeaguePage() {
                           <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
                             {team.team.name}
                           </span>
-                          <span className="text-lg font-bold" style={{ color: theme.green }}>
+                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
                             {team.goalsAgainstPerGame.toFixed(2)}
                           </span>
                         </Link>
@@ -726,12 +857,17 @@ export default function LeaguePage() {
                   <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
                     <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Win %</h3>
                   </div>
-                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                  <div>
                     {[...(data.teamStats || [])]
                       .sort((a, b) => b.winPct - a.winPct)
                       .slice(0, 5)
                       .map((team, index) => (
-                        <Link key={team.team.id} href={`/team/${team.team.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5">
+                        <Link
+                          key={team.team.id}
+                          href={`/team/${team.team.id}`}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
+                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+                        >
                           <span
                             className="text-sm font-bold w-5"
                             style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
@@ -742,7 +878,7 @@ export default function LeaguePage() {
                           <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
                             {team.team.name}
                           </span>
-                          <span className="text-lg font-bold" style={{ color: theme.accent }}>
+                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
                             {team.winPct.toFixed(1)}%
                           </span>
                         </Link>
