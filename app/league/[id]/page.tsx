@@ -43,6 +43,34 @@ interface TeamStatRow {
   goalsAgainstPerGame: number;
   winPct: number;
   goalDiffPerGame: number;
+  cleanSheets: number;
+  form: string;
+}
+
+interface PlayerStats {
+  player: {
+    id: number;
+    name: string;
+    photo: string;
+    nationality: string;
+  };
+  team: LeagueTeam | null;
+  games: {
+    appearances: number;
+    minutes: number;
+    lineups: number;
+    position: string | null;
+  };
+  goals: number;
+  assists: number;
+  shots: { total: number; onTarget: number };
+  passes: { total: number; key: number; accuracy: number };
+  tackles: { total: number; blocks: number; interceptions: number };
+  duels: { total: number; won: number };
+  dribbles: { attempts: number; success: number };
+  fouls: { drawn: number; committed: number };
+  cards: { yellow: number; red: number };
+  penalty: { won: number; scored: number; missed: number };
 }
 
 interface TopScorerRow {
@@ -87,6 +115,22 @@ interface LeagueData {
   standings: StandingRow[];
   teamStats: TeamStatRow[];
   topScorers: TopScorerRow[];
+  topAssists: TopScorerRow[];
+  yellowCards: PlayerStats[];
+  redCards: PlayerStats[];
+  playerLeaders: {
+    appearances: PlayerStats[];
+    minutes: PlayerStats[];
+    shots: PlayerStats[];
+    shotsOnTarget: PlayerStats[];
+    keyPasses: PlayerStats[];
+    passAccuracy: PlayerStats[];
+    tackles: PlayerStats[];
+    interceptions: PlayerStats[];
+    duelsWon: PlayerStats[];
+    dribbles: PlayerStats[];
+    foulsDrawn: PlayerStats[];
+  };
   recentFixtures: FixtureRow[];
   upcomingFixtures: FixtureRow[];
 }
@@ -206,7 +250,6 @@ export default function LeaguePage() {
             border: `1px solid ${live ? theme.red : theme.border}`,
           }}
         >
-          {/* Date/Time Header */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px]" style={{ color: theme.textSecondary }}>
               {formatDate(fixture.date)}
@@ -221,10 +264,7 @@ export default function LeaguePage() {
               {live && '● '}{getStatusDisplay(fixture)}
             </span>
           </div>
-
-          {/* Teams */}
           <div className="flex flex-col gap-2">
-            {/* Home Team */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <img src={fixture.homeTeam.logo} alt="" className="h-5 w-5 object-contain" />
@@ -245,8 +285,6 @@ export default function LeaguePage() {
                 {fixture.homeScore ?? '-'}
               </span>
             </div>
-
-            {/* Away Team */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <img src={fixture.awayTeam.logo} alt="" className="h-5 w-5 object-contain" />
@@ -270,6 +308,137 @@ export default function LeaguePage() {
           </div>
         </div>
       </Link>
+    );
+  };
+
+  // Player Stat Card Component
+  const PlayerStatCard = ({
+    title,
+    players,
+    statKey,
+    statLabel,
+    formatter = (v: number) => String(v)
+  }: {
+    title: string;
+    players: PlayerStats[] | TopScorerRow[];
+    statKey: string;
+    statLabel?: string;
+    formatter?: (value: number) => string;
+  }) => {
+    const getValue = (p: PlayerStats | TopScorerRow): number => {
+      const keys = statKey.split('.');
+      let value: unknown = p;
+      for (const key of keys) {
+        value = (value as Record<string, unknown>)?.[key];
+      }
+      return (value as number) || 0;
+    };
+
+    return (
+      <section
+        className="rounded-xl overflow-hidden"
+        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      >
+        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+          <h3 className="text-sm font-semibold" style={{ color: theme.text }}>{title}</h3>
+        </div>
+        <div>
+          {players.slice(0, 5).map((p, index) => (
+            <div
+              key={p.player.id}
+              className="flex items-center gap-3 px-4 py-2.5"
+              style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+            >
+              <span
+                className="text-sm font-bold w-5"
+                style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+              >
+                {index + 1}
+              </span>
+              <img
+                src={p.player.photo}
+                alt=""
+                className="h-8 w-8 rounded-full object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                  {p.player.name}
+                </p>
+                <div className="flex items-center gap-1">
+                  {p.team && <img src={p.team.logo} alt="" className="h-3 w-3 object-contain" />}
+                  <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                    {p.team?.name || 'Unknown'}
+                  </span>
+                </div>
+              </div>
+              <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
+                {formatter(getValue(p))}
+              </span>
+            </div>
+          ))}
+          {players.length === 0 && (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm" style={{ color: theme.textSecondary }}>No data available</p>
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  };
+
+  // Team Stat Card Component
+  const TeamStatCard = ({
+    title,
+    teams,
+    statKey,
+    formatter = (v: number) => String(v),
+    sortAsc = false
+  }: {
+    title: string;
+    teams: TeamStatRow[];
+    statKey: keyof TeamStatRow;
+    formatter?: (value: number) => string;
+    sortAsc?: boolean;
+  }) => {
+    const sorted = [...teams].sort((a, b) => {
+      const aVal = a[statKey] as number;
+      const bVal = b[statKey] as number;
+      return sortAsc ? aVal - bVal : bVal - aVal;
+    });
+
+    return (
+      <section
+        className="rounded-xl overflow-hidden"
+        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      >
+        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+          <h3 className="text-sm font-semibold" style={{ color: theme.text }}>{title}</h3>
+        </div>
+        <div>
+          {sorted.slice(0, 5).map((team, index) => (
+            <Link
+              key={team.team.id}
+              href={`/team/${team.team.id}`}
+              className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
+              style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+            >
+              <span
+                className="text-sm font-bold w-5"
+                style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+              >
+                {index + 1}
+              </span>
+              <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
+              <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
+                {team.team.name}
+              </span>
+              <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
+                {formatter(team[statKey] as number)}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
     );
   };
 
@@ -384,7 +553,6 @@ export default function LeaguePage() {
                     <ChevronUp size={18} style={{ color: theme.textSecondary }} />
                   )}
                 </button>
-
                 {!liveCollapsed && (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
                     {liveGames.map(fixture => (
@@ -407,10 +575,7 @@ export default function LeaguePage() {
                   style={{ borderBottom: upcomingCollapsed ? 'none' : `1px solid ${theme.border}` }}
                 >
                   <div className="flex items-center gap-2">
-                    <h2
-                      className="text-sm font-semibold uppercase tracking-wider"
-                      style={{ color: theme.text }}
-                    >
+                    <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: theme.text }}>
                       Upcoming
                     </h2>
                     <span
@@ -426,7 +591,6 @@ export default function LeaguePage() {
                     <ChevronUp size={18} style={{ color: theme.textSecondary }} />
                   )}
                 </button>
-
                 {!upcomingCollapsed && (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
                     {upcomingGames.map(fixture => (
@@ -449,10 +613,7 @@ export default function LeaguePage() {
                   style={{ borderBottom: completedCollapsed ? 'none' : `1px solid ${theme.border}` }}
                 >
                   <div className="flex items-center gap-2">
-                    <h2
-                      className="text-sm font-semibold uppercase tracking-wider"
-                      style={{ color: theme.text }}
-                    >
+                    <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: theme.text }}>
                       Completed
                     </h2>
                     <span
@@ -468,7 +629,6 @@ export default function LeaguePage() {
                     <ChevronUp size={18} style={{ color: theme.textSecondary }} />
                   )}
                 </button>
-
                 {!completedCollapsed && (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
                     {completedGames.map(fixture => (
@@ -480,13 +640,8 @@ export default function LeaguePage() {
             )}
 
             {liveGames.length === 0 && upcomingGames.length === 0 && completedGames.length === 0 && (
-              <div
-                className="rounded-lg py-8 text-center"
-                style={{ backgroundColor: theme.bgSecondary }}
-              >
-                <p className="text-sm" style={{ color: theme.textSecondary }}>
-                  No fixtures available
-                </p>
+              <div className="rounded-lg py-8 text-center" style={{ backgroundColor: theme.bgSecondary }}>
+                <p className="text-sm" style={{ color: theme.textSecondary }}>No fixtures available</p>
               </div>
             )}
           </div>
@@ -522,369 +677,159 @@ export default function LeaguePage() {
             {/* Player Stats */}
             {statsView === 'players' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Top Scorers */}
-                <section
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-                >
-                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Top Scorers</h3>
-                  </div>
-                  <div>
-                    {data.topScorers.slice(0, 5).map((scorer, index) => (
-                      <div
-                        key={scorer.player.id}
-                        className="flex items-center gap-3 px-4 py-2.5"
-                        style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
-                      >
-                        <span
-                          className="text-sm font-bold w-5"
-                          style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
-                        >
-                          {index + 1}
-                        </span>
-                        <img
-                          src={scorer.player.photo}
-                          alt=""
-                          className="h-8 w-8 rounded-full object-cover"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
-                            {scorer.player.name}
-                          </p>
-                          <div className="flex items-center gap-1">
-                            <img src={scorer.team.logo} alt="" className="h-3 w-3 object-contain" />
-                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                              {scorer.team.name}
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
-                          {scorer.goals}
-                        </span>
-                      </div>
-                    ))}
-                    {data.topScorers.length === 0 && (
-                      <div className="px-4 py-6 text-center">
-                        <p className="text-sm" style={{ color: theme.textSecondary }}>No data available</p>
-                      </div>
-                    )}
-                  </div>
-                </section>
+                {/* Goals */}
+                <PlayerStatCard
+                  title="Top Scorers"
+                  players={data.topScorers}
+                  statKey="goals"
+                />
 
-                {/* Top Assists */}
-                <section
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-                >
-                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Top Assists</h3>
-                  </div>
-                  <div>
-                    {[...data.topScorers]
-                      .sort((a, b) => b.assists - a.assists)
-                      .slice(0, 5)
-                      .map((scorer, index) => (
-                        <div
-                          key={scorer.player.id}
-                          className="flex items-center gap-3 px-4 py-2.5"
-                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
-                        >
-                          <span
-                            className="text-sm font-bold w-5"
-                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
-                          >
-                            {index + 1}
-                          </span>
-                          <img
-                            src={scorer.player.photo}
-                            alt=""
-                            className="h-8 w-8 rounded-full object-cover"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
-                              {scorer.player.name}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <img src={scorer.team.logo} alt="" className="h-3 w-3 object-contain" />
-                              <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                                {scorer.team.name}
-                              </span>
-                            </div>
-                          </div>
-                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
-                            {scorer.assists}
-                          </span>
-                        </div>
-                      ))}
-                    {data.topScorers.length === 0 && (
-                      <div className="px-4 py-6 text-center">
-                        <p className="text-sm" style={{ color: theme.textSecondary }}>No data available</p>
-                      </div>
-                    )}
-                  </div>
-                </section>
+                {/* Assists */}
+                <PlayerStatCard
+                  title="Top Assists"
+                  players={data.topAssists || []}
+                  statKey="assists"
+                />
 
-                {/* Most Appearances */}
-                <section
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-                >
-                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Most Appearances</h3>
-                  </div>
-                  <div>
-                    {[...data.topScorers]
-                      .sort((a, b) => b.appearances - a.appearances)
-                      .slice(0, 5)
-                      .map((scorer, index) => (
-                        <div
-                          key={scorer.player.id}
-                          className="flex items-center gap-3 px-4 py-2.5"
-                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
-                        >
-                          <span
-                            className="text-sm font-bold w-5"
-                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
-                          >
-                            {index + 1}
-                          </span>
-                          <img
-                            src={scorer.player.photo}
-                            alt=""
-                            className="h-8 w-8 rounded-full object-cover"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
-                              {scorer.player.name}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <img src={scorer.team.logo} alt="" className="h-3 w-3 object-contain" />
-                              <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                                {scorer.team.name}
-                              </span>
-                            </div>
-                          </div>
-                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
-                            {scorer.appearances}
-                          </span>
-                        </div>
-                      ))}
-                    {data.topScorers.length === 0 && (
-                      <div className="px-4 py-6 text-center">
-                        <p className="text-sm" style={{ color: theme.textSecondary }}>No data available</p>
-                      </div>
-                    )}
-                  </div>
-                </section>
+                {/* Appearances */}
+                <PlayerStatCard
+                  title="Most Appearances"
+                  players={data.playerLeaders?.appearances || []}
+                  statKey="games.appearances"
+                />
 
-                {/* Goals Per Game */}
-                <section
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-                >
-                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Goals Per Game</h3>
-                  </div>
-                  <div>
-                    {[...data.topScorers]
-                      .filter(s => s.appearances > 0)
-                      .map(s => ({ ...s, gpg: s.goals / s.appearances }))
-                      .sort((a, b) => b.gpg - a.gpg)
-                      .slice(0, 5)
-                      .map((scorer, index) => (
-                        <div
-                          key={scorer.player.id}
-                          className="flex items-center gap-3 px-4 py-2.5"
-                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
-                        >
-                          <span
-                            className="text-sm font-bold w-5"
-                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
-                          >
-                            {index + 1}
-                          </span>
-                          <img
-                            src={scorer.player.photo}
-                            alt=""
-                            className="h-8 w-8 rounded-full object-cover"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
-                              {scorer.player.name}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <img src={scorer.team.logo} alt="" className="h-3 w-3 object-contain" />
-                              <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                                {scorer.team.name}
-                              </span>
-                            </div>
-                          </div>
-                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
-                            {scorer.gpg.toFixed(2)}
-                          </span>
-                        </div>
-                      ))}
-                    {data.topScorers.length === 0 && (
-                      <div className="px-4 py-6 text-center">
-                        <p className="text-sm" style={{ color: theme.textSecondary }}>No data available</p>
-                      </div>
-                    )}
-                  </div>
-                </section>
+                {/* Minutes */}
+                <PlayerStatCard
+                  title="Most Minutes"
+                  players={data.playerLeaders?.minutes || []}
+                  statKey="games.minutes"
+                  formatter={(v) => v.toLocaleString()}
+                />
+
+                {/* Shots */}
+                <PlayerStatCard
+                  title="Most Shots"
+                  players={data.playerLeaders?.shots || []}
+                  statKey="shots.total"
+                />
+
+                {/* Shots on Target */}
+                <PlayerStatCard
+                  title="Shots on Target"
+                  players={data.playerLeaders?.shotsOnTarget || []}
+                  statKey="shots.onTarget"
+                />
+
+                {/* Key Passes */}
+                <PlayerStatCard
+                  title="Key Passes"
+                  players={data.playerLeaders?.keyPasses || []}
+                  statKey="passes.key"
+                />
+
+                {/* Pass Accuracy */}
+                <PlayerStatCard
+                  title="Pass Accuracy"
+                  players={data.playerLeaders?.passAccuracy || []}
+                  statKey="passes.accuracy"
+                  formatter={(v) => `${v}%`}
+                />
+
+                {/* Tackles */}
+                <PlayerStatCard
+                  title="Most Tackles"
+                  players={data.playerLeaders?.tackles || []}
+                  statKey="tackles.total"
+                />
+
+                {/* Interceptions */}
+                <PlayerStatCard
+                  title="Most Interceptions"
+                  players={data.playerLeaders?.interceptions || []}
+                  statKey="tackles.interceptions"
+                />
+
+                {/* Duels Won */}
+                <PlayerStatCard
+                  title="Duels Won"
+                  players={data.playerLeaders?.duelsWon || []}
+                  statKey="duels.won"
+                />
+
+                {/* Dribbles */}
+                <PlayerStatCard
+                  title="Successful Dribbles"
+                  players={data.playerLeaders?.dribbles || []}
+                  statKey="dribbles.success"
+                />
+
+                {/* Fouls Drawn */}
+                <PlayerStatCard
+                  title="Fouls Won"
+                  players={data.playerLeaders?.foulsDrawn || []}
+                  statKey="fouls.drawn"
+                />
+
+                {/* Yellow Cards */}
+                <PlayerStatCard
+                  title="Yellow Cards"
+                  players={data.yellowCards || []}
+                  statKey="cards.yellow"
+                />
+
+                {/* Red Cards */}
+                <PlayerStatCard
+                  title="Red Cards"
+                  players={data.redCards || []}
+                  statKey="cards.red"
+                />
               </div>
             )}
 
             {/* Team Stats */}
             {statsView === 'teams' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Points Per Game */}
-                <section
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-                >
-                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Points Per Game</h3>
-                  </div>
-                  <div>
-                    {[...(data.teamStats || [])]
-                      .sort((a, b) => b.ppg - a.ppg)
-                      .slice(0, 5)
-                      .map((team, index) => (
-                        <Link
-                          key={team.team.id}
-                          href={`/team/${team.team.id}`}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
-                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
-                        >
-                          <span
-                            className="text-sm font-bold w-5"
-                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
-                          >
-                            {index + 1}
-                          </span>
-                          <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
-                          <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
-                            {team.team.name}
-                          </span>
-                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
-                            {team.ppg.toFixed(2)}
-                          </span>
-                        </Link>
-                      ))}
-                  </div>
-                </section>
+                <TeamStatCard
+                  title="Points Per Game"
+                  teams={data.teamStats || []}
+                  statKey="ppg"
+                  formatter={(v) => v.toFixed(2)}
+                />
 
-                {/* Goals Per Game */}
-                <section
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-                >
-                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Goals Per Game</h3>
-                  </div>
-                  <div>
-                    {[...(data.teamStats || [])]
-                      .sort((a, b) => b.goalsPerGame - a.goalsPerGame)
-                      .slice(0, 5)
-                      .map((team, index) => (
-                        <Link
-                          key={team.team.id}
-                          href={`/team/${team.team.id}`}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
-                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
-                        >
-                          <span
-                            className="text-sm font-bold w-5"
-                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
-                          >
-                            {index + 1}
-                          </span>
-                          <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
-                          <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
-                            {team.team.name}
-                          </span>
-                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
-                            {team.goalsPerGame.toFixed(2)}
-                          </span>
-                        </Link>
-                      ))}
-                  </div>
-                </section>
+                <TeamStatCard
+                  title="Goals Per Game"
+                  teams={data.teamStats || []}
+                  statKey="goalsPerGame"
+                  formatter={(v) => v.toFixed(2)}
+                />
 
-                {/* Best Defense (lowest goals against) */}
-                <section
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-                >
-                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Best Defense (GA/G)</h3>
-                  </div>
-                  <div>
-                    {[...(data.teamStats || [])]
-                      .sort((a, b) => a.goalsAgainstPerGame - b.goalsAgainstPerGame)
-                      .slice(0, 5)
-                      .map((team, index) => (
-                        <Link
-                          key={team.team.id}
-                          href={`/team/${team.team.id}`}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
-                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
-                        >
-                          <span
-                            className="text-sm font-bold w-5"
-                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
-                          >
-                            {index + 1}
-                          </span>
-                          <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
-                          <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
-                            {team.team.name}
-                          </span>
-                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
-                            {team.goalsAgainstPerGame.toFixed(2)}
-                          </span>
-                        </Link>
-                      ))}
-                  </div>
-                </section>
+                <TeamStatCard
+                  title="Best Defense (GA/G)"
+                  teams={data.teamStats || []}
+                  statKey="goalsAgainstPerGame"
+                  formatter={(v) => v.toFixed(2)}
+                  sortAsc={true}
+                />
 
-                {/* Win Percentage */}
-                <section
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-                >
-                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Win %</h3>
-                  </div>
-                  <div>
-                    {[...(data.teamStats || [])]
-                      .sort((a, b) => b.winPct - a.winPct)
-                      .slice(0, 5)
-                      .map((team, index) => (
-                        <Link
-                          key={team.team.id}
-                          href={`/team/${team.team.id}`}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
-                          style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
-                        >
-                          <span
-                            className="text-sm font-bold w-5"
-                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
-                          >
-                            {index + 1}
-                          </span>
-                          <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
-                          <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
-                            {team.team.name}
-                          </span>
-                          <span className="text-lg font-bold" style={{ color: index === 0 ? theme.gold : theme.text }}>
-                            {team.winPct.toFixed(1)}%
-                          </span>
-                        </Link>
-                      ))}
-                  </div>
-                </section>
+                <TeamStatCard
+                  title="Win %"
+                  teams={data.teamStats || []}
+                  statKey="winPct"
+                  formatter={(v) => `${v.toFixed(1)}%`}
+                />
+
+                <TeamStatCard
+                  title="Clean Sheets"
+                  teams={data.teamStats || []}
+                  statKey="cleanSheets"
+                />
+
+                <TeamStatCard
+                  title="Goal Difference/Game"
+                  teams={data.teamStats || []}
+                  statKey="goalDiffPerGame"
+                  formatter={(v) => (v >= 0 ? '+' : '') + v.toFixed(2)}
+                />
               </div>
             )}
           </div>
@@ -896,7 +841,6 @@ export default function LeaguePage() {
             className="rounded-xl overflow-hidden"
             style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
-            {/* Table Header */}
             <div
               className="grid items-center gap-1 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider"
               style={{
@@ -915,7 +859,6 @@ export default function LeaguePage() {
               <span className="text-center">Pts</span>
             </div>
 
-            {/* Table Rows */}
             {data.standings.map((row, index) => (
               <Link
                 key={row.team.id}

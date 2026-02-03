@@ -897,6 +897,115 @@ export async function getTopAssists(leagueId: number, season?: number): Promise<
   });
 }
 
+// Get top yellow cards for a league
+export async function getTopYellowCards(leagueId: number, season?: number): Promise<PlayerWithStats[]> {
+  return fetchApi<PlayerWithStats>('/players/topyellowcards', {
+    league: leagueId,
+    season: season || getSeason(),
+  });
+}
+
+// Get top red cards for a league
+export async function getTopRedCards(leagueId: number, season?: number): Promise<PlayerWithStats[]> {
+  return fetchApi<PlayerWithStats>('/players/topredcards', {
+    league: leagueId,
+    season: season || getSeason(),
+  });
+}
+
+// Get all players with statistics for a league (handles pagination)
+export async function getLeaguePlayers(
+  leagueId: number,
+  season?: number,
+  maxPages: number = 10 // Limit pages to avoid too many API calls
+): Promise<PlayerWithStats[]> {
+  const allPlayers: PlayerWithStats[] = [];
+  let currentPage = 1;
+  let totalPages = 1;
+  const seasonYear = season || getSeason();
+
+  do {
+    const queryString = new URLSearchParams({
+      league: String(leagueId),
+      season: String(seasonYear),
+      page: String(currentPage),
+    }).toString();
+
+    const url = `${API_BASE}/players?${queryString}`;
+    const cacheKey = url;
+
+    // Check cache
+    const cached = cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log(`[API-Football] Cache hit: /players (league) page ${currentPage}`);
+      const cachedData = cached.data as { response: PlayerWithStats[]; paging: { total: number } };
+      allPlayers.push(...cachedData.response);
+      totalPages = Math.min(cachedData.paging.total, maxPages);
+    } else {
+      console.log(`[API-Football] Fetching: ${url}`);
+
+      const response = await fetch(url, {
+        headers: {
+          'x-apisports-key': API_KEY,
+        },
+      });
+
+      if (!response.ok) {
+        console.error(`[API-Football] HTTP Error: ${response.status}`);
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Check for API errors
+      const hasErrors = Array.isArray(data.errors)
+        ? data.errors.length > 0
+        : Object.keys(data.errors || {}).length > 0;
+      if (hasErrors) {
+        console.error('[API-Football] API returned errors:', data.errors);
+        break;
+      }
+
+      // Cache the response
+      cache.set(cacheKey, { data, timestamp: Date.now() });
+
+      allPlayers.push(...(data.response || []));
+      totalPages = Math.min(data.paging?.total || 1, maxPages);
+    }
+
+    currentPage++;
+  } while (currentPage <= totalPages);
+
+  console.log(`[API-Football] Fetched ${allPlayers.length} players for league ${leagueId}`);
+  return allPlayers;
+}
+
+// Get team statistics for all teams in a league
+export async function getLeagueTeamStatistics(
+  leagueId: number,
+  teamIds: number[],
+  season?: number
+): Promise<TeamStatistics[]> {
+  const seasonYear = season || getSeason();
+  const results: TeamStatistics[] = [];
+
+  // Fetch in batches of 5 to avoid rate limiting
+  const batchSize = 5;
+  for (let i = 0; i < teamIds.length; i += batchSize) {
+    const batch = teamIds.slice(i, i + batchSize);
+    const promises = batch.map(teamId =>
+      getTeamStatistics(teamId, leagueId, seasonYear).catch(err => {
+        console.error(`[API-Football] Failed to fetch stats for team ${teamId}:`, err);
+        return null;
+      })
+    );
+    const batchResults = await Promise.all(promises);
+    results.push(...batchResults.filter((r): r is TeamStatistics => r !== null));
+  }
+
+  return results;
+}
+
 // Get league fixtures (upcoming and recent)
 export async function getLeagueFixtures(
   leagueId: number,
