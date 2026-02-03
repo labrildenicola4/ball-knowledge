@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { ChevronLeft, Sun, Moon, Trophy, Calendar, Target } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, RefreshCw, Calendar, Trophy, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
+import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
+import { shouldUseWhiteFilterByCode } from '@/lib/constants/dark-mode-logos';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'League not found' : 'Failed to fetch');
@@ -31,6 +33,16 @@ interface StandingRow {
   goalsAgainst: number;
   goalDiff: number;
   form: string;
+}
+
+interface TeamStatRow {
+  team: LeagueTeam;
+  played: number;
+  ppg: number;
+  goalsPerGame: number;
+  goalsAgainstPerGame: number;
+  winPct: number;
+  goalDiffPerGame: number;
 }
 
 interface TopScorerRow {
@@ -69,28 +81,45 @@ interface LeagueData {
     shortName: string;
     country: string;
     type: string;
+    logo: string;
+    code: string;
   };
   standings: StandingRow[];
+  teamStats: TeamStatRow[];
   topScorers: TopScorerRow[];
   recentFixtures: FixtureRow[];
   upcomingFixtures: FixtureRow[];
 }
 
-type Tab = 'fixtures' | 'standings' | 'scorers';
+type Tab = 'schedule' | 'stats' | 'standings';
+type StatsView = 'players' | 'teams';
 
 export default function LeaguePage() {
   const params = useParams();
-  const router = useRouter();
-  const { theme, darkMode, toggleDarkMode } = useTheme();
+  const { theme, darkMode } = useTheme();
   const leagueSlug = params.id as string;
 
-  const [activeTab, setActiveTab] = useState<Tab>('standings');
+  const [activeTab, setActiveTab] = useState<Tab>('schedule');
+  const [statsView, setStatsView] = useState<StatsView>('players');
+  const [liveCollapsed, setLiveCollapsed] = useState(false);
+  const [upcomingCollapsed, setUpcomingCollapsed] = useState(false);
+  const [completedCollapsed, setCompletedCollapsed] = useState(false);
 
-  const { data, error, isLoading } = useSWR<LeagueData>(
+  const { data, error, isLoading, mutate, isValidating } = useSWR<LeagueData>(
     `/api/league/${leagueSlug}`,
     fetcher,
-    { revalidateOnFocus: false }
+    {
+      revalidateOnFocus: true,
+      refreshInterval: 30000,
+    }
   );
+
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
 
   if (isLoading) {
     return (
@@ -99,7 +128,7 @@ export default function LeaguePage() {
           className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
           style={{ color: theme.accent }}
         />
-        <p className="mt-4 text-[12px]" style={{ color: theme.textSecondary }}>Loading league...</p>
+        <p className="mt-4 text-sm" style={{ color: theme.textSecondary }}>Loading...</p>
       </div>
     );
   }
@@ -107,17 +136,34 @@ export default function LeaguePage() {
   if (error || !data) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
-        <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'League not found'}</p>
-        <button
-          onClick={() => router.back()}
-          className="mt-4 rounded-lg px-4 py-2 text-[12px]"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        <p className="text-sm" style={{ color: theme.red }}>{error?.message || 'League not found'}</p>
+        <Link
+          href="/soccer"
+          className="mt-4 rounded-lg px-4 py-2 text-sm"
+          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}`, color: theme.text }}
         >
-          Go back
-        </button>
+          Back to Soccer
+        </Link>
       </div>
     );
   }
+
+  // Categorize fixtures
+  const isLive = (status: string) => ['1H', '2H', 'HT', 'ET', 'P', 'BT', 'LIVE'].includes(status);
+  const isFinished = (status: string) => ['FT', 'AET', 'PEN'].includes(status);
+
+  const allFixtures = [...data.recentFixtures, ...data.upcomingFixtures];
+  const liveGames = allFixtures.filter(f => isLive(f.status));
+  const upcomingGames = data.upcomingFixtures.filter(f => !isLive(f.status) && !isFinished(f.status));
+  const completedGames = data.recentFixtures.filter(f => isFinished(f.status));
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -128,86 +174,586 @@ export default function LeaguePage() {
     });
   };
 
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-  };
-
   const getStatusDisplay = (fixture: FixtureRow) => {
-    switch (fixture.status) {
-      case 'NS':
-        return formatTime(fixture.date);
-      case 'FT':
-      case 'AET':
-      case 'PEN':
-        return 'FT';
-      case '1H':
-      case '2H':
-        return fixture.elapsed ? `${fixture.elapsed}'` : fixture.status;
-      case 'HT':
-        return 'HT';
-      default:
-        return fixture.status;
+    if (isLive(fixture.status)) {
+      return fixture.elapsed ? `${fixture.elapsed}'` : fixture.status;
     }
+    if (isFinished(fixture.status)) return 'FT';
+    return formatTime(fixture.date);
   };
 
-  const isLive = (status: string) => ['1H', '2H', 'HT', 'ET', 'P', 'BT'].includes(status);
+  const useWhiteFilter = darkMode && shouldUseWhiteFilterByCode(data.league.code);
+
+  const tabs = [
+    { id: 'schedule' as Tab, label: 'Schedule', icon: Calendar },
+    { id: 'stats' as Tab, label: 'Stats', icon: BarChart3 },
+    { id: 'standings' as Tab, label: 'Standings', icon: Trophy },
+  ];
+
+  // Game Card Component
+  const GameCard = ({ fixture }: { fixture: FixtureRow }) => {
+    const live = isLive(fixture.status);
+    const finished = isFinished(fixture.status);
+    const homeWin = finished && (fixture.homeScore ?? 0) > (fixture.awayScore ?? 0);
+    const awayWin = finished && (fixture.awayScore ?? 0) > (fixture.homeScore ?? 0);
+
+    return (
+      <Link href={`/match/${fixture.id}`}>
+        <div
+          className="rounded-xl p-3 transition-all hover:scale-[1.02] cursor-pointer"
+          style={{
+            backgroundColor: theme.bgTertiary,
+            border: `1px solid ${live ? theme.red : theme.border}`,
+          }}
+        >
+          {/* Date/Time Header */}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+              {formatDate(fixture.date)}
+            </span>
+            <span
+              className="text-[10px] font-medium px-2 py-0.5 rounded"
+              style={{
+                backgroundColor: live ? theme.red : theme.bgSecondary,
+                color: live ? '#fff' : theme.textSecondary,
+              }}
+            >
+              {live && '● '}{getStatusDisplay(fixture)}
+            </span>
+          </div>
+
+          {/* Teams */}
+          <div className="flex flex-col gap-2">
+            {/* Home Team */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <img src={fixture.homeTeam.logo} alt="" className="h-5 w-5 object-contain" />
+                <span
+                  className="text-xs truncate"
+                  style={{
+                    color: homeWin ? theme.accent : theme.text,
+                    fontWeight: homeWin ? 600 : 400,
+                  }}
+                >
+                  {fixture.homeTeam.name}
+                </span>
+              </div>
+              <span
+                className="text-sm font-bold tabular-nums"
+                style={{ color: homeWin ? theme.accent : theme.text }}
+              >
+                {fixture.homeScore ?? '-'}
+              </span>
+            </div>
+
+            {/* Away Team */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <img src={fixture.awayTeam.logo} alt="" className="h-5 w-5 object-contain" />
+                <span
+                  className="text-xs truncate"
+                  style={{
+                    color: awayWin ? theme.accent : theme.text,
+                    fontWeight: awayWin ? 600 : 400,
+                  }}
+                >
+                  {fixture.awayTeam.name}
+                </span>
+              </div>
+              <span
+                className="text-sm font-bold tabular-nums"
+                style={{ color: awayWin ? theme.accent : theme.text }}
+              >
+                {fixture.awayScore ?? '-'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Link>
+    );
+  };
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}>
-      {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-        <button
-          onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
-        >
-          <ChevronLeft size={18} style={{ color: theme.text }} />
-        </button>
-        <div className="flex-1">
-          <p className="text-[15px] font-semibold" style={{ color: theme.text }}>
-            {data.league.name}
-          </p>
-          <p className="text-[13px]" style={{ color: theme.textSecondary }}>
-            {data.league.country}
-          </p>
+    <div
+      className="flex min-h-screen flex-col transition-theme"
+      style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
+    >
+      <Header />
+
+      {/* Page Header */}
+      <div
+        className="px-4 py-4"
+        style={{ borderBottom: `1px solid ${theme.border}` }}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/soccer"
+              className="flex items-center justify-center rounded-full p-1.5 -ml-1.5 hover:opacity-70 transition-opacity"
+              style={{ backgroundColor: theme.bgSecondary }}
+            >
+              <ChevronLeft size={20} style={{ color: theme.text }} />
+            </Link>
+            <img
+              src={data.league.logo}
+              alt={data.league.name}
+              className="h-8 w-8 object-contain"
+              style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : 'none' }}
+            />
+            <div>
+              <h1 className="text-xl font-semibold" style={{ color: theme.text }}>
+                {data.league.shortName}
+              </h1>
+              <p className="text-sm" style={{ color: theme.textSecondary }}>
+                {dateStr}
+              </p>
+            </div>
+          </div>
+          {activeTab === 'schedule' && (
+            <button
+              onClick={() => mutate()}
+              disabled={isLoading}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
+              style={{
+                backgroundColor: theme.bgSecondary,
+                border: `1px solid ${theme.border}`,
+                color: theme.textSecondary,
+              }}
+            >
+              <RefreshCw size={14} className={isValidating ? 'animate-spin' : ''} />
+              Refresh
+            </button>
+          )}
         </div>
-        <button
-          onClick={toggleDarkMode}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
-        >
-          {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
-        </button>
-      </header>
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-1 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-        {[
-          { id: 'standings' as Tab, label: 'Standings', icon: Trophy },
-          { id: 'fixtures' as Tab, label: 'Fixtures', icon: Calendar },
-          { id: 'scorers' as Tab, label: 'Top Scorers', icon: Target },
-        ].map(tab => (
+        {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
             style={{
               backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary,
               color: activeTab === tab.id ? '#fff' : theme.textSecondary,
             }}
           >
-            <tab.icon size={14} />
+            <tab.icon size={16} />
             {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Content */}
       <main className="flex-1 overflow-y-auto px-4 py-4">
+        {/* Schedule Tab */}
+        {activeTab === 'schedule' && (
+          <div className="flex flex-col gap-4">
+            {/* Live Games */}
+            {liveGames.length > 0 && (
+              <section
+                className="rounded-xl overflow-hidden"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <button
+                  onClick={() => setLiveCollapsed(!liveCollapsed)}
+                  className="w-full flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="h-2.5 w-2.5 animate-pulse rounded-full"
+                      style={{ backgroundColor: theme.red }}
+                    />
+                    <h2
+                      className="text-sm font-semibold uppercase tracking-wider"
+                      style={{ color: theme.red }}
+                    >
+                      Live Now
+                    </h2>
+                    <span
+                      className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                      style={{ backgroundColor: theme.red, color: '#fff' }}
+                    >
+                      {liveGames.length}
+                    </span>
+                  </div>
+                  {liveCollapsed ? (
+                    <ChevronDown size={18} style={{ color: theme.textSecondary }} />
+                  ) : (
+                    <ChevronUp size={18} style={{ color: theme.textSecondary }} />
+                  )}
+                </button>
+
+                {!liveCollapsed && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
+                    {liveGames.map(fixture => (
+                      <GameCard key={fixture.id} fixture={fixture} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Upcoming Games */}
+            {upcomingGames.length > 0 && (
+              <section
+                className="rounded-xl overflow-hidden"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <button
+                  onClick={() => setUpcomingCollapsed(!upcomingCollapsed)}
+                  className="w-full flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: upcomingCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                >
+                  <div className="flex items-center gap-2">
+                    <h2
+                      className="text-sm font-semibold uppercase tracking-wider"
+                      style={{ color: theme.text }}
+                    >
+                      Upcoming
+                    </h2>
+                    <span
+                      className="rounded-full px-2.5 py-0.5 text-xs"
+                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    >
+                      {upcomingGames.length}
+                    </span>
+                  </div>
+                  {upcomingCollapsed ? (
+                    <ChevronDown size={18} style={{ color: theme.textSecondary }} />
+                  ) : (
+                    <ChevronUp size={18} style={{ color: theme.textSecondary }} />
+                  )}
+                </button>
+
+                {!upcomingCollapsed && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
+                    {upcomingGames.map(fixture => (
+                      <GameCard key={fixture.id} fixture={fixture} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Completed Games */}
+            {completedGames.length > 0 && (
+              <section
+                className="rounded-xl overflow-hidden"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <button
+                  onClick={() => setCompletedCollapsed(!completedCollapsed)}
+                  className="w-full flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: completedCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                >
+                  <div className="flex items-center gap-2">
+                    <h2
+                      className="text-sm font-semibold uppercase tracking-wider"
+                      style={{ color: theme.text }}
+                    >
+                      Completed
+                    </h2>
+                    <span
+                      className="rounded-full px-2.5 py-0.5 text-xs"
+                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    >
+                      {completedGames.length}
+                    </span>
+                  </div>
+                  {completedCollapsed ? (
+                    <ChevronDown size={18} style={{ color: theme.textSecondary }} />
+                  ) : (
+                    <ChevronUp size={18} style={{ color: theme.textSecondary }} />
+                  )}
+                </button>
+
+                {!completedCollapsed && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
+                    {completedGames.map(fixture => (
+                      <GameCard key={fixture.id} fixture={fixture} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {liveGames.length === 0 && upcomingGames.length === 0 && completedGames.length === 0 && (
+              <div
+                className="rounded-lg py-8 text-center"
+                style={{ backgroundColor: theme.bgSecondary }}
+              >
+                <p className="text-sm" style={{ color: theme.textSecondary }}>
+                  No fixtures available
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Stats Tab */}
+        {activeTab === 'stats' && (
+          <div className="flex flex-col gap-4">
+            {/* Players/Teams Toggle */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStatsView('players')}
+                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium"
+                style={{
+                  backgroundColor: statsView === 'players' ? theme.accent : theme.bgSecondary,
+                  color: statsView === 'players' ? '#fff' : theme.textSecondary,
+                }}
+              >
+                Players
+              </button>
+              <button
+                onClick={() => setStatsView('teams')}
+                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium"
+                style={{
+                  backgroundColor: statsView === 'teams' ? theme.accent : theme.bgSecondary,
+                  color: statsView === 'teams' ? '#fff' : theme.textSecondary,
+                }}
+              >
+                Teams
+              </button>
+            </div>
+
+            {/* Player Stats */}
+            {statsView === 'players' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Top Scorers */}
+                <section
+                  className="rounded-xl overflow-hidden"
+                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                >
+                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Top Scorers</h3>
+                  </div>
+                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                    {data.topScorers.slice(0, 5).map((scorer, index) => (
+                      <div key={scorer.player.id} className="flex items-center gap-3 px-4 py-2.5">
+                        <span
+                          className="text-sm font-bold w-5"
+                          style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                        >
+                          {index + 1}
+                        </span>
+                        <img
+                          src={scorer.player.photo}
+                          alt=""
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                            {scorer.player.name}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            <img src={scorer.team.logo} alt="" className="h-3 w-3 object-contain" />
+                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                              {scorer.team.name}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-lg font-bold" style={{ color: theme.accent }}>
+                          {scorer.goals}
+                        </span>
+                      </div>
+                    ))}
+                    {data.topScorers.length === 0 && (
+                      <div className="px-4 py-6 text-center">
+                        <p className="text-sm" style={{ color: theme.textSecondary }}>No data available</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* Top Assists */}
+                <section
+                  className="rounded-xl overflow-hidden"
+                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                >
+                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Top Assists</h3>
+                  </div>
+                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                    {[...data.topScorers]
+                      .sort((a, b) => b.assists - a.assists)
+                      .slice(0, 5)
+                      .map((scorer, index) => (
+                        <div key={scorer.player.id} className="flex items-center gap-3 px-4 py-2.5">
+                          <span
+                            className="text-sm font-bold w-5"
+                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                          >
+                            {index + 1}
+                          </span>
+                          <img
+                            src={scorer.player.photo}
+                            alt=""
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                              {scorer.player.name}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <img src={scorer.team.logo} alt="" className="h-3 w-3 object-contain" />
+                              <span className="text-[10px]" style={{ color: theme.textSecondary }}>
+                                {scorer.team.name}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-lg font-bold" style={{ color: theme.accent }}>
+                            {scorer.assists}
+                          </span>
+                        </div>
+                      ))}
+                    {data.topScorers.length === 0 && (
+                      <div className="px-4 py-6 text-center">
+                        <p className="text-sm" style={{ color: theme.textSecondary }}>No data available</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {/* Team Stats */}
+            {statsView === 'teams' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Points Per Game */}
+                <section
+                  className="rounded-xl overflow-hidden"
+                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                >
+                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Points Per Game</h3>
+                  </div>
+                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                    {[...(data.teamStats || [])]
+                      .sort((a, b) => b.ppg - a.ppg)
+                      .slice(0, 5)
+                      .map((team, index) => (
+                        <Link key={team.team.id} href={`/team/${team.team.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5">
+                          <span
+                            className="text-sm font-bold w-5"
+                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                          >
+                            {index + 1}
+                          </span>
+                          <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
+                          <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
+                            {team.team.name}
+                          </span>
+                          <span className="text-lg font-bold" style={{ color: theme.accent }}>
+                            {team.ppg.toFixed(2)}
+                          </span>
+                        </Link>
+                      ))}
+                  </div>
+                </section>
+
+                {/* Goals Per Game */}
+                <section
+                  className="rounded-xl overflow-hidden"
+                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                >
+                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Goals Per Game</h3>
+                  </div>
+                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                    {[...(data.teamStats || [])]
+                      .sort((a, b) => b.goalsPerGame - a.goalsPerGame)
+                      .slice(0, 5)
+                      .map((team, index) => (
+                        <Link key={team.team.id} href={`/team/${team.team.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5">
+                          <span
+                            className="text-sm font-bold w-5"
+                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                          >
+                            {index + 1}
+                          </span>
+                          <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
+                          <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
+                            {team.team.name}
+                          </span>
+                          <span className="text-lg font-bold" style={{ color: theme.accent }}>
+                            {team.goalsPerGame.toFixed(2)}
+                          </span>
+                        </Link>
+                      ))}
+                  </div>
+                </section>
+
+                {/* Best Defense (lowest goals against) */}
+                <section
+                  className="rounded-xl overflow-hidden"
+                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                >
+                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Best Defense (GA/G)</h3>
+                  </div>
+                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                    {[...(data.teamStats || [])]
+                      .sort((a, b) => a.goalsAgainstPerGame - b.goalsAgainstPerGame)
+                      .slice(0, 5)
+                      .map((team, index) => (
+                        <Link key={team.team.id} href={`/team/${team.team.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5">
+                          <span
+                            className="text-sm font-bold w-5"
+                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                          >
+                            {index + 1}
+                          </span>
+                          <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
+                          <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
+                            {team.team.name}
+                          </span>
+                          <span className="text-lg font-bold" style={{ color: theme.green }}>
+                            {team.goalsAgainstPerGame.toFixed(2)}
+                          </span>
+                        </Link>
+                      ))}
+                  </div>
+                </section>
+
+                {/* Win Percentage */}
+                <section
+                  className="rounded-xl overflow-hidden"
+                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                >
+                  <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+                    <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Win %</h3>
+                  </div>
+                  <div className="divide-y" style={{ borderColor: theme.border }}>
+                    {[...(data.teamStats || [])]
+                      .sort((a, b) => b.winPct - a.winPct)
+                      .slice(0, 5)
+                      .map((team, index) => (
+                        <Link key={team.team.id} href={`/team/${team.team.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5">
+                          <span
+                            className="text-sm font-bold w-5"
+                            style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
+                          >
+                            {index + 1}
+                          </span>
+                          <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
+                          <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
+                            {team.team.name}
+                          </span>
+                          <span className="text-lg font-bold" style={{ color: theme.accent }}>
+                            {team.winPct.toFixed(1)}%
+                          </span>
+                        </Link>
+                      ))}
+                  </div>
+                </section>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Standings Tab */}
         {activeTab === 'standings' && (
           <section
@@ -237,7 +783,7 @@ export default function LeaguePage() {
             {data.standings.map((row, index) => (
               <Link
                 key={row.team.id}
-                href={`/soccer/team/${row.team.id}`}
+                href={`/team/${row.team.id}`}
                 className="grid items-center gap-1 px-3 py-2.5 transition-colors hover:bg-black/5"
                 style={{
                   gridTemplateColumns: '24px minmax(0, 1fr) 32px 32px 32px 32px 32px 32px',
@@ -280,190 +826,6 @@ export default function LeaguePage() {
             {data.standings.length === 0 && (
               <div className="px-4 py-8 text-center">
                 <p className="text-sm" style={{ color: theme.textSecondary }}>No standings available</p>
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Fixtures Tab */}
-        {activeTab === 'fixtures' && (
-          <div className="flex flex-col gap-4">
-            {/* Upcoming Fixtures */}
-            {data.upcomingFixtures.length > 0 && (
-              <section
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-              >
-                <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-                  <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Upcoming</h3>
-                </div>
-                {data.upcomingFixtures.map((fixture, index) => (
-                  <div
-                    key={fixture.id}
-                    className="px-4 py-3"
-                    style={{ borderBottom: index < data.upcomingFixtures.length - 1 ? `1px solid ${theme.border}` : 'none' }}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px]" style={{ color: theme.textSecondary }}>{formatDate(fixture.date)}</span>
-                      <span
-                        className="text-[10px] font-medium px-2 py-0.5 rounded"
-                        style={{
-                          backgroundColor: isLive(fixture.status) ? theme.red : theme.bgTertiary,
-                          color: isLive(fixture.status) ? '#fff' : theme.textSecondary,
-                        }}
-                      >
-                        {getStatusDisplay(fixture)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 flex items-center gap-2">
-                        <img src={fixture.homeTeam.logo} alt="" className="h-5 w-5 object-contain" loading="lazy" />
-                        <span className="text-xs font-medium truncate" style={{ color: theme.text }}>{fixture.homeTeam.name}</span>
-                      </div>
-                      <span className="text-xs font-mono px-2" style={{ color: theme.textSecondary }}>vs</span>
-                      <div className="flex-1 flex items-center gap-2 justify-end">
-                        <span className="text-xs font-medium truncate" style={{ color: theme.text }}>{fixture.awayTeam.name}</span>
-                        <img src={fixture.awayTeam.logo} alt="" className="h-5 w-5 object-contain" loading="lazy" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {/* Recent Results */}
-            {data.recentFixtures.length > 0 && (
-              <section
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-              >
-                <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
-                  <h3 className="text-sm font-semibold" style={{ color: theme.text }}>Recent Results</h3>
-                </div>
-                {data.recentFixtures.map((fixture, index) => (
-                  <div
-                    key={fixture.id}
-                    className="px-4 py-3"
-                    style={{ borderBottom: index < data.recentFixtures.length - 1 ? `1px solid ${theme.border}` : 'none' }}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px]" style={{ color: theme.textSecondary }}>{formatDate(fixture.date)}</span>
-                      <span className="text-[10px]" style={{ color: theme.textSecondary }}>FT</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 flex items-center gap-2">
-                        <img src={fixture.homeTeam.logo} alt="" className="h-5 w-5 object-contain" loading="lazy" />
-                        <span
-                          className="text-xs font-medium truncate"
-                          style={{
-                            color: (fixture.homeScore ?? 0) > (fixture.awayScore ?? 0) ? theme.text : theme.textSecondary,
-                            fontWeight: (fixture.homeScore ?? 0) > (fixture.awayScore ?? 0) ? 600 : 400,
-                          }}
-                        >
-                          {fixture.homeTeam.name}
-                        </span>
-                      </div>
-                      <span
-                        className="text-sm font-mono font-bold px-3 py-1 rounded"
-                        style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
-                      >
-                        {fixture.homeScore ?? 0} - {fixture.awayScore ?? 0}
-                      </span>
-                      <div className="flex-1 flex items-center gap-2 justify-end">
-                        <span
-                          className="text-xs font-medium truncate"
-                          style={{
-                            color: (fixture.awayScore ?? 0) > (fixture.homeScore ?? 0) ? theme.text : theme.textSecondary,
-                            fontWeight: (fixture.awayScore ?? 0) > (fixture.homeScore ?? 0) ? 600 : 400,
-                          }}
-                        >
-                          {fixture.awayTeam.name}
-                        </span>
-                        <img src={fixture.awayTeam.logo} alt="" className="h-5 w-5 object-contain" loading="lazy" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {data.upcomingFixtures.length === 0 && data.recentFixtures.length === 0 && (
-              <div className="py-8 text-center">
-                <p className="text-sm" style={{ color: theme.textSecondary }}>No fixtures available</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Top Scorers Tab */}
-        {activeTab === 'scorers' && (
-          <section
-            className="rounded-xl overflow-hidden"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-          >
-            {/* Table Header */}
-            <div
-              className="grid items-center gap-2 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider"
-              style={{
-                gridTemplateColumns: '24px minmax(0, 1fr) minmax(0, 80px) 40px 40px',
-                color: theme.textSecondary,
-                borderBottom: `1px solid ${theme.border}`,
-              }}
-            >
-              <span>#</span>
-              <span>Player</span>
-              <span>Team</span>
-              <span className="text-center">G</span>
-              <span className="text-center">A</span>
-            </div>
-
-            {/* Player Rows */}
-            {data.topScorers.map((scorer, index) => (
-              <div
-                key={scorer.player.id}
-                className="grid items-center gap-2 px-3 py-2.5"
-                style={{
-                  gridTemplateColumns: '24px minmax(0, 1fr) minmax(0, 80px) 40px 40px',
-                  borderBottom: index < data.topScorers.length - 1 ? `1px solid ${theme.border}` : 'none',
-                }}
-              >
-                <span className="text-[11px] font-medium" style={{ color: theme.textSecondary }}>
-                  {index + 1}
-                </span>
-                <div className="flex items-center gap-2 min-w-0">
-                  <img
-                    src={scorer.player.photo}
-                    alt={scorer.player.name}
-                    className="h-7 w-7 flex-shrink-0 rounded-full object-cover"
-                    loading="lazy"
-                  />
-                  <span className="text-xs font-medium truncate" style={{ color: theme.text }}>
-                    {scorer.player.name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 min-w-0">
-                  <img
-                    src={scorer.team.logo}
-                    alt={scorer.team.name}
-                    className="h-4 w-4 flex-shrink-0 object-contain"
-                    loading="lazy"
-                  />
-                  <span className="text-[10px] truncate" style={{ color: theme.textSecondary }}>
-                    {scorer.team.name}
-                  </span>
-                </div>
-                <span className="text-center text-sm font-bold" style={{ color: theme.text }}>
-                  {scorer.goals}
-                </span>
-                <span className="text-center text-sm" style={{ color: theme.textSecondary }}>
-                  {scorer.assists}
-                </span>
-              </div>
-            ))}
-
-            {data.topScorers.length === 0 && (
-              <div className="px-4 py-8 text-center">
-                <p className="text-sm" style={{ color: theme.textSecondary }}>No top scorers available</p>
               </div>
             )}
           </section>

@@ -2,9 +2,7 @@
 
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
-
-// Leagues that should keep their original colored logos in dark mode
-const COLORED_LOGO_LEAGUES = ['SA', 'BL1', 'PPL', 'BSA'];
+import { shouldUseWhiteFilterByCode } from '@/lib/constants/dark-mode-logos';
 
 interface MatchCardProps {
   match: {
@@ -27,7 +25,7 @@ export function MatchCard({ match }: MatchCardProps) {
   const { theme, darkMode } = useTheme();
   const isFinished = match.status === 'FT';
   const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(match.status);
-  const keepOriginalLogo = match.leagueCode && COLORED_LOGO_LEAGUES.includes(match.leagueCode);
+  const useWhiteFilter = darkMode && match.leagueCode && shouldUseWhiteFilterByCode(match.leagueCode);
 
   return (
     <Link href={`/match/${match.id}`}>
@@ -46,7 +44,7 @@ export function MatchCard({ match }: MatchCardProps) {
                 src={match.leagueLogo}
                 alt={match.league}
                 className="h-5 w-5 object-contain"
-                style={{ filter: darkMode && !keepOriginalLogo ? 'brightness(0) invert(1)' : 'none' }}
+                style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : 'none' }}
                 loading="lazy"
               />
             )}

@@ -4,6 +4,11 @@ import { getStandings, getTopScorers, getLeagueFixtures, Standing, TopScorer, Fi
 
 export const dynamic = 'force-dynamic';
 
+// Helper to get league logo URL
+function getLeagueLogo(leagueId: number): string {
+  return `https://media.api-sports.io/football/leagues/${leagueId}.png`;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -60,6 +65,19 @@ export async function GET(
       form: s.form,
     }));
 
+    // Calculate team statistics for Stats tab
+    const teamStats = transformedStandings
+      .filter(s => s.played > 0)
+      .map(s => ({
+        team: s.team,
+        played: s.played,
+        ppg: Number((s.points / s.played).toFixed(2)),
+        goalsPerGame: Number((s.goalsFor / s.played).toFixed(2)),
+        goalsAgainstPerGame: Number((s.goalsAgainst / s.played).toFixed(2)),
+        winPct: Number(((s.won / s.played) * 100).toFixed(1)),
+        goalDiffPerGame: Number((s.goalDiff / s.played).toFixed(2)),
+      }));
+
     // Transform top scorers
     const transformedScorers = topScorers.slice(0, 20).map(ts => ({
       player: {
@@ -110,8 +128,11 @@ export async function GET(
         shortName: league.shortName,
         country: league.country,
         type: league.type,
+        logo: getLeagueLogo(league.id),
+        code: league.code,
       },
       standings: transformedStandings,
+      teamStats,
       topScorers: transformedScorers,
       recentFixtures: recentFixtures.map(transformFixture).reverse(),
       upcomingFixtures: upcomingFixtures.map(transformFixture),

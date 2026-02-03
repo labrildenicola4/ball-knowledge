@@ -10,10 +10,13 @@ import { BasketballGameCard } from '@/components/basketball/BasketballGameCard';
 import { NBAGameCard } from '@/components/nba/NBAGameCard';
 import { MLBGameCard } from '@/components/mlb/MLBGameCard';
 import { useTheme } from '@/lib/theme';
+import { shouldUseWhiteFilterByCode } from '@/lib/constants/dark-mode-logos';
 import { NATIONS, getNationsForMatch, type Nation } from '@/lib/nations';
 import { useFixtures } from '@/lib/use-fixtures';
 import { BasketballGame } from '@/lib/types/basketball';
 import { MLBGame } from '@/lib/types/mlb';
+import { NFLGame } from '@/lib/types/nfl';
+import { NFLGameCard } from '@/components/nfl/NFLGameCard';
 
 interface Match {
   id: number;
@@ -68,7 +71,7 @@ function formatDateET(date: Date): string {
 }
 
 export default function CalendarPage() {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const router = useRouter();
   // Initialize with null, will be set from localStorage or default to today
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -102,6 +105,11 @@ export default function CalendarPage() {
   const [mlbGames, setMlbGames] = useState<MLBGame[]>([]);
   const [mlbLoading, setMlbLoading] = useState(false);
   const [mlbError, setMlbError] = useState(false);
+
+  // Fetch NFL games when NFL is selected
+  const [nflGames, setNflGames] = useState<NFLGame[]>([]);
+  const [nflLoading, setNflLoading] = useState(false);
+  const [nflError, setNflError] = useState(false);
 
   useEffect(() => {
     if ((selectedSport === 'cbb' || selectedSport === 'all') && selectedDate) {
@@ -157,17 +165,37 @@ export default function CalendarPage() {
     }
   }, [selectedSport, selectedDate]);
 
+  useEffect(() => {
+    if ((selectedSport === 'nfl' || selectedSport === 'all') && selectedDate) {
+      setNflLoading(true);
+      setNflError(false);
+      const dateStr = formatDateET(selectedDate);
+      fetch(`/api/nfl/games?date=${dateStr}`)
+        .then(res => res.json())
+        .then(data => {
+          setNflGames(data.games || []);
+          setNflLoading(false);
+        })
+        .catch(() => {
+          setNflError(true);
+          setNflLoading(false);
+        });
+    }
+  }, [selectedSport, selectedDate]);
+
   // Determine loading/error states based on selected sport
   const isLoading = selectedSport === 'all'
-    ? soccerLoading || basketballLoading || nbaLoading || mlbLoading
+    ? soccerLoading || basketballLoading || nbaLoading || mlbLoading || nflLoading
     : selectedSport === 'cbb'
       ? basketballLoading
       : selectedSport === 'nba'
         ? nbaLoading
         : selectedSport === 'mlb'
           ? mlbLoading
-          : soccerLoading;
-  const isError = selectedSport === 'cbb' ? basketballError : selectedSport === 'nba' ? nbaError : selectedSport === 'mlb' ? mlbError : soccerError;
+          : selectedSport === 'nfl'
+            ? nflLoading
+            : soccerLoading;
+  const isError = selectedSport === 'cbb' ? basketballError : selectedSport === 'nba' ? nbaError : selectedSport === 'mlb' ? mlbError : selectedSport === 'nfl' ? nflError : soccerError;
 
   // Compute which international tournaments have matches today (with logos)
   const activeTournaments = Object.keys(INTERNATIONAL_TOURNAMENTS)
@@ -653,20 +681,19 @@ export default function CalendarPage() {
           <span>🏀</span>
           <span>NBA</span>
         </button>
-        {/* Coming Soon Sports - Greyed Out */}
         <button
-          disabled
-          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50 cursor-not-allowed"
+          onClick={() => setSelectedSport(selectedSport === 'nfl' ? null : 'nfl')}
+          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
           style={{
-            backgroundColor: theme.bgSecondary,
-            color: theme.textSecondary,
-            border: `1px solid ${theme.border}`,
+            backgroundColor: selectedSport === 'nfl' ? theme.accent : theme.bgSecondary,
+            color: selectedSport === 'nfl' ? '#fff' : theme.textSecondary,
+            border: `1px solid ${selectedSport === 'nfl' ? theme.accent : theme.border}`,
           }}
-          title="Coming Soon"
         >
           <span>🏈</span>
           <span>NFL</span>
         </button>
+        {/* Coming Soon Sports - Greyed Out */}
         <button
           disabled
           className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50 cursor-not-allowed"
@@ -739,7 +766,7 @@ export default function CalendarPage() {
                     src={logo}
                     alt={tournament.name}
                     className="w-5 h-5 object-contain"
-                    style={{ filter: 'brightness(0) invert(1)' }}
+                    style={{ filter: darkMode && shouldUseWhiteFilterByCode(code) ? 'brightness(0) invert(1)' : 'none' }}
                   />
                 )}
                 <span className="hidden md:inline">{tournament.name}</span>
@@ -804,23 +831,27 @@ export default function CalendarPage() {
           </h2>
           <span className="text-sm" style={{ color: theme.textSecondary }}>
             {selectedSport === 'all'
-              ? matches.length + basketballGames.length + nbaGames.length + mlbGames.length
+              ? matches.length + basketballGames.length + nbaGames.length + mlbGames.length + nflGames.length
               : selectedSport === 'cbb'
                 ? basketballGames.length
                 : selectedSport === 'nba'
                   ? nbaGames.length
                   : selectedSport === 'mlb'
                     ? mlbGames.length
-                    : matches.length
+                    : selectedSport === 'nfl'
+                      ? nflGames.length
+                      : matches.length
             } {(selectedSport === 'all'
-              ? matches.length + basketballGames.length + nbaGames.length + mlbGames.length
+              ? matches.length + basketballGames.length + nbaGames.length + mlbGames.length + nflGames.length
               : selectedSport === 'cbb'
                 ? basketballGames.length
                 : selectedSport === 'nba'
                   ? nbaGames.length
                   : selectedSport === 'mlb'
                     ? mlbGames.length
-                    : matches.length
+                    : selectedSport === 'nfl'
+                      ? nflGames.length
+                      : matches.length
             ) === 1 ? 'game' : 'games'}
           </span>
         </div>
@@ -884,8 +915,22 @@ export default function CalendarPage() {
               </section>
             )}
 
+            {/* NFL Section */}
+            {nflGames.length > 0 && (
+              <section>
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                  <span>🏈</span> NFL ({nflGames.length})
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {nflGames.map((game) => (
+                    <NFLGameCard key={game.id} game={game} />
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* No games message */}
-            {matches.length === 0 && basketballGames.length === 0 && nbaGames.length === 0 && mlbGames.length === 0 && !isLoading && (
+            {matches.length === 0 && basketballGames.length === 0 && nbaGames.length === 0 && mlbGames.length === 0 && nflGames.length === 0 && !isLoading && (
               <div
                 className="rounded-lg py-8 text-center"
                 style={{ backgroundColor: theme.bgSecondary }}
@@ -897,7 +942,7 @@ export default function CalendarPage() {
             )}
 
             {/* Loading indicator */}
-            {isLoading && matches.length === 0 && basketballGames.length === 0 && nbaGames.length === 0 && mlbGames.length === 0 && (
+            {isLoading && matches.length === 0 && basketballGames.length === 0 && nbaGames.length === 0 && mlbGames.length === 0 && nflGames.length === 0 && (
               <div className="py-8 text-center">
                 <div
                   className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
@@ -1014,6 +1059,42 @@ export default function CalendarPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
               {mlbGames.map((game) => (
                 <MLBGameCard key={game.id} game={game} />
+              ))}
+            </div>
+          )
+        ) : selectedSport === 'nfl' ? (
+          nflLoading ? (
+            <div className="py-8 text-center">
+              <div
+                className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                style={{ color: theme.accent }}
+              />
+              <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
+                Loading NFL games...
+              </p>
+            </div>
+          ) : nflError ? (
+            <div
+              className="rounded-lg py-8 text-center"
+              style={{ backgroundColor: theme.bgSecondary }}
+            >
+              <p className="text-sm font-medium" style={{ color: theme.red }}>
+                Failed to load games
+              </p>
+            </div>
+          ) : nflGames.length === 0 ? (
+            <div
+              className="rounded-lg py-8 text-center"
+              style={{ backgroundColor: theme.bgSecondary }}
+            >
+              <p className="text-sm" style={{ color: theme.textSecondary }}>
+                No NFL games on this date
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+              {nflGames.map((game) => (
+                <NFLGameCard key={game.id} game={game} />
               ))}
             </div>
           )
