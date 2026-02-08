@@ -32,7 +32,7 @@ export function BottomNav() {
             <Link
               key={item.id}
               href={item.href}
-              className="flex flex-col items-center gap-1 px-3 py-2"
+              className="tap-highlight flex flex-col items-center gap-1 px-3 py-2"
             >
               <item.icon
                 size={24}

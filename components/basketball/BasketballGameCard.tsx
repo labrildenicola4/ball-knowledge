@@ -19,7 +19,7 @@ export const BasketballGameCard = memo(function BasketballGameCard({ game }: Bas
   return (
     <Link href={`/basketball/game/${game.id}`}>
       <div
-        className="card-hover cursor-pointer rounded-xl p-3 md:p-4 transition-theme"
+        className="card-hover card-press cursor-pointer rounded-xl p-3 md:p-4 transition-theme"
         style={{
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,

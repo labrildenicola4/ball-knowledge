@@ -86,7 +86,9 @@ export default function RootLayout({
       </head>
       <body className="dark">
         <ThemeProvider>
-          <ErrorBoundary>{children}</ErrorBoundary>
+          <ErrorBoundary>
+            <main className="page-enter">{children}</main>
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

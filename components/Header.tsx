@@ -111,6 +111,7 @@ export function Header() {
       style={{
         backgroundColor: darkMode ? 'rgba(10, 15, 10, 0.95)' : 'rgba(245, 242, 232, 0.95)',
         borderBottom: `1px solid ${theme.border}`,
+        paddingTop: 'env(safe-area-inset-top)',
       }}
     >
       <div className="flex items-center justify-between px-4 py-3">
@@ -460,7 +461,7 @@ export function Header() {
           ) : (
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+              className="tap-highlight flex h-10 w-10 items-center justify-center rounded-full transition-colors"
               style={{ border: `1px solid ${theme.border}` }}
               aria-label="Search"
             >
@@ -471,7 +472,7 @@ export function Header() {
           {/* Theme Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+            className="tap-highlight flex h-10 w-10 items-center justify-center rounded-full transition-colors"
             style={{ border: `1px solid ${theme.border}` }}
             aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
