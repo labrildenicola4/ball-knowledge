@@ -41,10 +41,14 @@ async function fetchESPN<T>(
 
   console.log(`[ESPN-Basketball] Fetching: ${url}`);
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
   const response = await fetch(url, {
     cache: isLive ? 'no-store' : 'default',
     next: { revalidate: isLive ? 0 : 60 },
+    signal: controller.signal,
   });
+  clearTimeout(timeout);
 
   if (!response.ok) {
     console.error(`[ESPN-Basketball] HTTP Error: ${response.status}`);

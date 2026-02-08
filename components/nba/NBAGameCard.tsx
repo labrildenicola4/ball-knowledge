@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { BasketballGame } from '@/lib/types/basketball';
@@ -8,7 +9,7 @@ interface NBAGameCardProps {
   game: BasketballGame;
 }
 
-export function NBAGameCard({ game }: NBAGameCardProps) {
+export const NBAGameCard = memo(function NBAGameCard({ game }: NBAGameCardProps) {
   const { theme } = useTheme();
   const isLive = game.status === 'in_progress';
   const isFinal = game.status === 'final';
@@ -18,7 +19,7 @@ export function NBAGameCard({ game }: NBAGameCardProps) {
   return (
     <Link href={`/nba/game/${game.id}`}>
       <div
-        className="card-hover cursor-pointer rounded-xl p-4 transition-theme"
+        className="card-hover cursor-pointer rounded-xl p-3 md:p-4 transition-theme"
         style={{
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
@@ -41,6 +42,14 @@ export function NBAGameCard({ game }: NBAGameCardProps) {
                 {game.broadcast}
               </span>
             )}
+            {game.date && (
+              <span
+                className="text-[9px]"
+                style={{ color: theme.textSecondary }}
+              >
+                · {game.date}
+              </span>
+            )}
           </div>
           <span
             className="font-mono rounded-lg px-3 py-1 text-sm"
@@ -57,26 +66,26 @@ export function NBAGameCard({ game }: NBAGameCardProps) {
         {/* Teams & Score */}
         <div className="flex items-center">
           {/* Away Team */}
-          <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+          <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pr-1 md:pr-2">
             {game.awayTeam.logo ? (
               <img
                 src={game.awayTeam.logo}
                 alt={game.awayTeam.name}
-                className="h-8 w-8 flex-shrink-0 object-contain"
+                className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain"
                 loading="lazy"
               />
             ) : (
               <div
-                className="h-8 w-8 rounded-full flex-shrink-0"
+                className="h-7 w-7 md:h-8 md:w-8 rounded-full flex-shrink-0"
                 style={{ backgroundColor: game.awayTeam.color || theme.bgTertiary }}
               />
             )}
             <div className="flex flex-col min-w-0">
-              <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+              <span className="hidden md:block text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                 Away {game.awayTeam.record && `(${game.awayTeam.record})`}
               </span>
               <span
-                className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px]"
+                className="text-sm md:text-base font-medium truncate"
                 style={{
                   color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: awayWon ? 600 : 500,
@@ -89,7 +98,7 @@ export function NBAGameCard({ game }: NBAGameCardProps) {
 
           {/* Score */}
           <div
-            className="font-mono rounded-lg px-4 py-2 text-lg font-semibold flex-shrink-0"
+            className="font-mono rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-base md:text-lg font-semibold flex-shrink-0"
             style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
           >
             {(isLive || isFinal)
@@ -98,13 +107,13 @@ export function NBAGameCard({ game }: NBAGameCardProps) {
           </div>
 
           {/* Home Team */}
-          <div className="flex items-center gap-2 flex-1 min-w-0 pl-2 justify-end">
+          <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pl-1 md:pl-2 justify-end">
             <div className="flex flex-col items-end min-w-0">
-              <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+              <span className="hidden md:block text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                 Home {game.homeTeam.record && `(${game.homeTeam.record})`}
               </span>
               <span
-                className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px] text-right"
+                className="text-sm md:text-base font-medium truncate text-right"
                 style={{
                   color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: homeWon ? 600 : 500,
@@ -117,12 +126,12 @@ export function NBAGameCard({ game }: NBAGameCardProps) {
               <img
                 src={game.homeTeam.logo}
                 alt={game.homeTeam.name}
-                className="h-8 w-8 flex-shrink-0 object-contain"
+                className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain"
                 loading="lazy"
               />
             ) : (
               <div
-                className="h-8 w-8 rounded-full flex-shrink-0"
+                className="h-7 w-7 md:h-8 md:w-8 rounded-full flex-shrink-0"
                 style={{ backgroundColor: game.homeTeam.color || theme.bgTertiary }}
               />
             )}
@@ -141,4 +150,4 @@ export function NBAGameCard({ game }: NBAGameCardProps) {
       </div>
     </Link>
   );
-}
+});

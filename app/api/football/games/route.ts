@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCollegeFootballGames } from '@/lib/api-espn-college-football';
+import { getCachedGames, cacheToCollegeFootballGame } from '@/lib/espn-cache-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,22 @@ export async function GET(request: NextRequest) {
   const date = searchParams.get('date') || undefined;
 
   try {
+    // Try cache first
+    const { records, isFresh } = await getCachedGames('cfb', date);
+
+    if (isFresh && records.length > 0) {
+      const games = records.map(cacheToCollegeFootballGame);
+      games.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+      return NextResponse.json({
+        games,
+        count: games.length,
+        date: date || 'today',
+        cached: true,
+      });
+    }
+
+    // Fall back to direct ESPN API
     const games = await getCollegeFootballGames(date);
 
     return NextResponse.json({

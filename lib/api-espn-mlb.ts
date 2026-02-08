@@ -36,10 +36,14 @@ async function fetchESPN<T>(
 
   console.log(`[ESPN-MLB] Fetching: ${url}`);
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
   const response = await fetch(url, {
     cache: isLive ? 'no-store' : 'default',
     next: { revalidate: isLive ? 0 : 60 },
+    signal: controller.signal,
   });
+  clearTimeout(timeout);
 
   if (!response.ok) {
     console.error(`[ESPN-MLB] HTTP Error: ${response.status}`);
@@ -604,4 +608,157 @@ interface ESPNTeamResponse {
       }>;
     }>;
   };
+}
+
+// Get MLB team roster
+export async function getMLBRoster(teamId: string): Promise<import('./types/mlb').MLBPlayer[]> {
+  const url = `${API_BASE}/teams/${teamId}/roster`;
+
+  try {
+    const data = await fetchESPN<any>(url);
+
+    if (!data.athletes) return [];
+
+    return data.athletes.flatMap((group: any) =>
+      (group.items || []).map((athlete: any) => ({
+        id: athlete.id,
+        name: athlete.displayName || athlete.fullName,
+        jersey: athlete.jersey || '',
+        position: athlete.position?.abbreviation || athlete.position?.name || '',
+        headshot: athlete.headshot?.href || '',
+        height: athlete.displayHeight,
+        weight: athlete.displayWeight,
+        age: athlete.age,
+        birthDate: athlete.dateOfBirth,
+        batHand: athlete.hand?.displayValue || athlete.batHand?.displayValue,
+        throwHand: athlete.throwHand?.displayValue,
+      }))
+    );
+  } catch (error) {
+    console.error(`[ESPN-MLB] Failed to fetch roster for team ${teamId}:`, error);
+    return [];
+  }
+}
+
+// Get MLB team schedule with results
+export async function getMLBTeamSchedule(teamId: string): Promise<import('./types/mlb').MLBTeamScheduleGame[]> {
+  const url = `${API_BASE}/teams/${teamId}/schedule`;
+
+  try {
+    const data = await fetchESPN<any>(url);
+
+    if (!data.events) return [];
+
+    return data.events.map((event: any) => {
+      const competition = event.competitions?.[0];
+      const competitors = competition?.competitors || [];
+      const teamComp = competitors.find((c: any) => c.id === teamId || c.team?.id === teamId);
+      const opponentComp = competitors.find((c: any) => c.id !== teamId && c.team?.id !== teamId);
+
+      const isHome = teamComp?.homeAway === 'home';
+      const statusName = event.status?.type?.name || '';
+      const status = GAME_STATUS_MAP[statusName] || 'scheduled';
+
+      let result;
+      if (status === 'final' && teamComp && opponentComp) {
+        const teamScore = parseInt(teamComp.score) || 0;
+        const oppScore = parseInt(opponentComp.score) || 0;
+        result = {
+          win: teamScore > oppScore,
+          score: `${teamScore}-${oppScore}`,
+        };
+      }
+
+      return {
+        id: event.id,
+        date: new Date(event.date).toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          timeZone: 'America/New_York',
+        }),
+        opponent: opponentComp ? {
+          id: opponentComp.team?.id || opponentComp.id,
+          name: opponentComp.team?.name || 'TBD',
+          abbreviation: opponentComp.team?.abbreviation || '',
+          displayName: opponentComp.team?.displayName || 'TBD',
+          shortDisplayName: opponentComp.team?.shortDisplayName || 'TBD',
+          logo: opponentComp.team?.logos?.[0]?.href || opponentComp.team?.logo || '',
+        } : {
+          id: 'tbd',
+          name: 'TBD',
+          abbreviation: 'TBD',
+          displayName: 'TBD',
+          shortDisplayName: 'TBD',
+          logo: '',
+        },
+        isHome,
+        result,
+        status,
+      };
+    });
+  } catch (error) {
+    console.error(`[ESPN-MLB] Failed to fetch schedule for team ${teamId}:`, error);
+    return [];
+  }
+}
+
+// Get MLB recent form (last 5 games)
+export async function getMLBRecentForm(teamId: string): Promise<import('./types/mlb').MLBGameResult[]> {
+  const schedule = await getMLBTeamSchedule(teamId);
+
+  return schedule
+    .filter(g => g.status === 'final' && g.result)
+    .slice(-5)
+    .map(g => ({
+      id: g.id,
+      win: g.result!.win,
+      score: g.result!.score,
+      opponent: g.opponent.abbreviation,
+      isHome: g.isHome,
+    }));
+}
+
+// Get MLB team season stats
+export async function getMLBTeamStats(teamId: string): Promise<import('./types/mlb').MLBTeamSeasonStats | null> {
+  const url = `${API_BASE}/teams/${teamId}/statistics`;
+
+  try {
+    const data = await fetchESPN<any>(url);
+
+    const getStat = (categories: any[], categoryName: string, statName: string) => {
+      const category = categories?.find((c: any) => c.name === categoryName || c.displayName === categoryName);
+      const stat = category?.stats?.find((s: any) => s.name === statName || s.abbreviation === statName);
+      return {
+        value: stat?.value || 0,
+        displayValue: stat?.displayValue || String(stat?.value || 0),
+      };
+    };
+
+    const categories = data.results?.stats?.categories || data.stats?.categories || [];
+
+    return {
+      batting: {
+        avg: getStat(categories, 'batting', 'AVG'),
+        homeRuns: getStat(categories, 'batting', 'HR'),
+        rbi: getStat(categories, 'batting', 'RBI'),
+        runs: getStat(categories, 'batting', 'R'),
+        stolenBases: getStat(categories, 'batting', 'SB'),
+        obp: getStat(categories, 'batting', 'OBP'),
+        slg: getStat(categories, 'batting', 'SLG'),
+        ops: getStat(categories, 'batting', 'OPS'),
+      },
+      pitching: {
+        era: getStat(categories, 'pitching', 'ERA'),
+        wins: getStat(categories, 'pitching', 'W'),
+        losses: getStat(categories, 'pitching', 'L'),
+        saves: getStat(categories, 'pitching', 'SV'),
+        strikeouts: getStat(categories, 'pitching', 'SO'),
+        whip: getStat(categories, 'pitching', 'WHIP'),
+      },
+    };
+  } catch (error) {
+    console.error(`[ESPN-MLB] Failed to fetch stats for team ${teamId}:`, error);
+    return null;
+  }
 }

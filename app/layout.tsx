@@ -53,10 +53,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Ball Knowledge" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#4a5d3a" />
-        
+
         {/* Apple Touch Icons */}
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-        
+
         {/* Splash Screens for iOS */}
         <link
           rel="apple-touch-startup-image"

@@ -145,10 +145,54 @@ export interface MLBTeamScheduleGame {
   status: 'scheduled' | 'in_progress' | 'final';
 }
 
+export interface MLBPlayer {
+  id: string;
+  name: string;
+  jersey: string;
+  position: string;
+  headshot?: string;
+  height?: string;
+  weight?: string;
+  age?: number;
+  birthDate?: string;
+  batHand?: string;
+  throwHand?: string;
+}
+
+export interface MLBTeamSeasonStats {
+  batting: {
+    avg: { value: number; displayValue: string };
+    homeRuns: { value: number; displayValue: string };
+    rbi: { value: number; displayValue: string };
+    runs: { value: number; displayValue: string };
+    stolenBases: { value: number; displayValue: string };
+    obp: { value: number; displayValue: string };
+    slg: { value: number; displayValue: string };
+    ops: { value: number; displayValue: string };
+  };
+  pitching: {
+    era: { value: number; displayValue: string };
+    wins: { value: number; displayValue: string };
+    losses: { value: number; displayValue: string };
+    saves: { value: number; displayValue: string };
+    strikeouts: { value: number; displayValue: string };
+    whip: { value: number; displayValue: string };
+  };
+}
+
+export interface MLBGameResult {
+  id: string;
+  win: boolean;
+  score: string;
+  opponent: string;
+  isHome: boolean;
+}
+
 export interface MLBTeamInfo {
   team: MLBTeam;
   division: MLBDivision;
   record: string;
+  divisionRecord?: string;
   standing?: MLBStanding;
   schedule: MLBTeamScheduleGame[];
   venue?: {
@@ -156,4 +200,7 @@ export interface MLBTeamInfo {
     city: string;
     capacity?: number;
   };
+  roster?: MLBPlayer[];
+  stats?: MLBTeamSeasonStats | null;
+  recentForm?: MLBGameResult[];
 }

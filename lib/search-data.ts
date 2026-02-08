@@ -1,6 +1,7 @@
 // Searchable data for teams and leagues
 import { ALL_CONFERENCES } from './constants/unified-conferences';
 import { LEAGUES as LEAGUE_CONFIGS } from './constants/leagues';
+import { BASKETBALL_ICON, FOOTBALL_ICON } from './sport-icons';
 
 export interface SearchableTeam {
   id: number;
@@ -30,6 +31,25 @@ const getNBALogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/nba/50
 
 // ESPN NFL logo URL pattern
 const getNFLLogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/nfl/500/${abbrev.toLowerCase()}.png`;
+
+// American Sports League interface
+export interface SearchableAmericanLeague {
+  id: string;
+  name: string;
+  shortName: string;
+  sport: 'nfl' | 'nba' | 'mlb' | 'ncaab' | 'ncaaf';
+  logo: string;
+  href: string;
+}
+
+// American Sports Leagues
+export const AMERICAN_LEAGUES: SearchableAmericanLeague[] = [
+  { id: 'nfl', name: 'National Football League', shortName: 'NFL', sport: 'nfl', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png', href: '/nfl' },
+  { id: 'nba', name: 'National Basketball Association', shortName: 'NBA', sport: 'nba', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png', href: '/nba' },
+  { id: 'mlb', name: 'Major League Baseball', shortName: 'MLB', sport: 'mlb', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png', href: '/mlb' },
+  { id: 'ncaab', name: 'NCAA Basketball', shortName: 'NCAA Basketball', sport: 'ncaab', logo: BASKETBALL_ICON, href: '/basketball' },
+  { id: 'ncaaf', name: 'NCAA Football', shortName: 'College Football', sport: 'ncaaf', logo: FOOTBALL_ICON, href: '/football' },
+];
 
 export interface SearchableMLBTeam {
   id: string;
@@ -88,6 +108,7 @@ export interface SearchableSoccerLeague {
   shortName: string;
   country: string;
   type: 'league' | 'cup';
+  logo: string;
 }
 
 // Generate searchable conferences from unified data
@@ -109,6 +130,7 @@ export const SEARCHABLE_SOCCER_LEAGUES: SearchableSoccerLeague[] = LEAGUE_CONFIG
   shortName: l.shortName,
   country: l.country,
   type: l.type,
+  logo: `https://media.api-sports.io/football/leagues/${l.id}.png`,
 }));
 
 // ESPN College Basketball logo URL pattern
@@ -558,7 +580,8 @@ export const TEAMS: SearchableTeam[] = [
 // Search function
 export function searchAll(query: string): {
   teams: SearchableTeam[];
-  leagues: SearchableLeague[];
+  leagues: SearchableSoccerLeague[];
+  americanLeagues: SearchableAmericanLeague[];
   mlbTeams: SearchableMLBTeam[];
   nbaTeams: SearchableNBATeam[];
   nflTeams: SearchableNFLTeam[];
@@ -571,6 +594,7 @@ export function searchAll(query: string): {
   if (!q) return {
     teams: [],
     leagues: [],
+    americanLeagues: [],
     mlbTeams: [],
     nbaTeams: [],
     nflTeams: [],
@@ -587,11 +611,12 @@ export function searchAll(query: string): {
       t.league.toLowerCase().includes(q)
   ).slice(0, 10);
 
-  const leagues = LEAGUES.filter(
+  const leagues = SEARCHABLE_SOCCER_LEAGUES.filter(
     (l) =>
       l.name.toLowerCase().includes(q) ||
+      l.shortName.toLowerCase().includes(q) ||
       l.country.toLowerCase().includes(q)
-  ).slice(0, 5);
+  ).slice(0, 10);
 
   const mlbTeams = MLB_TEAMS.filter(
     (t) =>
@@ -638,5 +663,12 @@ export function searchAll(query: string): {
       l.country.toLowerCase().includes(q)
   ).slice(0, 10);
 
-  return { teams, leagues, mlbTeams, nbaTeams, nflTeams, collegeBasketballTeams, collegeFootballTeams, conferences, soccerLeagues };
+  const americanLeagues = AMERICAN_LEAGUES.filter(
+    (l) =>
+      l.name.toLowerCase().includes(q) ||
+      l.shortName.toLowerCase().includes(q) ||
+      l.sport.toLowerCase().includes(q)
+  );
+
+  return { teams, leagues, americanLeagues, mlbTeams, nbaTeams, nflTeams, collegeBasketballTeams, collegeFootballTeams, conferences, soccerLeagues };
 }

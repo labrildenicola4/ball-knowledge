@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMLBTeam } from '@/lib/api-espn-mlb';
+import { getMLBTeam, getMLBRoster, getMLBTeamStats, getMLBRecentForm, getMLBTeamSchedule, getMLBStandings } from '@/lib/api-espn-mlb';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const teamId = params.id;
+  const { id: teamId } = await params;
 
   if (!teamId) {
     return NextResponse.json(
@@ -17,7 +17,21 @@ export async function GET(
   }
 
   try {
-    const team = await getMLBTeam(teamId);
+    const [teamResult, rosterResult, statsResult, recentFormResult, scheduleResult, standingsResult] = await Promise.allSettled([
+      getMLBTeam(teamId),
+      getMLBRoster(teamId),
+      getMLBTeamStats(teamId),
+      getMLBRecentForm(teamId),
+      getMLBTeamSchedule(teamId),
+      getMLBStandings(),
+    ]);
+
+    const team = teamResult.status === 'fulfilled' ? teamResult.value : null;
+    const roster = rosterResult.status === 'fulfilled' ? rosterResult.value : null;
+    const stats = statsResult.status === 'fulfilled' ? statsResult.value : null;
+    const recentForm = recentFormResult.status === 'fulfilled' ? recentFormResult.value : null;
+    const schedule = scheduleResult.status === 'fulfilled' ? scheduleResult.value : null;
+    const standings = standingsResult.status === 'fulfilled' ? standingsResult.value : null;
 
     if (!team) {
       return NextResponse.json(
@@ -26,7 +40,14 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(team);
+    return NextResponse.json({
+      ...team,
+      roster,
+      stats,
+      recentForm,
+      schedule,
+      standings,
+    });
   } catch (error) {
     console.error(`[API/MLB/Team/${teamId}] Error:`, error);
     return NextResponse.json(

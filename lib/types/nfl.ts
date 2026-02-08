@@ -116,6 +116,19 @@ export interface NFLStandings {
   conferences: NFLConference[];
 }
 
+export interface NFLPlayer {
+  id: string;
+  name: string;
+  jersey: string;
+  position: string;
+  headshot?: string;
+  height?: string;
+  weight?: string;
+  age?: number;
+  experience?: string;
+  college?: string;
+}
+
 export interface NFLTeamInfo {
   team: NFLTeam;
   conference: string;
@@ -128,6 +141,7 @@ export interface NFLTeamInfo {
     city: string;
     capacity?: number;
   };
+  roster?: NFLPlayer[];
 }
 
 export interface NFLTeamScheduleGame {
@@ -140,7 +154,7 @@ export interface NFLTeamScheduleGame {
     score: string;
   };
   status: 'scheduled' | 'in_progress' | 'final';
-  week?: number;
+  week?: number | string;
 }
 
 // Stat Leaders

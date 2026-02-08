@@ -43,8 +43,8 @@ export const ESPN_SPORTS = {
     groups: null,
     syncDaysBack: 7,
     syncDaysAhead: 14,
-    liveRefreshSeconds: 30,
-    defaultRefreshSeconds: 120,
+    liveRefreshSeconds: 15,
+    defaultRefreshSeconds: 60,
   },
   nhl: {
     sportType: 'hockey_nhl',
@@ -65,8 +65,8 @@ export const ESPN_SPORTS = {
     groups: '80', // FBS group
     syncDaysBack: 7,
     syncDaysAhead: 14,
-    liveRefreshSeconds: 30,
-    defaultRefreshSeconds: 120,
+    liveRefreshSeconds: 15,
+    defaultRefreshSeconds: 60,
   },
 } as const;
 

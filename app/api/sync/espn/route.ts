@@ -14,7 +14,7 @@ import {
 } from '@/lib/espn-unified-fetcher';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60; // Allow up to 60 seconds for full sync
+export const maxDuration = 60;
 
 // Sync modes:
 // - "full": Sync entire date range (for cron jobs, runs less frequently)
@@ -22,6 +22,12 @@ export const maxDuration = 60; // Allow up to 60 seconds for full sync
 // - "date": Sync a specific date
 
 export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const startTime = Date.now();
   const searchParams = request.nextUrl.searchParams;
   const sport = searchParams.get('sport') as ESPNSportKey | 'all' | null;
   const mode = searchParams.get('mode') || 'live';
@@ -42,70 +48,110 @@ export async function GET(request: NextRequest) {
   const results: Record<string, { synced: number; errors: string[] }> = {};
   const supabase = createServiceClient();
 
-  for (const sportKey of sportsToSync) {
-    const config = ESPN_SPORTS[sportKey];
-    const sportResults = { synced: 0, errors: [] as string[] };
+  try {
+    for (const sportKey of sportsToSync) {
+      const config = ESPN_SPORTS[sportKey];
+      const sportResults = { synced: 0, errors: [] as string[] };
 
-    try {
-      let dates: string[];
+      try {
+        let dates: string[];
 
-      if (mode === 'full') {
-        // Full sync: entire date range
-        dates = getSyncDateRange(config.syncDaysBack, config.syncDaysAhead);
-      } else if (mode === 'date' && date) {
-        // Specific date
-        dates = [date];
-      } else {
-        // Live mode: just today
-        dates = [getEasternDateString()];
-      }
-
-      console.log(`[ESPN-Sync] Syncing ${sportKey} for ${dates.length} dates (mode: ${mode})`);
-
-      // Fetch all games
-      const games = await fetchAndTransformGames(sportKey, dates);
-
-      if (games.length > 0) {
-        // Upsert to Supabase
-        const { error } = await supabase
-          .from(ESPN_GAMES_TABLE)
-          .upsert(games, {
-            onConflict: 'id',
-            ignoreDuplicates: false,
-          });
-
-        if (error) {
-          console.error(`[ESPN-Sync] Supabase error for ${sportKey}:`, error);
-          sportResults.errors.push(`Database error: ${error.message}`);
+        if (mode === 'full') {
+          // Full sync: entire date range
+          dates = getSyncDateRange(config.syncDaysBack, config.syncDaysAhead);
+        } else if (mode === 'date' && date) {
+          // Specific date
+          dates = [date];
         } else {
-          sportResults.synced = games.length;
-          console.log(`[ESPN-Sync] Synced ${games.length} ${sportKey} games`);
+          // Live mode: today +/- 3 days to cover recent results and upcoming games
+          dates = getSyncDateRange(3, 3);
         }
+
+        console.log(`[ESPN-Sync] Syncing ${sportKey} for ${dates.length} dates (mode: ${mode})`);
+
+        // Fetch all games
+        const games = await fetchAndTransformGames(sportKey, dates);
+
+        if (games.length > 0) {
+          // Upsert to Supabase
+          const { error } = await supabase
+            .from(ESPN_GAMES_TABLE)
+            .upsert(games, {
+              onConflict: 'id',
+              ignoreDuplicates: false,
+            });
+
+          if (error) {
+            console.error(`[ESPN-Sync] Supabase error for ${sportKey}:`, error);
+            sportResults.errors.push(`Database error: ${error.message}`);
+          } else {
+            sportResults.synced = games.length;
+            console.log(`[ESPN-Sync] Synced ${games.length} ${sportKey} games`);
+          }
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`[ESPN-Sync] Error syncing ${sportKey}:`, message);
+        sportResults.errors.push(message);
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`[ESPN-Sync] Error syncing ${sportKey}:`, message);
-      sportResults.errors.push(message);
+
+      results[sportKey] = sportResults;
+
+      // Rate limit: 200ms delay between sports
+      await new Promise(r => setTimeout(r, 200));
     }
 
-    results[sportKey] = sportResults;
+    const totalSynced = Object.values(results).reduce((sum, r) => sum + r.synced, 0);
+    const totalErrors = Object.values(results).reduce((sum, r) => sum + r.errors.length, 0);
+
+    // Log sync result
+    await supabase.from('sync_log').insert({
+      sync_type: 'espn_games',
+      sport_type: 'espn',
+      records_synced: totalSynced,
+      status: totalErrors === 0 ? 'success' : totalErrors < sportsToSync.length ? 'partial' : 'error',
+      error_message: totalErrors > 0 ? JSON.stringify(Object.fromEntries(
+        Object.entries(results).filter(([, r]) => r.errors.length > 0).map(([k, r]) => [k, r.errors])
+      )) : null,
+      completed_at: new Date().toISOString(),
+    });
+
+    return NextResponse.json({
+      success: totalErrors === 0,
+      mode,
+      totalSynced,
+      totalErrors,
+      results,
+      duration: `${Date.now() - startTime}ms`,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('[ESPN-Sync] Fatal error:', error);
+
+    try {
+      await supabase.from('sync_log').insert({
+        sync_type: 'espn_games',
+        sport_type: 'espn',
+        status: 'error',
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        completed_at: new Date().toISOString(),
+      });
+    } catch { }
+
+    return NextResponse.json(
+      { error: 'Sync failed', message: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
-
-  const totalSynced = Object.values(results).reduce((sum, r) => sum + r.synced, 0);
-  const totalErrors = Object.values(results).reduce((sum, r) => sum + r.errors.length, 0);
-
-  return NextResponse.json({
-    success: totalErrors === 0,
-    mode,
-    totalSynced,
-    totalErrors,
-    results,
-    timestamp: new Date().toISOString(),
-  });
 }
 
 // POST endpoint for live game updates (more efficient for frequent polling)
 export async function POST(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const body = await request.json().catch(() => ({}));
   const sport = body.sport as ESPNSportKey | undefined;
 
@@ -128,10 +174,10 @@ export async function POST(request: NextRequest) {
     const relevantEvents = events.filter(event => {
       const status = event.status.type.name;
       return status.includes('IN_PROGRESS') ||
-             status.includes('HALFTIME') ||
-             status.includes('END_PERIOD') ||
-             status === 'STATUS_FINAL' ||
-             status === 'STATUS_FINAL_OT';
+        status.includes('HALFTIME') ||
+        status.includes('END_PERIOD') ||
+        status === 'STATUS_FINAL' ||
+        status === 'STATUS_FINAL_OT';
     });
 
     if (relevantEvents.length === 0) {
@@ -155,11 +201,26 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error(`[ESPN-Sync] Live update error for ${sport}:`, error);
+      await supabase.from('sync_log').insert({
+        sync_type: 'espn_live',
+        sport_type: sport,
+        status: 'error',
+        error_message: error.message,
+        completed_at: new Date().toISOString(),
+      });
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
       );
     }
+
+    await supabase.from('sync_log').insert({
+      sync_type: 'espn_live',
+      sport_type: sport,
+      records_synced: games.length,
+      status: 'success',
+      completed_at: new Date().toISOString(),
+    });
 
     return NextResponse.json({
       success: true,
@@ -169,6 +230,17 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[ESPN-Sync] Live update error:`, message);
+
+    try {
+      await supabase.from('sync_log').insert({
+        sync_type: 'espn_live',
+        sport_type: sport,
+        status: 'error',
+        error_message: message,
+        completed_at: new Date().toISOString(),
+      });
+    } catch { }
+
     return NextResponse.json(
       { error: message },
       { status: 500 }

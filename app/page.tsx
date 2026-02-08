@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { RefreshCw, ChevronDown, ChevronUp, Star } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchCard } from '@/components/MatchCard';
@@ -10,8 +10,11 @@ import { NBAGameCard } from '@/components/nba/NBAGameCard';
 import { MLBGameCard } from '@/components/mlb/MLBGameCard';
 import { useTheme } from '@/lib/theme';
 import { useLiveFixtures } from '@/lib/use-fixtures';
+import { useFavorites } from '@/lib/use-favorites';
 import { BasketballGame } from '@/lib/types/basketball';
 import { MLBGame } from '@/lib/types/mlb';
+import { NFLGame } from '@/lib/types/nfl';
+import { SOCCER_ICON, BASKETBALL_ICON, FOOTBALL_ICON } from '@/lib/sport-icons';
 
 interface Match {
   id: number;
@@ -59,7 +62,7 @@ function getTodayET(): string {
 
 // Combined game type for chronological display
 interface CombinedGame {
-  type: 'soccer' | 'basketball' | 'nba' | 'mlb';
+  type: 'soccer' | 'basketball' | 'nba' | 'mlb' | 'nfl';
   id: string;
   time: string;
   timeValue: number; // For sorting
@@ -69,12 +72,15 @@ interface CombinedGame {
   basketballGame?: BasketballGame;
   nbaGame?: BasketballGame;
   mlbGame?: MLBGame;
+  nflGame?: NFLGame;
 }
 
 export default function HomePage() {
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const [liveCollapsed, setLiveCollapsed] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const { theme } = useTheme();
+  const { favorites, getFavoritesByType, isLoggedIn } = useFavorites();
 
   // Use SWR hook for soccer data fetching
   const { matches, isLoading: soccerLoading, isRefreshing, isError: soccerError, refresh } = useLiveFixtures();
@@ -93,6 +99,11 @@ export default function HomePage() {
   const [mlbGames, setMlbGames] = useState<MLBGame[]>([]);
   const [mlbLoading, setMlbLoading] = useState(true);
   const [mlbError, setMlbError] = useState(false);
+
+  // NFL games state
+  const [nflGames, setNflGames] = useState<NFLGame[]>([]);
+  const [nflLoading, setNflLoading] = useState(true);
+  const [nflError, setNflError] = useState(false);
 
   // Fetch basketball games for today (NCAA)
   useEffect(() => {
@@ -142,6 +153,22 @@ export default function HomePage() {
       });
   }, []);
 
+  // Fetch NFL games for today
+  useEffect(() => {
+    setNflLoading(true);
+    const todayStr = getTodayET();
+    fetch(`/api/nfl/games?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setNflGames(data.games || []);
+        setNflLoading(false);
+      })
+      .catch(() => {
+        setNflError(true);
+        setNflLoading(false);
+      });
+  }, []);
+
   const refreshAll = () => {
     refresh();
     const todayStr = getTodayET();
@@ -178,10 +205,21 @@ export default function HomePage() {
         setMlbError(true);
         setMlbLoading(false);
       });
+    setNflLoading(true);
+    fetch(`/api/nfl/games?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setNflGames(data.games || []);
+        setNflLoading(false);
+      })
+      .catch(() => {
+        setNflError(true);
+        setNflLoading(false);
+      });
   };
 
-  const isLoading = soccerLoading && basketballLoading && nbaLoading && mlbLoading;
-  const isError = soccerError && basketballError && nbaError && mlbError;
+  const isLoading = soccerLoading && basketballLoading && nbaLoading && mlbLoading && nflLoading;
+  const isError = soccerError && basketballError && nbaError && mlbError && nflError;
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', {
@@ -268,13 +306,78 @@ export default function HomePage() {
       });
     });
 
+    // Add NFL games
+    nflGames.forEach(game => {
+      const isLive = game.status === 'in_progress';
+      const isFinished = game.status === 'final';
+      combined.push({
+        type: 'nfl',
+        id: `nfl-${game.id}`,
+        time: game.startTime,
+        timeValue: parseTimeToEST(game.startTime),
+        isLive,
+        isFinished,
+        nflGame: game,
+      });
+    });
+
     return combined;
-  }, [matches, basketballGames, nbaGames, mlbGames]);
+  }, [matches, basketballGames, nbaGames, mlbGames, nflGames]);
+
+  // Filter games based on selected filter
+  const filteredGames = useMemo(() => {
+    if (selectedFilter === 'all') return allGames;
+
+    if (selectedFilter === 'myteams') {
+      const soccerFavs = getFavoritesByType('team').map(String);
+      const ncaabFavs = getFavoritesByType('ncaab_team').map(String);
+      const nbaFavs = getFavoritesByType('nba_team').map(String);
+      const mlbFavs = getFavoritesByType('mlb_team').map(String);
+      const nflFavs = getFavoritesByType('nfl_team').map(String);
+
+      return allGames.filter(game => {
+        if (game.type === 'soccer' && game.soccerMatch) {
+          const homeId = String(game.soccerMatch.homeId || '');
+          const awayId = String(game.soccerMatch.awayId || '');
+          return soccerFavs.includes(homeId) || soccerFavs.includes(awayId);
+        }
+        if (game.type === 'basketball' && game.basketballGame) {
+          return ncaabFavs.includes(game.basketballGame.homeTeam.id) ||
+                 ncaabFavs.includes(game.basketballGame.awayTeam.id);
+        }
+        if (game.type === 'nba' && game.nbaGame) {
+          return nbaFavs.includes(game.nbaGame.homeTeam.id) ||
+                 nbaFavs.includes(game.nbaGame.awayTeam.id);
+        }
+        if (game.type === 'mlb' && game.mlbGame) {
+          return mlbFavs.includes(game.mlbGame.homeTeam.id) ||
+                 mlbFavs.includes(game.mlbGame.awayTeam.id);
+        }
+        if (game.type === 'nfl' && game.nflGame) {
+          return nflFavs.includes(game.nflGame.homeTeam.id) ||
+                 nflFavs.includes(game.nflGame.awayTeam.id);
+        }
+        return false;
+      });
+    }
+
+    // Filter by sport type
+    const sportMap: Record<string, CombinedGame['type'][]> = {
+      'soccer': ['soccer'],
+      'ncaa': ['basketball'],
+      'nba': ['nba'],
+      'mlb': ['mlb'],
+      'nfl': ['nfl'],
+    };
+
+    const types = sportMap[selectedFilter] || [];
+    return allGames.filter(game => types.includes(game.type));
+  }, [allGames, selectedFilter, getFavoritesByType]);
 
   // Separate live, finished, and upcoming games
-  const liveGames = allGames.filter(g => g.isLive);
-  const finishedGames = allGames.filter(g => g.isFinished);
-  const upcomingGames = allGames
+  const liveGames = filteredGames.filter(g => g.isLive);
+  const finishedGames = filteredGames.filter(g => g.isFinished);
+  const upcomingGames = filteredGames
     .filter(g => !g.isLive && !g.isFinished)
     .sort((a, b) => a.timeValue - b.timeValue);
 
@@ -335,33 +438,103 @@ export default function HomePage() {
               color: theme.textSecondary,
             }}
           >
-            <RefreshCw size={16} className={isRefreshing || basketballLoading || nbaLoading || mlbLoading ? 'animate-spin' : ''} />
+            <RefreshCw size={16} className={isRefreshing || basketballLoading || nbaLoading || mlbLoading || nflLoading ? 'animate-spin' : ''} />
             Refresh
           </button>
         </div>
-        {(isRefreshing || basketballLoading || nbaLoading || mlbLoading) && (
+        {(isRefreshing || basketballLoading || nbaLoading || mlbLoading || nflLoading) && (
           <p className="mt-1 text-sm" style={{ color: theme.textSecondary }}>
             Updating...
           </p>
         )}
-        {/* Sport counts */}
-        <div className="flex gap-3 mt-2 flex-wrap">
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
-            ⚽ {matches.length} soccer
-          </span>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
-            🏀 {basketballGames.length} NCAA
-          </span>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
-            🏀 {nbaGames.length} NBA
-          </span>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
-            ⚾ {mlbGames.length} baseball
-          </span>
+        {/* Sport filter pills */}
+        <div className="flex gap-2 mt-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          <button
+            onClick={() => setSelectedFilter('all')}
+            className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium flex items-center gap-1.5"
+            style={{
+              backgroundColor: selectedFilter === 'all' ? theme.accent : theme.bgSecondary,
+              color: selectedFilter === 'all' ? '#fff' : theme.textSecondary,
+              border: `1px solid ${selectedFilter === 'all' ? theme.accent : theme.border}`,
+            }}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setSelectedFilter('myteams')}
+            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center"
+            style={{
+              backgroundColor: selectedFilter === 'myteams' ? theme.accent : theme.bgSecondary,
+              border: `1px solid ${selectedFilter === 'myteams' ? theme.accent : theme.border}`,
+              minWidth: '36px',
+            }}
+          >
+            <Star size={14} fill={selectedFilter === 'myteams' ? '#fff' : '#D4AF37'} color={selectedFilter === 'myteams' ? '#fff' : '#D4AF37'} />
+          </button>
+          <button
+            onClick={() => setSelectedFilter('soccer')}
+            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1"
+            style={{
+              backgroundColor: selectedFilter === 'soccer' ? theme.accent : theme.bgSecondary,
+              color: selectedFilter === 'soccer' ? '#fff' : theme.textSecondary,
+              border: `1px solid ${selectedFilter === 'soccer' ? theme.accent : theme.border}`,
+            }}
+          >
+            <img src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain" />
+            {matches.length}
+          </button>
+          <button
+            onClick={() => setSelectedFilter('ncaa')}
+            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1"
+            style={{
+              backgroundColor: selectedFilter === 'ncaa' ? theme.accent : theme.bgSecondary,
+              color: selectedFilter === 'ncaa' ? '#fff' : theme.textSecondary,
+              border: `1px solid ${selectedFilter === 'ncaa' ? theme.accent : theme.border}`,
+            }}
+          >
+            <img src={BASKETBALL_ICON} alt="" className="h-4 w-4 object-contain" />
+            {basketballGames.length}
+          </button>
+          <button
+            onClick={() => setSelectedFilter('nba')}
+            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1"
+            style={{
+              backgroundColor: selectedFilter === 'nba' ? theme.accent : theme.bgSecondary,
+              color: selectedFilter === 'nba' ? '#fff' : theme.textSecondary,
+              border: `1px solid ${selectedFilter === 'nba' ? theme.accent : theme.border}`,
+            }}
+          >
+            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain" />
+            {nbaGames.length}
+          </button>
+          <button
+            onClick={() => setSelectedFilter('mlb')}
+            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1"
+            style={{
+              backgroundColor: selectedFilter === 'mlb' ? theme.accent : theme.bgSecondary,
+              color: selectedFilter === 'mlb' ? '#fff' : theme.textSecondary,
+              border: `1px solid ${selectedFilter === 'mlb' ? theme.accent : theme.border}`,
+            }}
+          >
+            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain" />
+            {mlbGames.length}
+          </button>
+          <button
+            onClick={() => setSelectedFilter('nfl')}
+            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1"
+            style={{
+              backgroundColor: selectedFilter === 'nfl' ? theme.accent : theme.bgSecondary,
+              color: selectedFilter === 'nfl' ? '#fff' : theme.textSecondary,
+              border: `1px solid ${selectedFilter === 'nfl' ? theme.accent : theme.border}`,
+            }}
+          >
+            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain" />
+            {nflGames.length}
+          </button>
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto px-4 py-4">
+      <main className="flex-1 overflow-y-auto px-2 md:px-4 py-4">
         {isLoading && totalGames === 0 ? (
           <div className="py-8 text-center">
             <div
@@ -399,6 +572,39 @@ export default function HomePage() {
             <p className="mt-2 text-sm" style={{ color: theme.textSecondary }}>
               Check the Calendar for upcoming fixtures
             </p>
+          </div>
+        ) : filteredGames.length === 0 ? (
+          <div
+            className="rounded-lg py-8 text-center"
+            style={{ backgroundColor: theme.bgSecondary }}
+          >
+            {selectedFilter === 'myteams' ? (
+              !isLoggedIn ? (
+                <>
+                  <Star size={24} style={{ color: theme.textSecondary, margin: '0 auto 8px' }} />
+                  <p className="text-sm font-medium" style={{ color: theme.text }}>
+                    Sign in to track your teams
+                  </p>
+                  <p className="mt-2 text-sm" style={{ color: theme.textSecondary }}>
+                    Add teams to your favorites to see their games here
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Star size={24} style={{ color: theme.textSecondary, margin: '0 auto 8px' }} />
+                  <p className="text-sm font-medium" style={{ color: theme.text }}>
+                    No games for your teams today
+                  </p>
+                  <p className="mt-2 text-sm" style={{ color: theme.textSecondary }}>
+                    Add more teams to your favorites or check the Calendar
+                  </p>
+                </>
+              )
+            ) : (
+              <p className="text-sm" style={{ color: theme.textSecondary }}>
+                No games for this filter today
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-4">

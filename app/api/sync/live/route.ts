@@ -4,6 +4,7 @@ import { getFixture } from '@/lib/api-football';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 // Get date in Eastern Time as YYYY-MM-DD
 function getEasternDate(date: Date): string {
@@ -19,6 +20,11 @@ function getEasternDate(date: Date): string {
 const LIVE_STATUSES = ['IN_PLAY', 'PAUSED', 'LIVE', '1H', '2H', 'HT', 'ET', 'P'];
 
 export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const startTime = Date.now();
   console.log('[Sync/Live] Starting live match sync...');
 

@@ -12,6 +12,7 @@ import LoginButton from '@/components/LoginButton';
 import {
   MLB_TEAMS,
   NBA_TEAMS,
+  NFL_TEAMS,
   COLLEGE_BASKETBALL_TEAMS,
   COLLEGE_FOOTBALL_TEAMS,
   SEARCHABLE_SOCCER_LEAGUES,
@@ -144,6 +145,7 @@ export default function MyStuffPage() {
 
   const mlbFavoriteIds = getFavoriteIds('mlb_team');
   const nbaFavoriteIds = getFavoriteIds('nba_team');
+  const nflFavoriteIds = getFavoriteIds('nfl_team');
   const ncaabFavoriteIds = getFavoriteIds('ncaab_team');
   const ncaafFavoriteIds = getFavoriteIds('ncaaf_team');
   const leagueFavoriteIds = getFavoriteIds('league');
@@ -155,6 +157,7 @@ export default function MyStuffPage() {
   // Get favorite data from static lists
   const mlbFavorites = MLB_TEAMS.filter(t => idMatches(t.id, mlbFavoriteIds));
   const nbaFavorites = NBA_TEAMS.filter(t => idMatches(t.id, nbaFavoriteIds));
+  const nflFavorites = NFL_TEAMS.filter(t => idMatches(t.id, nflFavoriteIds));
   const ncaabFavorites = COLLEGE_BASKETBALL_TEAMS.filter(t => idMatches(t.id, ncaabFavoriteIds));
   const ncaafFavorites = COLLEGE_FOOTBALL_TEAMS.filter(t => idMatches(t.id, ncaafFavoriteIds));
   const leagueFavorites = SEARCHABLE_SOCCER_LEAGUES.filter(l => idMatches(l.id, leagueFavoriteIds));
@@ -264,7 +267,7 @@ export default function MyStuffPage() {
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
                   style={{ color: theme.textSecondary }}
                 >
-                  ⚽ Soccer Teams
+                  Soccer Teams
                 </h2>
                 <div className="flex flex-col gap-2">
                   {soccerTeams.map((team) => (
@@ -337,7 +340,7 @@ export default function MyStuffPage() {
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
                   style={{ color: theme.textSecondary }}
                 >
-                  ⚾ MLB Teams
+                  MLB Teams
                 </h2>
                 <div className="flex flex-col gap-2">
                   {mlbFavorites.map((team) => (
@@ -384,7 +387,7 @@ export default function MyStuffPage() {
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
                   style={{ color: theme.textSecondary }}
                 >
-                  🏀 NBA Teams
+                  NBA Teams
                 </h2>
                 <div className="flex flex-col gap-2">
                   {nbaFavorites.map((team) => (
@@ -424,6 +427,53 @@ export default function MyStuffPage() {
               </section>
             )}
 
+            {/* NFL Teams Section */}
+            {nflFavorites.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: theme.textSecondary }}
+                >
+                  NFL Teams
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {nflFavorites.map((team) => (
+                    <div
+                      key={team.id}
+                      className="flex items-center gap-3 rounded-xl p-4"
+                      style={{
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href={`/nfl/team/${team.id}`} className="flex items-center gap-3 flex-1">
+                        <img
+                          src={team.logo}
+                          alt={team.name}
+                          className="h-10 w-10 object-contain"
+                        />
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {team.name}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {team.conference} &bull; {team.division}
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => removeFavorite('nfl_team', Number(team.id))}
+                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        style={{ backgroundColor: theme.bgTertiary }}
+                      >
+                        <Heart size={16} color={theme.gold} fill={theme.gold} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* NCAA Basketball Teams Section */}
             {ncaabFavorites.length > 0 && (
               <section>
@@ -431,7 +481,7 @@ export default function MyStuffPage() {
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
                   style={{ color: theme.textSecondary }}
                 >
-                  🏀 NCAA Basketball
+                  NCAA Basketball
                 </h2>
                 <div className="flex flex-col gap-2">
                   {ncaabFavorites.map((team) => (
@@ -478,7 +528,7 @@ export default function MyStuffPage() {
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
                   style={{ color: theme.textSecondary }}
                 >
-                  🏈 NCAA Football
+                  NCAA Football
                 </h2>
                 <div className="flex flex-col gap-2">
                   {ncaafFavorites.map((team) => (
@@ -525,7 +575,7 @@ export default function MyStuffPage() {
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
                   style={{ color: theme.textSecondary }}
                 >
-                  🏆 Leagues
+                  Leagues
                 </h2>
                 <div className="flex flex-col gap-2">
                   {leagueFavorites.map((league) => (
@@ -537,13 +587,12 @@ export default function MyStuffPage() {
                         border: `1px solid ${theme.border}`,
                       }}
                     >
-                      <Link href={`/standings?league=${league.slug}`} className="flex items-center gap-3 flex-1">
-                        <div
-                          className="h-10 w-10 rounded-lg flex items-center justify-center text-lg"
-                          style={{ backgroundColor: theme.bgTertiary }}
-                        >
-                          ⚽
-                        </div>
+                      <Link href={`/league/${league.slug}`} className="flex items-center gap-3 flex-1">
+                        <img
+                          src={league.logo}
+                          alt={league.name}
+                          className="h-10 w-10 object-contain"
+                        />
                         <div className="flex-1">
                           <p className="text-[13px] font-medium" style={{ color: theme.text }}>
                             {league.name}

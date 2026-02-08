@@ -126,6 +126,7 @@ export interface BasketballTeamInfo {
   conference: BasketballConference;
   record: string;
   conferenceRecord: string;
+  divisionRecord?: string;
   rank?: number;
   standing?: BasketballStanding;
   schedule: BasketballTeamScheduleGame[];

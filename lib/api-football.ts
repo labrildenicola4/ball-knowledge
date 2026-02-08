@@ -46,12 +46,16 @@ async function fetchApi<T>(
   console.log(`[API-Football] Fetching: ${url}`);
   console.log(`[API-Football] Using API key: ${API_KEY ? API_KEY.substring(0, 8) + '...' : 'NOT SET'}`);
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
   const response = await fetch(url, {
     headers: {
       'x-apisports-key': API_KEY,
     },
     cache: isLive ? 'no-store' : 'default',
+    signal: controller.signal,
   });
+  clearTimeout(timeout);
 
   if (!response.ok) {
     console.error(`[API-Football] HTTP Error: ${response.status}`);
@@ -684,7 +688,12 @@ export async function getTeamStatistics(
     season: season || getSeason(),
   };
   const stats = await fetchApi<TeamStatistics>('/teams/statistics', params);
-  return stats[0] || null;
+  // The /teams/statistics endpoint returns a single object, not an array
+  // fetchApi types it as array but response is actually the object directly
+  if (Array.isArray(stats)) {
+    return stats[0] || null;
+  }
+  return (stats as unknown as TeamStatistics) || null;
 }
 
 // Get all leagues a team participates in
@@ -776,11 +785,15 @@ export async function getTeamPlayers(
     } else {
       console.log(`[API-Football] Fetching: ${url}`);
 
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
       const response = await fetch(url, {
         headers: {
           'x-apisports-key': API_KEY,
         },
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       if (!response.ok) {
         console.error(`[API-Football] HTTP Error: ${response.status}`);
@@ -944,11 +957,15 @@ export async function getLeaguePlayers(
     } else {
       console.log(`[API-Football] Fetching: ${url}`);
 
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
       const response = await fetch(url, {
         headers: {
           'x-apisports-key': API_KEY,
         },
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       if (!response.ok) {
         console.error(`[API-Football] HTTP Error: ${response.status}`);

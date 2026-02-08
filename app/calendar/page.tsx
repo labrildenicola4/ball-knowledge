@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Calendar as CalendarIcon, Star } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { MatchCard } from '@/components/MatchCard';
@@ -13,10 +13,12 @@ import { useTheme } from '@/lib/theme';
 import { shouldUseWhiteFilterByCode } from '@/lib/constants/dark-mode-logos';
 import { NATIONS, getNationsForMatch, type Nation } from '@/lib/nations';
 import { useFixtures } from '@/lib/use-fixtures';
+import { useFavorites } from '@/lib/use-favorites';
 import { BasketballGame } from '@/lib/types/basketball';
 import { MLBGame } from '@/lib/types/mlb';
 import { NFLGame } from '@/lib/types/nfl';
 import { NFLGameCard } from '@/components/nfl/NFLGameCard';
+import { SOCCER_ICON, BASKETBALL_ICON, FOOTBALL_ICON } from '@/lib/sport-icons';
 
 interface Match {
   id: number;
@@ -72,6 +74,7 @@ function formatDateET(date: Date): string {
 
 export default function CalendarPage() {
   const { theme, darkMode } = useTheme();
+  const { favorites, getFavoritesByType, isLoggedIn } = useFavorites();
   const router = useRouter();
   // Initialize with null, will be set from localStorage or default to today
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -81,7 +84,7 @@ export default function CalendarPage() {
   const [initialized, setInitialized] = useState(false);
   const [lastViewedMatch, setLastViewedMatch] = useState<string | null>(null);
   const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
-  const [selectedSport, setSelectedSport] = useState<string | null>('soccer');
+  const [selectedSport, setSelectedSport] = useState<string | null>('all');
   const [selectedTournament, setSelectedTournament] = useState<string | null>(null);
 
   // Dynamic year bounds based on selected year
@@ -112,7 +115,7 @@ export default function CalendarPage() {
   const [nflError, setNflError] = useState(false);
 
   useEffect(() => {
-    if ((selectedSport === 'cbb' || selectedSport === 'all') && selectedDate) {
+    if ((selectedSport === 'cbb' || selectedSport === 'all' || selectedSport === 'myteams') && selectedDate) {
       setBasketballLoading(true);
       setBasketballError(false);
       const dateStr = formatDateET(selectedDate);
@@ -130,7 +133,7 @@ export default function CalendarPage() {
   }, [selectedSport, selectedDate]);
 
   useEffect(() => {
-    if ((selectedSport === 'nba' || selectedSport === 'all') && selectedDate) {
+    if ((selectedSport === 'nba' || selectedSport === 'all' || selectedSport === 'myteams') && selectedDate) {
       setNbaLoading(true);
       setNbaError(false);
       const dateStr = formatDateET(selectedDate);
@@ -148,7 +151,7 @@ export default function CalendarPage() {
   }, [selectedSport, selectedDate]);
 
   useEffect(() => {
-    if ((selectedSport === 'mlb' || selectedSport === 'all') && selectedDate) {
+    if ((selectedSport === 'mlb' || selectedSport === 'all' || selectedSport === 'myteams') && selectedDate) {
       setMlbLoading(true);
       setMlbError(false);
       const dateStr = formatDateET(selectedDate);
@@ -166,7 +169,7 @@ export default function CalendarPage() {
   }, [selectedSport, selectedDate]);
 
   useEffect(() => {
-    if ((selectedSport === 'nfl' || selectedSport === 'all') && selectedDate) {
+    if ((selectedSport === 'nfl' || selectedSport === 'all' || selectedSport === 'myteams') && selectedDate) {
       setNflLoading(true);
       setNflError(false);
       const dateStr = formatDateET(selectedDate);
@@ -184,7 +187,7 @@ export default function CalendarPage() {
   }, [selectedSport, selectedDate]);
 
   // Determine loading/error states based on selected sport
-  const isLoading = selectedSport === 'all'
+  const isLoading = selectedSport === 'all' || selectedSport === 'myteams'
     ? soccerLoading || basketballLoading || nbaLoading || mlbLoading || nflLoading
     : selectedSport === 'cbb'
       ? basketballLoading
@@ -218,6 +221,46 @@ export default function CalendarPage() {
           );
           return matchNations.includes(selectedNation);
         });
+
+  // Filter games for "My Teams" - memoized for performance
+  const myTeamsMatches = useMemo(() => {
+    const soccerFavs = getFavoritesByType('team').map(String);
+    return matches.filter(match => {
+      const homeId = String(match.homeId || '');
+      const awayId = String(match.awayId || '');
+      return soccerFavs.includes(homeId) || soccerFavs.includes(awayId);
+    });
+  }, [matches, getFavoritesByType]);
+
+  const myTeamsBasketball = useMemo(() => {
+    const ncaabFavs = getFavoritesByType('ncaab_team').map(String);
+    return basketballGames.filter(game =>
+      ncaabFavs.includes(game.homeTeam.id) || ncaabFavs.includes(game.awayTeam.id)
+    );
+  }, [basketballGames, getFavoritesByType]);
+
+  const myTeamsNba = useMemo(() => {
+    const nbaFavs = getFavoritesByType('nba_team').map(String);
+    return nbaGames.filter(game =>
+      nbaFavs.includes(game.homeTeam.id) || nbaFavs.includes(game.awayTeam.id)
+    );
+  }, [nbaGames, getFavoritesByType]);
+
+  const myTeamsMlb = useMemo(() => {
+    const mlbFavs = getFavoritesByType('mlb_team').map(String);
+    return mlbGames.filter(game =>
+      mlbFavs.includes(game.homeTeam.id) || mlbFavs.includes(game.awayTeam.id)
+    );
+  }, [mlbGames, getFavoritesByType]);
+
+  const myTeamsNfl = useMemo(() => {
+    const nflFavs = getFavoritesByType('nfl_team').map(String);
+    return nflGames.filter(game =>
+      nflFavs.includes(game.homeTeam.id) || nflFavs.includes(game.awayTeam.id)
+    );
+  }, [nflGames, getFavoritesByType]);
+
+  const myTeamsTotal = myTeamsMatches.length + myTeamsBasketball.length + myTeamsNba.length + myTeamsMlb.length + myTeamsNfl.length;
 
   // Load saved date and last match from localStorage on mount
   useEffect(() => {
@@ -619,7 +662,7 @@ export default function CalendarPage() {
       {/* Sport Pills */}
       <div
         className="flex gap-2 overflow-x-auto px-4 py-3"
-        style={{ scrollbarWidth: 'none', borderBottom: selectedSport === 'all' || !selectedSport ? `1px solid ${theme.border}` : 'none' }}
+        style={{ scrollbarWidth: 'none', borderBottom: selectedSport === 'all' || selectedSport === 'myteams' || !selectedSport ? `1px solid ${theme.border}` : 'none' }}
       >
         <button
           onClick={() => setSelectedSport('all')}
@@ -634,91 +677,108 @@ export default function CalendarPage() {
           <span className="md:hidden">All</span>
         </button>
         <button
+          onClick={() => setSelectedSport('myteams')}
+          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          style={{
+            backgroundColor: selectedSport === 'myteams' ? theme.accent : theme.bgSecondary,
+            color: selectedSport === 'myteams' ? '#fff' : theme.textSecondary,
+            border: `1px solid ${selectedSport === 'myteams' ? theme.accent : theme.border}`,
+            minWidth: '40px',
+          }}
+        >
+          <Star size={16} fill={selectedSport === 'myteams' ? '#fff' : '#D4AF37'} color={selectedSport === 'myteams' ? '#fff' : '#D4AF37'} />
+          <span className="hidden md:inline">My Teams</span>
+        </button>
+        <button
           onClick={() => setSelectedSport(selectedSport === 'soccer' ? null : 'soccer')}
-          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
+          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'soccer' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'soccer' ? '#fff' : theme.textSecondary,
             border: `1px solid ${selectedSport === 'soccer' ? theme.accent : theme.border}`,
+            minWidth: '40px',
           }}
         >
-          <span>⚽</span>
-          <span>Soccer</span>
+          <img src={SOCCER_ICON} alt="Soccer" className="h-5 w-5 object-contain" />
+          <span className="hidden md:inline">Soccer</span>
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'cbb' ? null : 'cbb')}
-          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
+          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'cbb' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'cbb' ? '#fff' : theme.textSecondary,
             border: `1px solid ${selectedSport === 'cbb' ? theme.accent : theme.border}`,
+            minWidth: '40px',
           }}
         >
-          <span>🏀</span>
-          <span>CBB</span>
+          <img src={BASKETBALL_ICON} alt="CBB" className="h-5 w-5 object-contain" />
+          <span className="hidden md:inline">CBB</span>
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'mlb' ? null : 'mlb')}
-          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
+          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'mlb' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'mlb' ? '#fff' : theme.textSecondary,
             border: `1px solid ${selectedSport === 'mlb' ? theme.accent : theme.border}`,
+            minWidth: '40px',
           }}
         >
-          <span>⚾</span>
-          <span>MLB</span>
+          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="MLB" className="h-5 w-5 object-contain" />
+          <span className="hidden md:inline">MLB</span>
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'nba' ? null : 'nba')}
-          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
+          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'nba' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'nba' ? '#fff' : theme.textSecondary,
             border: `1px solid ${selectedSport === 'nba' ? theme.accent : theme.border}`,
+            minWidth: '40px',
           }}
         >
-          <span>🏀</span>
-          <span>NBA</span>
+          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA" className="h-5 w-5 object-contain" />
+          <span className="hidden md:inline">NBA</span>
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'nfl' ? null : 'nfl')}
-          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
+          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'nfl' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'nfl' ? '#fff' : theme.textSecondary,
             border: `1px solid ${selectedSport === 'nfl' ? theme.accent : theme.border}`,
+            minWidth: '40px',
           }}
         >
-          <span>🏈</span>
-          <span>NFL</span>
-        </button>
-        {/* Coming Soon Sports - Greyed Out */}
-        <button
-          disabled
-          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50 cursor-not-allowed"
-          style={{
-            backgroundColor: theme.bgSecondary,
-            color: theme.textSecondary,
-            border: `1px solid ${theme.border}`,
-          }}
-          title="Coming Soon"
-        >
-          <span>🏒</span>
-          <span>NHL</span>
+          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="h-5 w-5 object-contain" />
+          <span className="hidden md:inline">NFL</span>
         </button>
         <button
-          disabled
-          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 opacity-50 cursor-not-allowed"
+          onClick={() => setSelectedSport(selectedSport === 'nhl' ? null : 'nhl')}
+          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
-            backgroundColor: theme.bgSecondary,
-            color: theme.textSecondary,
-            border: `1px solid ${theme.border}`,
+            backgroundColor: selectedSport === 'nhl' ? theme.accent : theme.bgSecondary,
+            color: selectedSport === 'nhl' ? '#fff' : theme.textSecondary,
+            border: `1px solid ${selectedSport === 'nhl' ? theme.accent : theme.border}`,
+            minWidth: '40px',
           }}
-          title="Coming Soon"
         >
-          <span>🏈</span>
-          <span>CFB</span>
+          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png" alt="NHL" className="h-5 w-5 object-contain" />
+          <span className="hidden md:inline">NHL</span>
+        </button>
+        <button
+          onClick={() => setSelectedSport(selectedSport === 'cfb' ? null : 'cfb')}
+          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          style={{
+            backgroundColor: selectedSport === 'cfb' ? theme.accent : theme.bgSecondary,
+            color: selectedSport === 'cfb' ? '#fff' : theme.textSecondary,
+            border: `1px solid ${selectedSport === 'cfb' ? theme.accent : theme.border}`,
+            minWidth: '40px',
+          }}
+        >
+          <img src={FOOTBALL_ICON} alt="CFB" className="h-5 w-5 object-contain" />
+          <span className="hidden md:inline">CFB</span>
         </button>
       </div>
 
@@ -821,7 +881,7 @@ export default function CalendarPage() {
       )}
 
       {/* Fixtures */}
-      <main className="flex-1 overflow-y-auto px-4 py-4">
+      <main className="flex-1 overflow-y-auto px-2 md:px-4 py-4">
         <div className="mb-3 flex items-center justify-between">
           <h2
             className="text-xs font-semibold uppercase tracking-wider"
@@ -832,26 +892,30 @@ export default function CalendarPage() {
           <span className="text-sm" style={{ color: theme.textSecondary }}>
             {selectedSport === 'all'
               ? matches.length + basketballGames.length + nbaGames.length + mlbGames.length + nflGames.length
-              : selectedSport === 'cbb'
-                ? basketballGames.length
-                : selectedSport === 'nba'
-                  ? nbaGames.length
-                  : selectedSport === 'mlb'
-                    ? mlbGames.length
-                    : selectedSport === 'nfl'
-                      ? nflGames.length
-                      : matches.length
+              : selectedSport === 'myteams'
+                ? myTeamsTotal
+                : selectedSport === 'cbb'
+                  ? basketballGames.length
+                  : selectedSport === 'nba'
+                    ? nbaGames.length
+                    : selectedSport === 'mlb'
+                      ? mlbGames.length
+                      : selectedSport === 'nfl'
+                        ? nflGames.length
+                        : matches.length
             } {(selectedSport === 'all'
               ? matches.length + basketballGames.length + nbaGames.length + mlbGames.length + nflGames.length
-              : selectedSport === 'cbb'
-                ? basketballGames.length
-                : selectedSport === 'nba'
-                  ? nbaGames.length
-                  : selectedSport === 'mlb'
-                    ? mlbGames.length
-                    : selectedSport === 'nfl'
-                      ? nflGames.length
-                      : matches.length
+              : selectedSport === 'myteams'
+                ? myTeamsTotal
+                : selectedSport === 'cbb'
+                  ? basketballGames.length
+                  : selectedSport === 'nba'
+                    ? nbaGames.length
+                    : selectedSport === 'mlb'
+                      ? mlbGames.length
+                      : selectedSport === 'nfl'
+                        ? nflGames.length
+                        : matches.length
             ) === 1 ? 'game' : 'games'}
           </span>
         </div>
@@ -863,7 +927,7 @@ export default function CalendarPage() {
             {matches.length > 0 && (
               <section>
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                  <span>⚽</span> Soccer ({matches.length})
+                  <img src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain inline" /> Soccer ({matches.length})
                 </h3>
                 <div className="flex flex-col gap-3">
                   {matches.map((match) => (
@@ -891,7 +955,7 @@ export default function CalendarPage() {
             {nbaGames.length > 0 && (
               <section>
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                  <span>🏀</span> NBA ({nbaGames.length})
+                  <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain inline" /> NBA ({nbaGames.length})
                 </h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                   {nbaGames.map((game) => (
@@ -905,7 +969,7 @@ export default function CalendarPage() {
             {mlbGames.length > 0 && (
               <section>
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                  <span>⚾</span> MLB ({mlbGames.length})
+                  <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain inline" /> MLB ({mlbGames.length})
                 </h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                   {mlbGames.map((game) => (
@@ -919,7 +983,7 @@ export default function CalendarPage() {
             {nflGames.length > 0 && (
               <section>
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                  <span>🏈</span> NFL ({nflGames.length})
+                  <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain inline" /> NFL ({nflGames.length})
                 </h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                   {nflGames.map((game) => (
@@ -954,6 +1018,116 @@ export default function CalendarPage() {
               </div>
             )}
           </div>
+        ) : selectedSport === 'myteams' ? (
+          isLoading ? (
+            <div className="py-8 text-center">
+              <div
+                className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                style={{ color: theme.accent }}
+              />
+              <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
+                Loading your teams' games...
+              </p>
+            </div>
+          ) : !isLoggedIn ? (
+            <div
+              className="rounded-lg py-8 text-center"
+              style={{ backgroundColor: theme.bgSecondary }}
+            >
+              <Star size={24} style={{ color: theme.textSecondary, margin: '0 auto 8px' }} />
+              <p className="text-sm font-medium" style={{ color: theme.text }}>
+                Sign in to track your teams
+              </p>
+              <p className="mt-2 text-sm" style={{ color: theme.textSecondary }}>
+                Add teams to your favorites to see their games here
+              </p>
+            </div>
+          ) : myTeamsTotal === 0 ? (
+            <div
+              className="rounded-lg py-8 text-center"
+              style={{ backgroundColor: theme.bgSecondary }}
+            >
+              <Star size={24} style={{ color: theme.textSecondary, margin: '0 auto 8px' }} />
+              <p className="text-sm font-medium" style={{ color: theme.text }}>
+                No games for your teams on this date
+              </p>
+              <p className="mt-2 text-sm" style={{ color: theme.textSecondary }}>
+                Add more teams to your favorites or check another date
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6">
+              {/* My Teams - Soccer */}
+              {myTeamsMatches.length > 0 && (
+                <section>
+                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                    <img src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain inline" /> Soccer ({myTeamsMatches.length})
+                  </h3>
+                  <div className="flex flex-col gap-3">
+                    {myTeamsMatches.map((match) => (
+                      <MatchCard key={match.id} match={match} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* My Teams - Basketball */}
+              {myTeamsBasketball.length > 0 && (
+                <section>
+                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                    <span>🏀</span> College Basketball ({myTeamsBasketball.length})
+                  </h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {myTeamsBasketball.map((game) => (
+                      <BasketballGameCard key={game.id} game={game} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* My Teams - NBA */}
+              {myTeamsNba.length > 0 && (
+                <section>
+                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                    <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain inline" /> NBA ({myTeamsNba.length})
+                  </h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {myTeamsNba.map((game) => (
+                      <NBAGameCard key={game.id} game={game} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* My Teams - MLB */}
+              {myTeamsMlb.length > 0 && (
+                <section>
+                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                    <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain inline" /> MLB ({myTeamsMlb.length})
+                  </h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {myTeamsMlb.map((game) => (
+                      <MLBGameCard key={game.id} game={game} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* My Teams - NFL */}
+              {myTeamsNfl.length > 0 && (
+                <section>
+                  <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
+                    <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain inline" /> NFL ({myTeamsNfl.length})
+                  </h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {myTeamsNfl.map((game) => (
+                      <NFLGameCard key={game.id} game={game} />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          )
         ) : selectedSport === 'cbb' ? (
           basketballLoading ? (
             <div className="py-8 text-center">
@@ -1098,6 +1272,32 @@ export default function CalendarPage() {
               ))}
             </div>
           )
+        ) : selectedSport === 'nhl' ? (
+          <div
+            className="rounded-lg py-8 text-center"
+            style={{ backgroundColor: theme.bgSecondary }}
+          >
+            <p className="text-2xl mb-2">🏒</p>
+            <p className="text-sm font-medium" style={{ color: theme.text }}>
+              NHL Coming Soon
+            </p>
+            <p className="mt-2 text-xs" style={{ color: theme.textSecondary }}>
+              NHL game data will be available soon
+            </p>
+          </div>
+        ) : selectedSport === 'cfb' ? (
+          <div
+            className="rounded-lg py-8 text-center"
+            style={{ backgroundColor: theme.bgSecondary }}
+          >
+            <p className="text-2xl mb-2">🏈</p>
+            <p className="text-sm font-medium" style={{ color: theme.text }}>
+              College Football Coming Soon
+            </p>
+            <p className="mt-2 text-xs" style={{ color: theme.textSecondary }}>
+              CFB game data will be available soon
+            </p>
+          </div>
         ) : isLoading && matches.length === 0 ? (
           <div className="py-8 text-center">
             <div

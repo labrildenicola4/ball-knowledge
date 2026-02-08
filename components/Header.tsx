@@ -4,16 +4,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trophy, Sun, Moon, Search, X } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
-import { searchAll, type SearchableTeam, type SearchableLeague, type SearchableMLBTeam, type SearchableNBATeam, type SearchableNFLTeam, type SearchableCollegeBasketballTeam, type SearchableCollegeFootballTeam } from '@/lib/search-data';
+import { searchAll, type SearchableTeam, type SearchableSoccerLeague, type SearchableAmericanLeague, type SearchableMLBTeam, type SearchableNBATeam, type SearchableNFLTeam, type SearchableCollegeBasketballTeam, type SearchableCollegeFootballTeam } from '@/lib/search-data';
 
 export function Header() {
   const { darkMode, toggleDarkMode, theme } = useTheme();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<{ teams: SearchableTeam[]; leagues: SearchableLeague[]; mlbTeams: SearchableMLBTeam[]; nbaTeams: SearchableNBATeam[]; nflTeams: SearchableNFLTeam[]; collegeBasketballTeams: SearchableCollegeBasketballTeam[]; collegeFootballTeams: SearchableCollegeFootballTeam[] }>({
+  const [results, setResults] = useState<{ teams: SearchableTeam[]; leagues: SearchableSoccerLeague[]; americanLeagues: SearchableAmericanLeague[]; mlbTeams: SearchableMLBTeam[]; nbaTeams: SearchableNBATeam[]; nflTeams: SearchableNFLTeam[]; collegeBasketballTeams: SearchableCollegeBasketballTeam[]; collegeFootballTeams: SearchableCollegeFootballTeam[] }>({
     teams: [],
     leagues: [],
+    americanLeagues: [],
     mlbTeams: [],
     nbaTeams: [],
     nflTeams: [],
@@ -36,7 +37,7 @@ export function Header() {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setSearchOpen(false);
         setQuery('');
-        setResults({ teams: [], leagues: [], mlbTeams: [], nbaTeams: [], nflTeams: [], collegeBasketballTeams: [], collegeFootballTeams: [] });
+        setResults({ teams: [], leagues: [], americanLeagues: [], mlbTeams: [], nbaTeams: [], nflTeams: [], collegeBasketballTeams: [], collegeFootballTeams: [] });
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -49,7 +50,7 @@ export function Header() {
       const searchResults = searchAll(query);
       setResults(searchResults);
     } else {
-      setResults({ teams: [], leagues: [], mlbTeams: [], nbaTeams: [], nflTeams: [], collegeBasketballTeams: [], collegeFootballTeams: [] });
+      setResults({ teams: [], leagues: [], americanLeagues: [], mlbTeams: [], nbaTeams: [], nflTeams: [], collegeBasketballTeams: [], collegeFootballTeams: [] });
     }
   }, [query]);
 
@@ -59,9 +60,9 @@ export function Header() {
     setQuery('');
   };
 
-  const handleLeagueClick = (league: SearchableLeague) => {
-    // Navigate to standings for that league
-    router.push(`/standings?league=${league.id}`);
+  const handleLeagueClick = (league: SearchableSoccerLeague) => {
+    // Navigate to league page
+    router.push(`/league/${league.slug}`);
     setSearchOpen(false);
     setQuery('');
   };
@@ -96,7 +97,13 @@ export function Header() {
     setQuery('');
   };
 
-  const hasResults = results.teams.length > 0 || results.leagues.length > 0 || results.mlbTeams.length > 0 || results.nbaTeams.length > 0 || results.nflTeams.length > 0 || results.collegeBasketballTeams.length > 0 || results.collegeFootballTeams.length > 0;
+  const handleAmericanLeagueClick = (league: SearchableAmericanLeague) => {
+    router.push(league.href);
+    setSearchOpen(false);
+    setQuery('');
+  };
+
+  const hasResults = results.teams.length > 0 || results.leagues.length > 0 || results.americanLeagues.length > 0 || results.mlbTeams.length > 0 || results.nbaTeams.length > 0 || results.nflTeams.length > 0 || results.collegeBasketballTeams.length > 0 || results.collegeFootballTeams.length > 0;
 
   return (
     <header
@@ -173,7 +180,7 @@ export function Header() {
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                             style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
                           >
-                            Leagues
+                            Leagues & Cups
                           </div>
                           {results.leagues.map((league) => (
                             <button
@@ -185,7 +192,7 @@ export function Header() {
                               <img
                                 src={league.logo}
                                 alt={league.name}
-                                className="h-6 w-6 object-contain"
+                                className="h-8 w-8 object-contain"
                                 loading="lazy"
                               />
                               <div>
@@ -193,7 +200,42 @@ export function Header() {
                                   {league.name}
                                 </p>
                                 <p className="text-xs" style={{ color: theme.textSecondary }}>
-                                  {league.country}
+                                  {league.country} • {league.type === 'cup' ? 'Cup' : 'League'}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* American Sports Leagues */}
+                      {results.americanLeagues.length > 0 && (
+                        <div>
+                          <div
+                            className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                          >
+                            American Sports
+                          </div>
+                          {results.americanLeagues.map((league) => (
+                            <button
+                              key={league.id}
+                              onClick={() => handleAmericanLeagueClick(league)}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              style={{ borderBottom: `1px solid ${theme.border}` }}
+                            >
+                              <img
+                                src={league.logo}
+                                alt={league.name}
+                                className="h-8 w-8 object-contain"
+                                loading="lazy"
+                              />
+                              <div>
+                                <p className="text-sm font-medium" style={{ color: theme.text }}>
+                                  {league.shortName}
+                                </p>
+                                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                                  {league.name}
                                 </p>
                               </div>
                             </button>
@@ -208,7 +250,7 @@ export function Header() {
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                             style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
                           >
-                            ⚽ Soccer Teams
+                            Soccer
                           </div>
                           {results.teams.map((team) => (
                             <button
@@ -243,7 +285,7 @@ export function Header() {
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                             style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
                           >
-                            ⚾ MLB Teams
+                            MLB
                           </div>
                           {results.mlbTeams.map((team) => (
                             <button
@@ -278,7 +320,7 @@ export function Header() {
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                             style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
                           >
-                            🏀 NBA Teams
+                            NBA
                           </div>
                           {results.nbaTeams.map((team) => (
                             <button
@@ -313,7 +355,7 @@ export function Header() {
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                             style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
                           >
-                            🏈 NFL Teams
+                            NFL
                           </div>
                           {results.nflTeams.map((team) => (
                             <button
@@ -348,7 +390,7 @@ export function Header() {
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                             style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
                           >
-                            🏀 NCAA Basketball
+                            NCAA Basketball
                           </div>
                           {results.collegeBasketballTeams.map((team) => (
                             <button
@@ -383,7 +425,7 @@ export function Header() {
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
                             style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
                           >
-                            🏈 NCAA Football
+                            NCAA Football
                           </div>
                           {results.collegeFootballTeams.map((team) => (
                             <button

@@ -3,18 +3,20 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { RefreshCw, ChevronDown, ChevronUp, Calendar, Trophy, BarChart3, ChevronLeft } from 'lucide-react';
+import { RefreshCw, ChevronDown, ChevronUp, Calendar, Trophy, BarChart3, ChevronLeft, GitMerge } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { FootballGameCard } from '@/components/football/FootballGameCard';
+import { CFBPlayoffBracket } from '@/components/football/CFBPlayoffBracket';
 import { ConferenceStandingsTable, ConferenceStandingsTeam } from '@/components/ConferenceStandingsTable';
+import { CFBPlayoffBracket as CFBPlayoffBracketData } from '@/lib/api-espn-cfb-bracket';
 import { useTheme } from '@/lib/theme';
 import { CollegeFootballGame, CollegeFootballRanking } from '@/lib/types/college-football';
 import { MULTI_SPORT_CONFERENCES } from '@/lib/constants/unified-conferences';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-type Tab = 'schedule' | 'rankings' | 'standings';
+type Tab = 'schedule' | 'bracket' | 'rankings' | 'standings';
 
 // Football conferences for dropdown (only ones with football)
 const FOOTBALL_CONFERENCES = [
@@ -67,6 +69,12 @@ export default function CollegeFootballHomePage() {
     fetcher
   );
 
+  // Fetch playoff bracket
+  const { data: bracketData, isLoading: bracketLoading } = useSWR<CFBPlayoffBracketData>(
+    activeTab === 'bracket' ? '/api/football/bracket' : null,
+    fetcher
+  );
+
   const games = gamesData?.games || [];
   const rankings = rankingsData?.rankings || [];
   const standings = standingsData?.standings || [];
@@ -92,6 +100,7 @@ export default function CollegeFootballHomePage() {
 
   const tabs = [
     { id: 'schedule' as Tab, label: 'Schedule', icon: Calendar },
+    { id: 'bracket' as Tab, label: 'Bracket', icon: GitMerge },
     { id: 'rankings' as Tab, label: 'Rankings', icon: Trophy },
     { id: 'standings' as Tab, label: 'Standings', icon: BarChart3 },
   ];
@@ -322,6 +331,43 @@ export default function CollegeFootballHomePage() {
                     )}
                   </section>
                 )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Bracket Tab */}
+        {activeTab === 'bracket' && (
+          <>
+            {bracketLoading ? (
+              <div className="py-8 text-center">
+                <div
+                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                  style={{ color: theme.accent }}
+                />
+                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
+                  Loading playoff bracket...
+                </p>
+              </div>
+            ) : bracketData ? (
+              <CFBPlayoffBracket
+                firstRound={bracketData.firstRound}
+                quarterfinals={bracketData.quarterfinals}
+                semifinals={bracketData.semifinals}
+                championship={bracketData.championship}
+              />
+            ) : (
+              <div
+                className="rounded-xl p-8 text-center"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <GitMerge size={48} style={{ color: theme.textSecondary, margin: '0 auto 16px' }} />
+                <p className="text-base font-medium mb-2" style={{ color: theme.text }}>
+                  CFP Bracket Coming Soon
+                </p>
+                <p className="text-sm" style={{ color: theme.textSecondary }}>
+                  The College Football Playoff bracket will be available once selections are made.
+                </p>
               </div>
             )}
           </>

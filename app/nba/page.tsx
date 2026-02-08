@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { RefreshCw, ChevronDown, ChevronUp, Calendar, Trophy, BarChart3, ChevronLeft } from 'lucide-react';
+import { RefreshCw, ChevronDown, ChevronUp, Calendar, Trophy, BarChart3, ChevronLeft, Heart } from 'lucide-react';
+import { useFavorites } from '@/lib/use-favorites';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { NBAGameCard } from '@/components/nba/NBAGameCard';
@@ -24,6 +25,7 @@ export default function NBAHomePage() {
   const [completedCollapsed, setCompletedCollapsed] = useState(false);
   const [selectedConference, setSelectedConference] = useState<'Eastern' | 'Western'>('Eastern');
   const { theme } = useTheme();
+  const { isFavorite, toggleFavorite, isLoggedIn } = useFavorites();
 
   // Fetch games
   const { data: gamesData, isLoading: gamesLoading, mutate, isValidating } = useSWR<{
@@ -482,45 +484,66 @@ export default function NBAHomePage() {
 
                         return (
                           <div key={team.id}>
-                            <Link
-                              href={`/nba/team/${team.id}`}
-                              className="flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
+                            <div
+                              className="flex items-center px-4 py-2.5"
                               style={{
                                 borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
                               }}
                             >
-                              <span
-                                className="w-7 text-[12px] font-mono font-bold"
-                                style={{ color: isPlayoffSpot ? theme.green : isPlayIn ? theme.gold : theme.textSecondary }}
+                              <Link
+                                href={`/nba/team/${team.id}`}
+                                className="flex items-center flex-1 hover:opacity-80 transition-opacity"
                               >
-                                {team.seed}
-                              </span>
-                              <div className="flex-1 flex items-center gap-2 min-w-0">
-                                <img
-                                  src={team.logo}
-                                  alt={team.name}
-                                  className="h-6 w-6 object-contain flex-shrink-0"
-                                />
                                 <span
-                                  className="text-[13px] font-medium truncate"
-                                  style={{ color: theme.text }}
+                                  className="w-7 text-[12px] font-mono font-bold"
+                                  style={{ color: isPlayoffSpot ? theme.green : isPlayIn ? theme.gold : theme.textSecondary }}
                                 >
-                                  {team.abbreviation}
+                                  {team.seed}
                                 </span>
-                              </div>
-                              <span className="w-10 text-center text-[13px] font-mono" style={{ color: theme.text }}>
-                                {team.wins}
-                              </span>
-                              <span className="w-10 text-center text-[13px] font-mono" style={{ color: theme.text }}>
-                                {team.losses}
-                              </span>
-                              <span className="w-12 text-center text-[12px] font-mono" style={{ color: theme.text }}>
-                                {(team.winPct * 100).toFixed(1)}
-                              </span>
-                              <span className="w-10 text-center text-[12px] font-mono" style={{ color: theme.textSecondary }}>
-                                {team.gamesBehind === 0 ? '-' : team.gamesBehind}
-                              </span>
-                            </Link>
+                                <div className="flex-1 flex items-center gap-2 min-w-0">
+                                  <img
+                                    src={team.logo}
+                                    alt={team.name}
+                                    className="h-6 w-6 object-contain flex-shrink-0"
+                                  />
+                                  <span
+                                    className="text-[13px] font-medium truncate"
+                                    style={{ color: theme.text }}
+                                  >
+                                    {team.abbreviation}
+                                  </span>
+                                </div>
+                                <span className="w-10 text-center text-[13px] font-mono" style={{ color: theme.text }}>
+                                  {team.wins}
+                                </span>
+                                <span className="w-10 text-center text-[13px] font-mono" style={{ color: theme.text }}>
+                                  {team.losses}
+                                </span>
+                                <span className="w-12 text-center text-[12px] font-mono" style={{ color: theme.text }}>
+                                  {(team.winPct * 100).toFixed(1)}
+                                </span>
+                                <span className="w-10 text-center text-[12px] font-mono" style={{ color: theme.textSecondary }}>
+                                  {team.gamesBehind === 0 ? '-' : team.gamesBehind}
+                                </span>
+                              </Link>
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (!isLoggedIn) {
+                                    alert('Please sign in to save favorites');
+                                    return;
+                                  }
+                                  toggleFavorite('nba_team', Number(team.id));
+                                }}
+                                className="ml-2 p-1.5 rounded-full hover:bg-black/10 transition-colors"
+                              >
+                                <Heart
+                                  size={16}
+                                  color={isFavorite('nba_team', Number(team.id)) ? '#D4AF37' : theme.textSecondary}
+                                  fill={isFavorite('nba_team', Number(team.id)) ? '#D4AF37' : 'transparent'}
+                                />
+                              </button>
+                            </div>
 
                             {/* Playoff Cutoff Line */}
                             {isPlayoffCutoff && (

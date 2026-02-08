@@ -35,10 +35,14 @@ async function fetchESPN<T>(url: string, isLive = false): Promise<T> {
 
   console.log(`[ESPN-NFL] Fetching: ${url}`);
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
   const response = await fetch(url, {
     cache: isLive ? 'no-store' : 'default',
     next: { revalidate: isLive ? 0 : 60 },
+    signal: controller.signal,
   });
+  clearTimeout(timeout);
 
   if (!response.ok) {
     throw new Error(`ESPN API Error: ${response.status}`);
@@ -122,6 +126,45 @@ export async function getNFLGames(date?: string): Promise<NFLGame[]> {
 
   const data = await fetchESPN<any>(url, !date);
   return data.events?.map(transformGame) || [];
+}
+
+// Playoff week to round name mapping
+const PLAYOFF_ROUND_NAMES: Record<number, string> = {
+  1: 'Wild Card',
+  2: 'Divisional',
+  3: 'Conf Champ',
+  4: 'Pro Bowl',
+  5: 'Super Bowl',
+};
+
+// Get upcoming NFL playoff games (including Super Bowl)
+export async function getNFLPlayoffGames(): Promise<NFLGame[]> {
+  try {
+    // Get current postseason games
+    const currentUrl = `${API_BASE}/scoreboard?seasontype=3&limit=100`;
+
+    // Get Super Bowl date (Feb 8, 2026)
+    const superBowlUrl = `${API_BASE}/scoreboard?dates=20260208`;
+
+    const [currentData, superBowlData] = await Promise.all([
+      fetchESPN<any>(currentUrl),
+      fetchESPN<any>(superBowlUrl).catch(() => ({ events: [] })),
+    ]);
+
+    const currentGames = currentData.events?.map(transformGame) || [];
+    const superBowlGames = superBowlData.events?.map(transformGame) || [];
+
+    // Combine and dedupe
+    const gameMap = new Map();
+    [...currentGames, ...superBowlGames].forEach(game => {
+      gameMap.set(game.id, game);
+    });
+
+    return Array.from(gameMap.values());
+  } catch (error) {
+    console.error('[ESPN-NFL] Failed to fetch playoff games:', error);
+    return [];
+  }
 }
 
 // Get live games only
@@ -363,7 +406,10 @@ export async function getNFLTeamSchedule(teamId: string): Promise<NFLTeamSchedul
       fetchESPN<any>(postseasonUrl).catch(() => ({ events: [] })),
     ]);
 
-    const events = [...(regularData.events || []), ...(postData.events || [])];
+    // Mark postseason events
+    const regularEvents = (regularData.events || []).map((e: any) => ({ ...e, isPostseason: false }));
+    const postEvents = (postData.events || []).map((e: any) => ({ ...e, isPostseason: true }));
+    const events = [...regularEvents, ...postEvents];
 
     return events.map((event: any) => {
       const competition = event.competitions?.[0];
@@ -383,6 +429,12 @@ export async function getNFLTeamSchedule(teamId: string): Promise<NFLTeamSchedul
           score: `${teamScore}-${oppScore}`,
         };
       }
+
+      // For postseason games, use round name instead of week number
+      const weekNumber = event.week?.number;
+      const weekDisplay = event.isPostseason && weekNumber
+        ? PLAYOFF_ROUND_NAMES[weekNumber] || `Playoff Wk ${weekNumber}`
+        : weekNumber;
 
       return {
         id: event.id,
@@ -409,7 +461,7 @@ export async function getNFLTeamSchedule(teamId: string): Promise<NFLTeamSchedul
         isHome,
         result,
         status,
-        week: event.week?.number,
+        week: weekDisplay,
       };
     });
   } catch (error) {
@@ -418,19 +470,14 @@ export async function getNFLTeamSchedule(teamId: string): Promise<NFLTeamSchedul
   }
 }
 
-// Get NFL stat leaders
-export async function getNFLLeaders(): Promise<{
-  passingYards: any[];
-  rushingYards: any[];
-  receivingYards: any[];
-  passingTouchdowns: any[];
-  rushingTouchdowns: any[];
-  receivingTouchdowns: any[];
-  sacks: any[];
-  interceptions: any[];
-  tackles: any[];
+// Get team-specific player stats using the leaders endpoint with team filter
+export async function getNFLTeamStats(teamId: string): Promise<{
+  passing: any[];
+  rushing: any[];
+  receiving: any[];
+  defense: any[];
 }> {
-  const url = 'https://site.api.espn.com/apis/site/v3/sports/football/nfl/leaders';
+  const url = `https://site.api.espn.com/apis/site/v3/sports/football/nfl/leaders?team=${teamId}`;
 
   try {
     const data = await fetchESPN<any>(url);
@@ -449,18 +496,144 @@ export async function getNFLLeaders(): Promise<{
           headshot: leader.athlete?.headshot?.href || '',
           position: leader.athlete?.position?.abbreviation || '',
         },
-        team: {
-          id: leader.team?.id || '',
-          name: leader.team?.name || '',
-          abbreviation: leader.team?.abbreviation || '',
-          logo: leader.team?.logos?.[0]?.href || '',
-        },
+        displayValue: leader.displayValue || '',
         value: leader.value || 0,
-        displayValue: leader.displayValue || String(leader.value || 0),
       }));
     };
 
     return {
+      passing: extractLeaders('passingYards'),
+      rushing: extractLeaders('rushingYards'),
+      receiving: extractLeaders('receivingYards'),
+      defense: extractLeaders('totalTackles'),
+    };
+  } catch (error) {
+    console.error(`[ESPN-NFL] Failed to fetch team stats for ${teamId}:`, error);
+    return {
+      passing: [],
+      rushing: [],
+      receiving: [],
+      defense: [],
+    };
+  }
+}
+
+// Get NFL stat leaders (regular season stats)
+export async function getNFLLeaders(): Promise<{
+  passingYards: any[];
+  rushingYards: any[];
+  receivingYards: any[];
+  passingTouchdowns: any[];
+  rushingTouchdowns: any[];
+  receivingTouchdowns: any[];
+  sacks: any[];
+  interceptions: any[];
+  tackles: any[];
+}> {
+  // Use core API to get regular season stats (types/2 = regular season)
+  const coreUrl = 'https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/types/2/leaders?limit=5';
+
+  try {
+    const data = await fetchESPN<any>(coreUrl);
+
+    // Helper to extract athlete ID from ref URL
+    const getAthleteId = (ref: string) => {
+      const match = ref.match(/athletes\/(\d+)/);
+      return match ? match[1] : '';
+    };
+
+    // Helper to extract team ID from ref URL
+    const getTeamId = (ref: string) => {
+      const match = ref.match(/teams\/(\d+)/);
+      return match ? match[1] : '';
+    };
+
+    // NFL team data for quick lookup
+    const NFL_TEAM_DATA: Record<string, { name: string; abbreviation: string; logo: string }> = {
+      '1': { name: 'Falcons', abbreviation: 'ATL', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/atl.png' },
+      '2': { name: 'Bills', abbreviation: 'BUF', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/buf.png' },
+      '3': { name: 'Bears', abbreviation: 'CHI', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/chi.png' },
+      '4': { name: 'Bengals', abbreviation: 'CIN', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/cin.png' },
+      '5': { name: 'Browns', abbreviation: 'CLE', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/cle.png' },
+      '6': { name: 'Cowboys', abbreviation: 'DAL', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/dal.png' },
+      '7': { name: 'Broncos', abbreviation: 'DEN', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/den.png' },
+      '8': { name: 'Lions', abbreviation: 'DET', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/det.png' },
+      '9': { name: 'Packers', abbreviation: 'GB', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/gb.png' },
+      '10': { name: 'Titans', abbreviation: 'TEN', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/ten.png' },
+      '11': { name: 'Colts', abbreviation: 'IND', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/ind.png' },
+      '12': { name: 'Chiefs', abbreviation: 'KC', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/kc.png' },
+      '13': { name: 'Raiders', abbreviation: 'LV', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/lv.png' },
+      '14': { name: 'Rams', abbreviation: 'LAR', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/lar.png' },
+      '15': { name: 'Dolphins', abbreviation: 'MIA', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/mia.png' },
+      '16': { name: 'Vikings', abbreviation: 'MIN', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/min.png' },
+      '17': { name: 'Patriots', abbreviation: 'NE', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/ne.png' },
+      '18': { name: 'Saints', abbreviation: 'NO', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/no.png' },
+      '19': { name: 'Giants', abbreviation: 'NYG', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png' },
+      '20': { name: 'Jets', abbreviation: 'NYJ', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png' },
+      '21': { name: 'Eagles', abbreviation: 'PHI', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/phi.png' },
+      '22': { name: 'Cardinals', abbreviation: 'ARI', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/ari.png' },
+      '23': { name: 'Steelers', abbreviation: 'PIT', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/pit.png' },
+      '24': { name: 'Chargers', abbreviation: 'LAC', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/lac.png' },
+      '25': { name: '49ers', abbreviation: 'SF', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/sf.png' },
+      '26': { name: 'Seahawks', abbreviation: 'SEA', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/sea.png' },
+      '27': { name: 'Buccaneers', abbreviation: 'TB', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/tb.png' },
+      '28': { name: 'Commanders', abbreviation: 'WSH', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png' },
+      '29': { name: 'Panthers', abbreviation: 'CAR', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/car.png' },
+      '30': { name: 'Jaguars', abbreviation: 'JAX', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/jax.png' },
+      '33': { name: 'Ravens', abbreviation: 'BAL', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/bal.png' },
+      '34': { name: 'Texans', abbreviation: 'HOU', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/hou.png' },
+    };
+
+    const extractLeaders = (categoryName: string) => {
+      const category = data.categories?.find((c: any) =>
+        c.name?.toLowerCase() === categoryName.toLowerCase()
+      );
+
+      if (!category?.leaders) return [];
+
+      return category.leaders.slice(0, 5).map((leader: any) => {
+        const athleteId = getAthleteId(leader.athlete?.$ref || '');
+        const teamId = getTeamId(leader.team?.$ref || '');
+        const teamData = NFL_TEAM_DATA[teamId] || { name: '', abbreviation: '', logo: '' };
+
+        return {
+          player: {
+            id: athleteId,
+            name: '', // Will be populated by athlete fetch if needed
+            headshot: athleteId ? `https://a.espncdn.com/i/headshots/nfl/players/full/${athleteId}.png` : '',
+            position: '',
+          },
+          team: {
+            id: teamId,
+            name: teamData.name,
+            abbreviation: teamData.abbreviation,
+            logo: teamData.logo,
+          },
+          value: leader.value || 0,
+          displayValue: leader.displayValue || String(leader.value || 0),
+        };
+      });
+    };
+
+    // Fetch athlete names in parallel
+    const fetchAthleteNames = async (leaders: any[]) => {
+      const athletePromises = leaders.map(async (leader) => {
+        if (!leader.player.id) return leader;
+        try {
+          const athleteUrl = `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/${leader.player.id}`;
+          const athleteData = await fetch(athleteUrl).then(r => r.json());
+          leader.player.name = athleteData.displayName || '';
+          leader.player.position = athleteData.position?.abbreviation || '';
+        } catch {
+          // Silently fail - headshot is more important than name
+        }
+        return leader;
+      });
+      return Promise.all(athletePromises);
+    };
+
+    // Extract all categories
+    const categories = {
       passingYards: extractLeaders('passingYards'),
       rushingYards: extractLeaders('rushingYards'),
       receivingYards: extractLeaders('receivingYards'),
@@ -470,6 +643,31 @@ export async function getNFLLeaders(): Promise<{
       sacks: extractLeaders('sacks'),
       interceptions: extractLeaders('interceptions'),
       tackles: extractLeaders('totalTackles'),
+    };
+
+    // Fetch athlete names for all categories in parallel
+    const [passingYards, rushingYards, receivingYards, passingTouchdowns, rushingTouchdowns, receivingTouchdowns, sacks, interceptions, tackles] = await Promise.all([
+      fetchAthleteNames(categories.passingYards),
+      fetchAthleteNames(categories.rushingYards),
+      fetchAthleteNames(categories.receivingYards),
+      fetchAthleteNames(categories.passingTouchdowns),
+      fetchAthleteNames(categories.rushingTouchdowns),
+      fetchAthleteNames(categories.receivingTouchdowns),
+      fetchAthleteNames(categories.sacks),
+      fetchAthleteNames(categories.interceptions),
+      fetchAthleteNames(categories.tackles),
+    ]);
+
+    return {
+      passingYards,
+      rushingYards,
+      receivingYards,
+      passingTouchdowns,
+      rushingTouchdowns,
+      receivingTouchdowns,
+      sacks,
+      interceptions,
+      tackles,
     };
   } catch (error) {
     console.error('[ESPN-NFL] Failed to fetch leaders:', error);
@@ -484,5 +682,34 @@ export async function getNFLLeaders(): Promise<{
       interceptions: [],
       tackles: [],
     };
+  }
+}
+
+// Get NFL team roster
+export async function getNFLRoster(teamId: string): Promise<import('./types/nfl').NFLPlayer[]> {
+  const url = `${API_BASE}/teams/${teamId}/roster`;
+
+  try {
+    const data = await fetchESPN<any>(url);
+
+    if (!data.athletes) return [];
+
+    return data.athletes.flatMap((group: any) =>
+      (group.items || []).map((athlete: any) => ({
+        id: athlete.id,
+        name: athlete.displayName || athlete.fullName,
+        jersey: athlete.jersey || '',
+        position: athlete.position?.abbreviation || athlete.position?.name || '',
+        headshot: athlete.headshot?.href || '',
+        height: athlete.displayHeight,
+        weight: athlete.displayWeight,
+        age: athlete.age,
+        experience: athlete.experience?.years ? `${athlete.experience.years} yrs` : 'Rookie',
+        college: athlete.college?.name,
+      }))
+    );
+  } catch (error) {
+    console.error(`[ESPN-NFL] Failed to fetch roster for team ${teamId}:`, error);
+    return [];
   }
 }

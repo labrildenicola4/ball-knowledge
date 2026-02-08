@@ -24,13 +24,19 @@ export async function GET(
     }
 
     // Fetch all data in parallel
-    const [team, roster, stats, recentForm, standings] = await Promise.all([
+    const [teamResult, rosterResult, statsResult, recentFormResult, standingsResult] = await Promise.allSettled([
       getNBATeam(id),
       getNBARoster(id),
       getNBATeamStats(id),
       getNBARecentForm(id),
       getNBAStandings(),
     ]);
+
+    const team = teamResult.status === 'fulfilled' ? teamResult.value : null;
+    const roster = rosterResult.status === 'fulfilled' ? rosterResult.value : null;
+    const stats = statsResult.status === 'fulfilled' ? statsResult.value : null;
+    const recentForm = recentFormResult.status === 'fulfilled' ? recentFormResult.value : null;
+    const standings = standingsResult.status === 'fulfilled' ? standingsResult.value : null;
 
     if (!team) {
       return NextResponse.json(

@@ -5,18 +5,19 @@ import { ChevronRight, Trophy, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
 import { TOURNAMENTS } from '@/lib/constants/tournaments';
+import { SOCCER_ICON, BASKETBALL_ICON, FOOTBALL_ICON } from '@/lib/sport-icons';
 
 export default function AllPage() {
   const { theme, darkMode, toggleDarkMode } = useTheme();
 
   // Sports Hubs
   const sportsHubs = [
-    { name: 'Soccer', href: '/', icon: '⚽', description: 'Leagues, cups & fixtures' },
-    { name: 'NFL', href: '/nfl', icon: '🏈', description: 'Pro football' },
-    { name: 'NBA', href: '/nba', icon: '🏀', description: 'Games, stats & standings' },
-    { name: 'NCAA Basketball', href: '/basketball', icon: '🏀', description: 'College hoops' },
-    { name: 'College Football', href: '/football', icon: '🏈', description: 'CFB games' },
-    { name: 'MLB', href: '/mlb', icon: '⚾', description: 'Baseball' },
+    { name: 'Soccer', href: '/soccer', logo: SOCCER_ICON, description: 'Leagues, cups & fixtures' },
+    { name: 'NFL', href: '/nfl', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png', description: 'Pro football' },
+    { name: 'NBA', href: '/nba', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png', description: 'Games, stats & standings' },
+    { name: 'NCAA Basketball', href: '/basketball', logo: BASKETBALL_ICON, description: 'College hoops' },
+    { name: 'College Football', href: '/football', logo: FOOTBALL_ICON, description: 'CFB games' },
+    { name: 'MLB', href: '/mlb', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png', description: 'Baseball' },
   ];
 
   return (
@@ -53,7 +54,7 @@ export default function AllPage() {
                 className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80"
                 style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
-                <span className="text-2xl">{hub.icon}</span>
+                <img src={hub.logo} alt={hub.name} className="h-8 w-8 object-contain" />
                 <div className="flex-1">
                   <span className="text-sm font-medium" style={{ color: theme.text }}>{hub.name}</span>
                   <p className="text-[11px]" style={{ color: theme.textSecondary }}>{hub.description}</p>

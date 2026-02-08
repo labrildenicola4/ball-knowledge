@@ -157,7 +157,7 @@ export default function NBATeamPage() {
     );
   }
 
-  const { team, conference, record, conferenceRecord, schedule, venue, roster, stats, recentForm, standings } = teamInfo;
+  const { team, conference, record, conferenceRecord, divisionRecord, schedule, venue, roster, stats, recentForm, standings } = teamInfo;
 
   // Find team's standing
   const currentConf = standings?.conferences?.find(c =>
@@ -208,7 +208,7 @@ export default function NBATeamPage() {
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-1">
-          <div className="w-[26px]" /> {/* Spacer for balance */}
+          <div className="w-[26px]" />
           <h1 className="text-xl font-bold" style={{ color: theme.text }}>
             {team.displayName}
           </h1>
@@ -257,10 +257,10 @@ export default function NBATeamPage() {
           <div className="w-px h-10" style={{ backgroundColor: theme.border }} />
           <div className="text-center">
             <p className="text-xl font-mono font-bold" style={{ color: theme.text }}>
-              {conferenceRecord || '-'}
+              {teamStanding?.conferenceRecord || conferenceRecord || '-'}
             </p>
             <p className="text-[9px] uppercase tracking-wider" style={{ color: theme.textSecondary }}>
-              Division
+              Conference
             </p>
           </div>
           {teamStanding && (

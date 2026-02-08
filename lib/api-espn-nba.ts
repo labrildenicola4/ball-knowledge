@@ -36,10 +36,14 @@ async function fetchESPN<T>(url: string, isLive = false): Promise<T> {
 
   console.log(`[ESPN-NBA] Fetching: ${url}`);
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
   const response = await fetch(url, {
     cache: isLive ? 'no-store' : 'default',
     next: { revalidate: isLive ? 0 : 60 },
+    signal: controller.signal,
   });
+  clearTimeout(timeout);
 
   if (!response.ok) {
     console.error(`[ESPN-NBA] HTTP Error: ${response.status}`);
@@ -288,6 +292,7 @@ export async function getNBATeam(teamId: string): Promise<BasketballTeamInfo | n
     // Extract records
     const overallRecord = team.record?.items?.find((r: ESPNRecordItem) => r.type === 'total');
     const confRecord = team.record?.items?.find((r: ESPNRecordItem) => r.type === 'vsconf');
+    const divRecord = team.record?.items?.find((r: ESPNRecordItem) => r.type === 'vsdiv');
 
     // Extract division from standingSummary (e.g., "3rd in Southeast Division")
     const standingSummary = team.standingSummary || '';
@@ -312,6 +317,7 @@ export async function getNBATeam(teamId: string): Promise<BasketballTeamInfo | n
       },
       record: overallRecord?.summary || team.record?.items?.[0]?.summary || '-',
       conferenceRecord: confRecord?.summary || '-',
+      divisionRecord: divRecord?.summary || '-',
       rank: team.rank,
       schedule: [],
       venue: team.franchise?.venue ? {
@@ -392,6 +398,10 @@ export async function getNBAStandings(): Promise<NBAStandings> {
         const stat = entry.stats?.find((s) => s.name === name);
         return stat?.value ?? 0;
       };
+      const getStatSummary = (type: string) => {
+        const stat = entry.stats?.find((s) => s.type === type);
+        return stat?.summary || stat?.displayValue || '';
+      };
 
       return {
         id: entry.team?.id || '',
@@ -405,6 +415,8 @@ export async function getNBAStandings(): Promise<NBAStandings> {
         gamesBehind: getStat('gamesBehind'),
         streak: Math.round(getStat('streak')),
         lastTen: entry.stats?.find(s => s.name === 'Last Ten Games')?.displayValue || '-',
+        conferenceRecord: getStatSummary('vsconf'),
+        divisionRecord: getStatSummary('vsdiv'),
       };
     }) || [];
 
@@ -721,6 +733,8 @@ export interface NBAStandingTeam {
   gamesBehind: number;
   streak: number;
   lastTen: string;
+  conferenceRecord?: string;
+  divisionRecord?: string;
 }
 
 export interface NBAPlayerSeasonStats {
@@ -786,8 +800,10 @@ interface ESPNStandingsResponse {
         };
         stats?: Array<{
           name: string;
+          type?: string;
           value?: number;
           displayValue?: string;
+          summary?: string;
         }>;
       }>;
     };

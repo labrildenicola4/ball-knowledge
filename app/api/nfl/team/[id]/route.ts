@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getNFLTeam, getNFLTeamSchedule, getNFLStandings } from '@/lib/api-espn-nfl';
+import { getNFLTeam, getNFLTeamSchedule, getNFLStandings, getNFLRoster } from '@/lib/api-espn-nfl';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,11 +9,17 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const [teamInfo, schedule, standings] = await Promise.all([
+    const [teamInfoResult, scheduleResult, standingsResult, rosterResult] = await Promise.allSettled([
       getNFLTeam(id),
       getNFLTeamSchedule(id),
       getNFLStandings(),
+      getNFLRoster(id),
     ]);
+
+    const teamInfo = teamInfoResult.status === 'fulfilled' ? teamInfoResult.value : null;
+    const schedule = scheduleResult.status === 'fulfilled' ? scheduleResult.value : [];
+    const standings = standingsResult.status === 'fulfilled' ? standingsResult.value : null;
+    const roster = rosterResult.status === 'fulfilled' ? rosterResult.value : null;
 
     if (!teamInfo) {
       return NextResponse.json(
@@ -39,6 +45,7 @@ export async function GET(
       schedule,
       standings,
       recentForm,
+      roster,
     });
   } catch (error) {
     console.error('[API] NFL team error:', error);

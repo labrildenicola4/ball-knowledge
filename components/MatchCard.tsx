@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { shouldUseWhiteFilterByCode } from '@/lib/constants/dark-mode-logos';
@@ -21,7 +22,7 @@ interface MatchCardProps {
   };
 }
 
-export function MatchCard({ match }: MatchCardProps) {
+export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
   const { theme, darkMode } = useTheme();
   const isFinished = match.status === 'FT';
   const isLive = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes(match.status);
@@ -30,7 +31,7 @@ export function MatchCard({ match }: MatchCardProps) {
   return (
     <Link href={`/match/${match.id}`}>
       <div
-        className="card-hover cursor-pointer rounded-xl p-4 transition-theme"
+        className="card-hover cursor-pointer rounded-xl p-3 md:p-4 transition-theme"
         style={{
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
@@ -69,21 +70,21 @@ export function MatchCard({ match }: MatchCardProps) {
         {/* Teams & Score */}
         <div className="flex items-center">
           {/* Home Team */}
-          <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+          <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pr-1 md:pr-2">
             {match.homeLogo.startsWith('http') ? (
-              <img src={match.homeLogo} alt={match.home} className="h-8 w-8 flex-shrink-0 object-contain" loading="lazy" />
+              <img src={match.homeLogo} alt={match.home} className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain" loading="lazy" />
             ) : (
-              <span className="text-2xl flex-shrink-0">{match.homeLogo}</span>
+              <span className="text-xl md:text-2xl flex-shrink-0">{match.homeLogo}</span>
             )}
             <div className="flex flex-col min-w-0">
-              <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Home</span>
-              <span className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px]" style={{ color: theme.text }}>{match.home}</span>
+              <span className="hidden md:block text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Home</span>
+              <span className="text-sm md:text-base font-medium truncate" style={{ color: theme.text }}>{match.home}</span>
             </div>
           </div>
 
           {/* Score */}
           <div
-            className="font-mono rounded-lg px-4 py-2 text-lg font-semibold flex-shrink-0"
+            className="font-mono rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-base md:text-lg font-semibold flex-shrink-0"
             style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
           >
             {match.homeScore !== null
@@ -92,19 +93,19 @@ export function MatchCard({ match }: MatchCardProps) {
           </div>
 
           {/* Away Team */}
-          <div className="flex items-center gap-2 flex-1 min-w-0 pl-2 justify-end">
+          <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pl-1 md:pl-2 justify-end">
             <div className="flex flex-col items-end min-w-0">
-              <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Away</span>
-              <span className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px] text-right" style={{ color: theme.text }}>{match.away}</span>
+              <span className="hidden md:block text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Away</span>
+              <span className="text-sm md:text-base font-medium truncate text-right" style={{ color: theme.text }}>{match.away}</span>
             </div>
             {match.awayLogo.startsWith('http') ? (
-              <img src={match.awayLogo} alt={match.away} className="h-8 w-8 flex-shrink-0 object-contain" loading="lazy" />
+              <img src={match.awayLogo} alt={match.away} className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain" loading="lazy" />
             ) : (
-              <span className="text-2xl flex-shrink-0">{match.awayLogo}</span>
+              <span className="text-xl md:text-2xl flex-shrink-0">{match.awayLogo}</span>
             )}
           </div>
         </div>
       </div>
     </Link>
   );
-}
+});

@@ -3,24 +3,26 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { RefreshCw, ChevronDown, ChevronUp, Calendar, Trophy, BarChart3, ChevronLeft } from 'lucide-react';
+import { RefreshCw, ChevronDown, ChevronUp, Calendar, Trophy, BarChart3, ChevronLeft, GitMerge } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { NFLGameCard } from '@/components/nfl/NFLGameCard';
+import { NFLPlayoffBracket } from '@/components/nfl/NFLPlayoffBracket';
 import { useTheme } from '@/lib/theme';
+import { NFLPlayoffBracket as NFLPlayoffBracketData } from '@/lib/api-espn-nfl-bracket';
 import { NFLGame, NFLStandings, NFLStanding, NFLStatLeader } from '@/lib/types/nfl';
 
 interface NFLLeadersData {
-  passing: NFLStatLeader[];
-  rushing: NFLStatLeader[];
-  receiving: NFLStatLeader[];
-  touchdowns: NFLStatLeader[];
+  passingYards: NFLStatLeader[];
+  rushingYards: NFLStatLeader[];
+  receivingYards: NFLStatLeader[];
+  passingTouchdowns: NFLStatLeader[];
   sacks: NFLStatLeader[];
 }
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-type Tab = 'schedule' | 'stats' | 'standings';
+type Tab = 'schedule' | 'bracket' | 'stats' | 'standings';
 type Conference = 'AFC' | 'NFC';
 
 // NFL Teams by Division (for offseason display)
@@ -119,6 +121,12 @@ export default function NFLHomePage() {
     fetcher
   );
 
+  // Fetch playoff bracket
+  const { data: bracketData, isLoading: bracketLoading } = useSWR<NFLPlayoffBracketData>(
+    activeTab === 'bracket' ? '/api/nfl/bracket' : null,
+    fetcher
+  );
+
   const games = gamesData?.games || [];
 
   const today = new Date();
@@ -135,6 +143,7 @@ export default function NFLHomePage() {
 
   const tabs = [
     { id: 'schedule' as Tab, label: 'Schedule', icon: Calendar },
+    { id: 'bracket' as Tab, label: 'Bracket', icon: GitMerge },
     { id: 'stats' as Tab, label: 'Stats', icon: BarChart3 },
     { id: 'standings' as Tab, label: 'Standings', icon: Trophy },
   ];
@@ -374,6 +383,42 @@ export default function NFLHomePage() {
           </>
         )}
 
+        {/* Bracket Tab */}
+        {activeTab === 'bracket' && (
+          <>
+            {bracketLoading ? (
+              <div className="py-8 text-center">
+                <div
+                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                  style={{ color: theme.accent }}
+                />
+                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
+                  Loading playoff bracket...
+                </p>
+              </div>
+            ) : bracketData ? (
+              <NFLPlayoffBracket
+                afc={bracketData.afc}
+                nfc={bracketData.nfc}
+                superBowl={bracketData.superBowl}
+              />
+            ) : (
+              <div
+                className="rounded-xl p-8 text-center"
+                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <GitMerge size={48} style={{ color: theme.textSecondary, margin: '0 auto 16px' }} />
+                <p className="text-base font-medium mb-2" style={{ color: theme.text }}>
+                  Playoff Bracket Coming Soon
+                </p>
+                <p className="text-sm" style={{ color: theme.textSecondary }}>
+                  The NFL playoff bracket will be available once the postseason begins.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
         {/* Stats Tab */}
         {activeTab === 'stats' && (
           <>
@@ -387,7 +432,7 @@ export default function NFLHomePage() {
                   Loading player leaders...
                 </p>
               </div>
-            ) : !leadersData?.passing?.length && !leadersData?.rushing?.length ? (
+            ) : !leadersData?.passingYards?.length && !leadersData?.rushingYards?.length ? (
               <div
                 className="rounded-xl p-8 text-center"
                 style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
@@ -404,22 +449,22 @@ export default function NFLHomePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <LeaderCard
                   title="Passing Yards"
-                  leaders={leadersData?.passing || []}
+                  leaders={leadersData?.passingYards || []}
                   theme={theme}
                 />
                 <LeaderCard
                   title="Rushing Yards"
-                  leaders={leadersData?.rushing || []}
+                  leaders={leadersData?.rushingYards || []}
                   theme={theme}
                 />
                 <LeaderCard
                   title="Receiving Yards"
-                  leaders={leadersData?.receiving || []}
+                  leaders={leadersData?.receivingYards || []}
                   theme={theme}
                 />
                 <LeaderCard
                   title="Passing Touchdowns"
-                  leaders={leadersData?.touchdowns || []}
+                  leaders={leadersData?.passingTouchdowns || []}
                   theme={theme}
                 />
                 <LeaderCard

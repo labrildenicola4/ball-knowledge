@@ -4,6 +4,7 @@ import { LEAGUE_ID_TO_CODE, SUPPORTED_LEAGUE_IDS } from '@/lib/constants/leagues
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 // Get date in Eastern Time as YYYY-MM-DD
 function getEasternDate(date: Date): string {
@@ -85,7 +86,12 @@ interface LiveFixture {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const startTime = Date.now();
   console.log('[Sync/LiveAll] Starting bulk live sync...');
 
@@ -198,11 +204,11 @@ export async function GET() {
               const fAway = normalize(f.away_team_name);
               // Check if names share a significant prefix (3+ chars) or one contains the other
               const homeMatch = fHome.slice(0, 3) === homeNorm.slice(0, 3) ||
-                               fHome.includes(homeNorm.slice(0, 4)) ||
-                               homeNorm.includes(fHome.slice(0, 4));
+                fHome.includes(homeNorm.slice(0, 4)) ||
+                homeNorm.includes(fHome.slice(0, 4));
               const awayMatch = fAway.slice(0, 3) === awayNorm.slice(0, 3) ||
-                               fAway.includes(awayNorm.slice(0, 4)) ||
-                               awayNorm.includes(fAway.slice(0, 4));
+                fAway.includes(awayNorm.slice(0, 4)) ||
+                awayNorm.includes(fAway.slice(0, 4));
               return homeMatch && awayMatch;
             });
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { MLBGame } from '@/lib/types/mlb';
@@ -8,7 +9,7 @@ interface MLBGameCardProps {
   game: MLBGame;
 }
 
-export function MLBGameCard({ game }: MLBGameCardProps) {
+export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps) {
   const { theme } = useTheme();
   const isLive = game.status === 'in_progress';
   const isFinal = game.status === 'final';
@@ -24,7 +25,7 @@ export function MLBGameCard({ game }: MLBGameCardProps) {
   return (
     <Link href={`/mlb/game/${game.id}`}>
       <div
-        className="card-hover cursor-pointer rounded-xl p-4 transition-theme"
+        className="card-hover cursor-pointer rounded-xl p-3 md:p-4 transition-theme"
         style={{
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
@@ -41,12 +42,20 @@ export function MLBGameCard({ game }: MLBGameCardProps) {
                 {game.broadcast}
               </span>
             )}
+            {game.date && (
+              <span
+                className="text-[9px]"
+                style={{ color: theme.textSecondary }}
+              >
+                · {game.date}
+              </span>
+            )}
             {game.seriesInfo && (
               <span
                 className="text-[9px]"
                 style={{ color: theme.textSecondary }}
               >
-                {game.seriesInfo}
+                · {game.seriesInfo}
               </span>
             )}
           </div>
@@ -194,4 +203,4 @@ export function MLBGameCard({ game }: MLBGameCardProps) {
       </div>
     </Link>
   );
-}
+});

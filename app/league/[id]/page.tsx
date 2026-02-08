@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { ChevronLeft, ChevronDown, ChevronUp, RefreshCw, Calendar, Trophy, BarChart3 } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, RefreshCw, Calendar, Trophy, BarChart3, GitBranch } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { shouldUseWhiteFilterByCode } from '@/lib/constants/dark-mode-logos';
+import { getLeagueBySlug } from '@/lib/constants/leagues';
+import { TournamentBracket } from '@/components/TournamentBracket';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'League not found' : 'Failed to fetch');
@@ -144,19 +146,50 @@ interface LeagueData {
   upcomingFixtures: FixtureRow[];
 }
 
-type Tab = 'schedule' | 'stats' | 'standings';
+type Tab = 'schedule' | 'stats' | 'standings' | 'bracket';
 type StatsView = 'players' | 'teams';
+
+interface BracketMatch {
+  id: number;
+  home: string;
+  away: string;
+  homeId: number;
+  awayId: number;
+  homeLogo: string;
+  awayLogo: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  status: string;
+  date: string;
+  time: string;
+  venue: string;
+}
+
+interface BracketData {
+  stages: string[];
+  stageNames: Record<string, string>;
+  bracket: Record<string, BracketMatch[]>;
+  tournamentComplete?: boolean;
+}
 
 export default function LeaguePage() {
   const params = useParams();
   const { theme, darkMode } = useTheme();
   const leagueSlug = params.id as string;
 
+  // Detect if this is a cup competition
+  const leagueConfig = getLeagueBySlug(leagueSlug);
+  const isCup = leagueConfig?.type === 'cup';
+  // Domestic cups (not UCL, UEL, Libertadores) should show bracket
+  const isDomesticCup = isCup && !['champions-league', 'europa-league', 'copa-libertadores'].includes(leagueSlug);
+
   const [activeTab, setActiveTab] = useState<Tab>('schedule');
   const [statsView, setStatsView] = useState<StatsView>('players');
   const [liveCollapsed, setLiveCollapsed] = useState(false);
   const [upcomingCollapsed, setUpcomingCollapsed] = useState(false);
   const [completedCollapsed, setCompletedCollapsed] = useState(false);
+  const [bracketData, setBracketData] = useState<BracketData | null>(null);
+  const [bracketLoading, setBracketLoading] = useState(false);
 
   const { data, error, isLoading, mutate, isValidating } = useSWR<LeagueData>(
     `/api/league/${leagueSlug}`,
@@ -166,6 +199,24 @@ export default function LeaguePage() {
       refreshInterval: 30000,
     }
   );
+
+  // Fetch bracket data for domestic cups
+  useEffect(() => {
+    if (isDomesticCup && activeTab === 'bracket') {
+      setBracketLoading(true);
+      fetch(`/api/bracket?competition=${leagueConfig?.key}`)
+        .then(res => res.json())
+        .then(data => {
+          setBracketData(data);
+        })
+        .catch(err => {
+          console.error('Error fetching bracket:', err);
+        })
+        .finally(() => {
+          setBracketLoading(false);
+        });
+    }
+  }, [isDomesticCup, activeTab, leagueConfig?.key]);
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', {
@@ -237,11 +288,17 @@ export default function LeaguePage() {
 
   const useWhiteFilter = darkMode && shouldUseWhiteFilterByCode(data.league.code);
 
-  const tabs = [
-    { id: 'schedule' as Tab, label: 'Schedule', icon: Calendar },
-    { id: 'stats' as Tab, label: 'Stats', icon: BarChart3 },
-    { id: 'standings' as Tab, label: 'Standings', icon: Trophy },
-  ];
+  const tabs = isDomesticCup
+    ? [
+        { id: 'schedule' as Tab, label: 'Schedule', icon: Calendar },
+        { id: 'stats' as Tab, label: 'Stats', icon: BarChart3 },
+        { id: 'bracket' as Tab, label: 'Bracket', icon: GitBranch },
+      ]
+    : [
+        { id: 'schedule' as Tab, label: 'Schedule', icon: Calendar },
+        { id: 'stats' as Tab, label: 'Stats', icon: BarChart3 },
+        { id: 'standings' as Tab, label: 'Standings', icon: Trophy },
+      ];
 
   // Game Card Component
   const GameCard = ({ fixture }: { fixture: FixtureRow }) => {
@@ -990,6 +1047,57 @@ export default function LeaguePage() {
               </div>
             )}
           </section>
+        )}
+
+        {/* Bracket Tab (for domestic cups) */}
+        {activeTab === 'bracket' && (
+          <div className="flex flex-col gap-4">
+            {bracketLoading ? (
+              <div className="py-8 text-center">
+                <div
+                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
+                  style={{ color: theme.accent }}
+                />
+                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
+                  Loading bracket...
+                </p>
+              </div>
+            ) : bracketData && Object.values(bracketData.bracket).some(matches => matches.length > 0) ? (
+              <>
+                {bracketData.tournamentComplete && (
+                  <div
+                    className="rounded-lg px-4 py-3 mb-4"
+                    style={{ backgroundColor: theme.gold + '20', border: `1px solid ${theme.gold}` }}
+                  >
+                    <p className="text-sm font-medium" style={{ color: theme.gold }}>
+                      Tournament Complete
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: theme.textSecondary }}>
+                      This season's competition has ended. Showing final results.
+                    </p>
+                  </div>
+                )}
+                <TournamentBracket
+                  bracket={bracketData.bracket}
+                  stages={bracketData.stages}
+                  stageNames={bracketData.stageNames}
+                />
+              </>
+            ) : (
+              <div
+                className="rounded-lg py-8 text-center"
+                style={{ backgroundColor: theme.bgSecondary }}
+              >
+                <GitBranch size={32} className="mx-auto mb-3" style={{ color: theme.textSecondary }} />
+                <p className="text-sm" style={{ color: theme.textSecondary }}>
+                  No bracket data available yet
+                </p>
+                <p className="mt-2 text-xs" style={{ color: theme.textSecondary }}>
+                  Bracket will appear once knockout rounds begin
+                </p>
+              </div>
+            )}
+          </div>
         )}
       </main>
 

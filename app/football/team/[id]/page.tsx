@@ -181,7 +181,7 @@ export default function CollegeFootballTeamPage() {
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-1">
-          <div className="w-[26px]" /> {/* Spacer for balance */}
+          <div className="w-[26px]" />
           <h1 className="text-2xl font-bold" style={{ color: theme.text }}>
             {team.displayName}
           </h1>

@@ -4,6 +4,7 @@ import { getStandings } from '@/lib/api-football';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 // All domestic leagues to sync standings for (API-Football league IDs)
 const STANDINGS_LEAGUES: Array<{ id: number; code: string; name: string }> = [
@@ -19,6 +20,11 @@ const STANDINGS_LEAGUES: Array<{ id: number; code: string; name: string }> = [
 ];
 
 export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const startTime = Date.now();
   console.log('[Sync] Starting standings sync (API-Football)...');
 
@@ -115,7 +121,7 @@ export async function GET(request: NextRequest) {
         error_message: error instanceof Error ? error.message : 'Unknown error',
         completed_at: new Date().toISOString(),
       });
-    } catch {}
+    } catch { }
 
     return NextResponse.json(
       { error: 'Sync failed', message: error instanceof Error ? error.message : 'Unknown error' },

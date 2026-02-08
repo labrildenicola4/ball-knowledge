@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { ChevronLeft, MapPin, Sun, Moon, TrendingUp, Trophy, Heart, BarChart3 } from 'lucide-react';
+import { ChevronLeft, MapPin, Sun, Moon, TrendingUp, Trophy, Heart, BarChart3, Users } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
-import { NFLTeamInfo, NFLTeamScheduleGame, NFLStandings, NFLStanding, NFLStatLeader } from '@/lib/types/nfl';
+import { NFLTeamInfo, NFLTeamScheduleGame, NFLStandings, NFLStanding, NFLPlayer } from '@/lib/types/nfl';
 import { createBrowserClient } from '@supabase/ssr';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -23,6 +23,7 @@ interface ExtendedTeamInfo extends NFLTeamInfo {
   schedule: NFLTeamScheduleGame[];
   standings: NFLStandings;
   recentForm: RecentGame[];
+  roster: NFLPlayer[];
 }
 
 const fetcher = (url: string) => fetch(url).then(res => {
@@ -36,7 +37,7 @@ export default function NFLTeamPage() {
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const teamId = params.id as string;
 
-  const [activeTab, setActiveTab] = useState<'schedule' | 'stats' | 'standings'>('schedule');
+  const [activeTab, setActiveTab] = useState<'schedule' | 'roster' | 'stats' | 'standings'>('schedule');
   const [selectedConference, setSelectedConference] = useState<'AFC' | 'NFC'>('AFC');
 
   // Favorites state
@@ -118,19 +119,14 @@ export default function NFLTeamPage() {
     }
   );
 
-  // Fetch leaders when Stats tab is active
-  const { data: leaders } = useSWR<{
-    passingYards: NFLStatLeader[];
-    rushingYards: NFLStatLeader[];
-    receivingYards: NFLStatLeader[];
-    passingTouchdowns: NFLStatLeader[];
-    rushingTouchdowns: NFLStatLeader[];
-    receivingTouchdowns: NFLStatLeader[];
-    sacks: NFLStatLeader[];
-    interceptions: NFLStatLeader[];
-    tackles: NFLStatLeader[];
+  // Fetch team stats when Stats tab is active
+  const { data: teamStats } = useSWR<{
+    passing: Array<{ player: { id: string; name: string; headshot: string; position: string }; displayValue: string; value: number }>;
+    rushing: Array<{ player: { id: string; name: string; headshot: string; position: string }; displayValue: string; value: number }>;
+    receiving: Array<{ player: { id: string; name: string; headshot: string; position: string }; displayValue: string; value: number }>;
+    defense: Array<{ player: { id: string; name: string; headshot: string; position: string }; displayValue: string; value: number }>;
   }>(
-    activeTab === 'stats' ? '/api/nfl/leaders' : null,
+    activeTab === 'stats' && teamId ? `/api/nfl/team/${teamId}/stats` : null,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -170,7 +166,7 @@ export default function NFLTeamPage() {
     );
   }
 
-  const { team, conference, division, record, venue, schedule, standings, recentForm } = teamInfo;
+  const { team, conference, division, record, venue, schedule, standings, recentForm, roster } = teamInfo;
 
   // Parse record for display (e.g., "10-7" -> wins/losses)
   const recordParts = record?.split('-') || [];
@@ -229,7 +225,7 @@ export default function NFLTeamPage() {
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-1">
-          <div className="w-[26px]" /> {/* Spacer for balance */}
+          <div className="w-[26px]" />
           <h1 className="text-xl font-bold" style={{ color: theme.text }}>
             {team.displayName}
           </h1>
@@ -313,6 +309,7 @@ export default function NFLTeamPage() {
       <div className="flex" style={{ borderBottom: `1px solid ${theme.border}` }}>
         {[
           { key: 'schedule', label: 'Schedule', icon: TrendingUp },
+          { key: 'roster', label: 'Roster', icon: Users },
           { key: 'stats', label: 'Stats', icon: BarChart3 },
           { key: 'standings', label: 'Standings', icon: Trophy },
         ].map((tab) => {
@@ -369,7 +366,7 @@ export default function NFLTeamPage() {
                               </span>
                               {game.week && (
                                 <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
-                                  Wk {game.week}
+                                  {typeof game.week === 'string' ? game.week : `Wk ${game.week}`}
                                 </span>
                               )}
                               <span className="text-[10px] w-4" style={{ color: theme.textSecondary }}>
@@ -417,7 +414,7 @@ export default function NFLTeamPage() {
                               </span>
                               {game.week && (
                                 <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
-                                  Wk {game.week}
+                                  {typeof game.week === 'string' ? game.week : `Wk ${game.week}`}
                                 </span>
                               )}
                               <span className="text-[10px] w-4" style={{ color: theme.textSecondary }}>
@@ -458,13 +455,50 @@ export default function NFLTeamPage() {
           </section>
         )}
 
+        {/* Roster Tab */}
+        {activeTab === 'roster' && (
+          <section className="px-4 py-4">
+            {roster && roster.length > 0 ? (
+              <div className="rounded-xl overflow-hidden" style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
+                {roster.map((player, idx) => (
+                  <div
+                    key={player.id}
+                    className="flex items-center gap-3 px-4 py-3"
+                    style={{ borderTop: idx > 0 ? `1px solid ${theme.border}` : 'none' }}
+                  >
+                    {player.headshot ? (
+                      <img src={player.headshot} alt={player.name} className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
+                        {player.jersey || '#'}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="text-sm font-medium" style={{ color: theme.text }}>{player.name}</p>
+                      <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                        #{player.jersey} · {player.position}
+                        {player.experience && ` · ${player.experience}`}
+                        {player.college && ` · ${player.college}`}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8" style={{ color: theme.textSecondary }}>
+                No roster data available
+              </div>
+            )}
+          </section>
+        )}
+
         {/* Stats Tab */}
         {activeTab === 'stats' && (
           <section className="px-4 py-4">
-            {leaders ? (
+            {teamStats ? (
               <div className="space-y-4">
-                {/* Passing Leaders */}
-                {leaders.passingYards.length > 0 && (
+                {/* Passing Yards */}
+                {teamStats.passing.length > 0 && (
                   <div
                     className="rounded-xl overflow-hidden"
                     style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
@@ -475,9 +509,9 @@ export default function NFLTeamPage() {
                     >
                       Passing Yards
                     </div>
-                    {leaders.passingYards.map((leader, index) => (
+                    {teamStats.passing.map((player, index) => (
                       <div
-                        key={leader.player.id}
+                        key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
                         style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
                       >
@@ -487,36 +521,36 @@ export default function NFLTeamPage() {
                         >
                           {index + 1}
                         </span>
-                        {leader.player.headshot && (
+                        {player.player.headshot && (
                           <img
-                            src={leader.player.headshot}
-                            alt={leader.player.name}
+                            src={player.player.headshot}
+                            alt={player.player.name}
                             className="h-8 w-8 rounded-full object-cover"
                           />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
-                            {leader.player.name}
+                            {player.player.name}
                           </p>
-                          <div className="flex items-center gap-1">
-                            {leader.team.logo && (
-                              <img src={leader.team.logo} alt={leader.team.abbreviation} className="h-3 w-3" />
-                            )}
-                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                              {leader.team.abbreviation} · {leader.player.position}
-                            </span>
-                          </div>
+                          <p className="text-[10px]" style={{ color: theme.textSecondary }}>
+                            {player.player.position}
+                          </p>
                         </div>
-                        <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
-                          {leader.displayValue}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
+                            {player.value?.toLocaleString() || '0'}
+                          </span>
+                          <p className="text-[9px] max-w-[120px] truncate" style={{ color: theme.textSecondary }}>
+                            {player.displayValue}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Rushing Leaders */}
-                {leaders.rushingYards.length > 0 && (
+                {/* Rushing Yards */}
+                {teamStats.rushing.length > 0 && (
                   <div
                     className="rounded-xl overflow-hidden"
                     style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
@@ -527,9 +561,9 @@ export default function NFLTeamPage() {
                     >
                       Rushing Yards
                     </div>
-                    {leaders.rushingYards.map((leader, index) => (
+                    {teamStats.rushing.map((player, index) => (
                       <div
-                        key={leader.player.id}
+                        key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
                         style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
                       >
@@ -539,36 +573,36 @@ export default function NFLTeamPage() {
                         >
                           {index + 1}
                         </span>
-                        {leader.player.headshot && (
+                        {player.player.headshot && (
                           <img
-                            src={leader.player.headshot}
-                            alt={leader.player.name}
+                            src={player.player.headshot}
+                            alt={player.player.name}
                             className="h-8 w-8 rounded-full object-cover"
                           />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
-                            {leader.player.name}
+                            {player.player.name}
                           </p>
-                          <div className="flex items-center gap-1">
-                            {leader.team.logo && (
-                              <img src={leader.team.logo} alt={leader.team.abbreviation} className="h-3 w-3" />
-                            )}
-                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                              {leader.team.abbreviation} · {leader.player.position}
-                            </span>
-                          </div>
+                          <p className="text-[10px]" style={{ color: theme.textSecondary }}>
+                            {player.player.position}
+                          </p>
                         </div>
-                        <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
-                          {leader.displayValue}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
+                            {player.value?.toLocaleString() || '0'}
+                          </span>
+                          <p className="text-[9px] max-w-[120px] truncate" style={{ color: theme.textSecondary }}>
+                            {player.displayValue}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Receiving Leaders */}
-                {leaders.receivingYards.length > 0 && (
+                {/* Receiving Yards */}
+                {teamStats.receiving.length > 0 && (
                   <div
                     className="rounded-xl overflow-hidden"
                     style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
@@ -579,9 +613,9 @@ export default function NFLTeamPage() {
                     >
                       Receiving Yards
                     </div>
-                    {leaders.receivingYards.map((leader, index) => (
+                    {teamStats.receiving.map((player, index) => (
                       <div
-                        key={leader.player.id}
+                        key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
                         style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
                       >
@@ -591,36 +625,36 @@ export default function NFLTeamPage() {
                         >
                           {index + 1}
                         </span>
-                        {leader.player.headshot && (
+                        {player.player.headshot && (
                           <img
-                            src={leader.player.headshot}
-                            alt={leader.player.name}
+                            src={player.player.headshot}
+                            alt={player.player.name}
                             className="h-8 w-8 rounded-full object-cover"
                           />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
-                            {leader.player.name}
+                            {player.player.name}
                           </p>
-                          <div className="flex items-center gap-1">
-                            {leader.team.logo && (
-                              <img src={leader.team.logo} alt={leader.team.abbreviation} className="h-3 w-3" />
-                            )}
-                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                              {leader.team.abbreviation} · {leader.player.position}
-                            </span>
-                          </div>
+                          <p className="text-[10px]" style={{ color: theme.textSecondary }}>
+                            {player.player.position}
+                          </p>
                         </div>
-                        <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
-                          {leader.displayValue}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
+                            {player.value?.toLocaleString() || '0'}
+                          </span>
+                          <p className="text-[9px] max-w-[120px] truncate" style={{ color: theme.textSecondary }}>
+                            {player.displayValue}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Sacks Leaders */}
-                {leaders.sacks.length > 0 && (
+                {/* Tackles */}
+                {teamStats.defense.length > 0 && (
                   <div
                     className="rounded-xl overflow-hidden"
                     style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
@@ -629,11 +663,11 @@ export default function NFLTeamPage() {
                       className="px-4 py-2 text-[10px] font-semibold uppercase"
                       style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                     >
-                      Sacks
+                      Total Tackles
                     </div>
-                    {leaders.sacks.map((leader, index) => (
+                    {teamStats.defense.map((player, index) => (
                       <div
-                        key={leader.player.id}
+                        key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
                         style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
                       >
@@ -643,83 +677,44 @@ export default function NFLTeamPage() {
                         >
                           {index + 1}
                         </span>
-                        {leader.player.headshot && (
+                        {player.player.headshot && (
                           <img
-                            src={leader.player.headshot}
-                            alt={leader.player.name}
+                            src={player.player.headshot}
+                            alt={player.player.name}
                             className="h-8 w-8 rounded-full object-cover"
                           />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
-                            {leader.player.name}
+                            {player.player.name}
                           </p>
-                          <div className="flex items-center gap-1">
-                            {leader.team.logo && (
-                              <img src={leader.team.logo} alt={leader.team.abbreviation} className="h-3 w-3" />
-                            )}
-                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                              {leader.team.abbreviation} · {leader.player.position}
-                            </span>
-                          </div>
+                          <p className="text-[10px]" style={{ color: theme.textSecondary }}>
+                            {player.player.position}
+                          </p>
                         </div>
-                        <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
-                          {leader.displayValue}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
+                            {player.value?.toLocaleString() || '0'}
+                          </span>
+                          <p className="text-[9px] max-w-[120px] truncate" style={{ color: theme.textSecondary }}>
+                            {player.displayValue}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Interceptions Leaders */}
-                {leaders.interceptions.length > 0 && (
+                {/* Empty state if no stats */}
+                {teamStats.passing.length === 0 && teamStats.rushing.length === 0 &&
+                 teamStats.receiving.length === 0 && teamStats.defense.length === 0 && (
                   <div
-                    className="rounded-xl overflow-hidden"
+                    className="rounded-xl p-6 text-center"
                     style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
-                    <div
-                      className="px-4 py-2 text-[10px] font-semibold uppercase"
-                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
-                    >
-                      Interceptions
-                    </div>
-                    {leaders.interceptions.map((leader, index) => (
-                      <div
-                        key={leader.player.id}
-                        className="flex items-center gap-3 px-4 py-3"
-                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
-                      >
-                        <span
-                          className="w-5 text-center text-[11px] font-bold"
-                          style={{ color: index === 0 ? theme.gold : theme.textSecondary }}
-                        >
-                          {index + 1}
-                        </span>
-                        {leader.player.headshot && (
-                          <img
-                            src={leader.player.headshot}
-                            alt={leader.player.name}
-                            className="h-8 w-8 rounded-full object-cover"
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
-                            {leader.player.name}
-                          </p>
-                          <div className="flex items-center gap-1">
-                            {leader.team.logo && (
-                              <img src={leader.team.logo} alt={leader.team.abbreviation} className="h-3 w-3" />
-                            )}
-                            <span className="text-[10px]" style={{ color: theme.textSecondary }}>
-                              {leader.team.abbreviation} · {leader.player.position}
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-[14px] font-mono font-semibold" style={{ color: theme.accent }}>
-                          {leader.displayValue}
-                        </span>
-                      </div>
-                    ))}
+                    <p className="text-[12px]" style={{ color: theme.textSecondary }}>
+                      No stats available for this team
+                    </p>
                   </div>
                 )}
               </div>

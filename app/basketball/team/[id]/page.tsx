@@ -252,7 +252,7 @@ export default function BasketballTeamPage() {
           <div className="w-px h-10" style={{ backgroundColor: theme.border }} />
           <div className="text-center">
             <p className="text-xl font-mono font-bold" style={{ color: theme.text }}>
-              {conferenceRecord || '-'}
+              {conferenceRecord || (teamStanding ? `${teamStanding.conferenceWins}-${teamStanding.conferenceLosses}` : '-')}
             </p>
             <p className="text-[9px] uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Conference

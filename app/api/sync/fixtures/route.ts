@@ -5,6 +5,7 @@ import { LEAGUE_ID_TO_CODE, SUPPORTED_LEAGUE_IDS } from '@/lib/constants/leagues
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 // Get date in Eastern Time as YYYY-MM-DD
 function getEasternDate(date: Date): string {
@@ -20,6 +21,11 @@ function getEasternDate(date: Date): string {
 const ALL_LEAGUE_IDS = Array.from(SUPPORTED_LEAGUE_IDS);
 
 export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const startTime = Date.now();
   console.log('[Sync] Starting fixtures sync (API-Football)...');
 
@@ -240,7 +246,7 @@ export async function GET(request: NextRequest) {
         error_message: error instanceof Error ? error.message : 'Unknown error',
         completed_at: new Date().toISOString(),
       });
-    } catch {}
+    } catch { }
 
     return NextResponse.json(
       { error: 'Sync failed', message: error instanceof Error ? error.message : 'Unknown error' },
