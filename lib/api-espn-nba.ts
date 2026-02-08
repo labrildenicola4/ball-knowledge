@@ -237,7 +237,7 @@ export async function getNBAGameSummary(gameId: string): Promise<{
         fieldGoalPct: getStat('fieldGoalPct') || getStat('Field Goal %'),
         threePointPct: getStat('threePointFieldGoalPct') || getStat('3-Point %'),
         freeThrowPct: getStat('freeThrowPct') || getStat('Free Throw %'),
-        rebounds: parseInt(getStat('rebounds') || getStat('Total Rebounds')) || 0,
+        rebounds: parseInt(getStat('totalRebounds') || getStat('rebounds') || getStat('Total Rebounds')) || 0,
         offensiveRebounds: parseInt(getStat('offensiveRebounds') || getStat('Offensive Rebounds')) || 0,
         defensiveRebounds: parseInt(getStat('defensiveRebounds') || getStat('Defensive Rebounds')) || 0,
         assists: parseInt(getStat('assists') || getStat('Assists')) || 0,
