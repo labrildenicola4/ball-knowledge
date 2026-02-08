@@ -169,7 +169,7 @@ export default function MyStuffPage() {
     return (
       <div
         className="flex min-h-screen flex-col"
-        style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
+        style={{ backgroundColor: theme.bg }}
       >
         <Header />
         <main className="flex flex-1 flex-col items-center justify-center px-6">
@@ -201,7 +201,7 @@ export default function MyStuffPage() {
   return (
     <div
       className="flex min-h-screen flex-col"
-      style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
+      style={{ backgroundColor: theme.bg }}
     >
       <Header />
       <main className="flex-1 overflow-y-auto px-4 py-4">

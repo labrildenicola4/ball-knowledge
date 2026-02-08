@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { ChevronLeft, ChevronDown, ChevronUp, RefreshCw, Calendar, Trophy, BarChart3, GitBranch } from 'lucide-react';
@@ -174,6 +174,7 @@ interface BracketData {
 
 export default function LeaguePage() {
   const params = useParams();
+  const router = useRouter();
   const { theme, darkMode } = useTheme();
   const leagueSlug = params.id as string;
 
@@ -241,13 +242,13 @@ export default function LeaguePage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
         <p className="text-sm" style={{ color: theme.red }}>{error?.message || 'League not found'}</p>
-        <Link
-          href="/soccer"
-          className="mt-4 rounded-lg px-4 py-2 text-sm"
+        <button
+          onClick={() => router.back()}
+          className="tap-highlight mt-4 rounded-lg px-4 py-2.5 text-sm"
           style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}`, color: theme.text }}
         >
-          Back to Soccer
-        </Link>
+          Go back
+        </button>
       </div>
     );
   }
@@ -511,7 +512,7 @@ export default function LeaguePage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
+      style={{ backgroundColor: theme.bg }}
     >
       <Header />
 
@@ -522,13 +523,13 @@ export default function LeaguePage() {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link
-              href="/soccer"
-              className="flex items-center justify-center rounded-full p-1.5 -ml-1.5 hover:opacity-70 transition-opacity"
+            <button
+              onClick={() => router.back()}
+              className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity"
               style={{ backgroundColor: theme.bgSecondary }}
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
-            </Link>
+            </button>
             <img
               src={data.league.logo}
               alt={data.league.name}

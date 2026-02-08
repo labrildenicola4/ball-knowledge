@@ -50,7 +50,7 @@ export default function StandingsPage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
+      style={{ backgroundColor: theme.bg }}
     >
       <Header />
       <LeagueTabs activeLeague={activeLeague} onLeagueChange={setActiveLeague} />

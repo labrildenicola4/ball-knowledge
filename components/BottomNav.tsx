@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Home, Calendar, User, Menu } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import Link from 'next/link';
@@ -15,6 +16,36 @@ const navItems = [
 export function BottomNav() {
   const { theme } = useTheme();
   const pathname = usePathname();
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
+
+  const handleScroll = useCallback(() => {
+    if (ticking.current) return;
+
+    ticking.current = true;
+    requestAnimationFrame(() => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < 50) {
+        setVisible(true);
+      } else if (currentScrollY - lastScrollY.current > 10) {
+        setVisible(false);
+      } else if (lastScrollY.current - currentScrollY > 10) {
+        setVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+      ticking.current = false;
+    });
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
 
   return (
     <nav
@@ -23,6 +54,8 @@ export function BottomNav() {
         backgroundColor: theme.bg,
         borderTop: `1px solid ${theme.border}`,
         paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+        transform: visible ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'transform 0.3s ease',
       }}
     >
       <div className="flex justify-around py-2">

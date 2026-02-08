@@ -15,7 +15,7 @@ export default function MarchMadnessPage() {
   const isTournamentSeason = month >= 2 && month <= 3; // March (2) and April (3)
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg }}>
       {/* Header */}
       <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
         <button

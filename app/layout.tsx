@@ -87,7 +87,7 @@ export default function RootLayout({
       <body className="dark">
         <ThemeProvider>
           <ErrorBoundary>
-            <main className="page-enter">{children}</main>
+            <main className="page-enter" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>{children}</main>
           </ErrorBoundary>
         </ThemeProvider>
       </body>

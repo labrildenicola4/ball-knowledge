@@ -77,7 +77,7 @@ export default function NBAHomePage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
+      style={{ backgroundColor: theme.bg }}
     >
       <Header />
 

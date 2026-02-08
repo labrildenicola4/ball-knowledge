@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
@@ -71,6 +72,7 @@ function LeagueCard({ league }: { league: typeof SOCCER_LEAGUES[0] }) {
 
 export default function SoccerHubPage() {
   const { theme } = useTheme();
+  const router = useRouter();
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', {
@@ -82,7 +84,7 @@ export default function SoccerHubPage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg, paddingBottom: '80px' }}
+      style={{ backgroundColor: theme.bg }}
     >
       <Header />
 
@@ -92,13 +94,13 @@ export default function SoccerHubPage() {
         style={{ borderBottom: `1px solid ${theme.border}` }}
       >
         <div className="flex items-center gap-3">
-          <Link
-            href="/all"
-            className="flex items-center justify-center rounded-full p-1.5 -ml-1.5 hover:opacity-70 transition-opacity"
+          <button
+            onClick={() => router.back()}
+            className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity"
             style={{ backgroundColor: theme.bgSecondary }}
           >
             <ChevronLeft size={20} style={{ color: theme.text }} />
-          </Link>
+          </button>
           <div>
             <h1 className="text-2xl font-semibold" style={{ color: theme.text }}>
               Soccer
