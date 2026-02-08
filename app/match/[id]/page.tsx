@@ -278,7 +278,7 @@ export default function MatchPage() {
         <p className="text-[14px]" style={{ color: theme.red }}>{error || 'Match not found'}</p>
         <button
           onClick={() => router.back()}
-          className="mt-4 rounded-lg px-4 py-2 text-[12px]"
+          className="tap-highlight mt-4 rounded-lg px-4 py-2.5 text-[12px]"
           style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           Go back
@@ -319,7 +319,7 @@ export default function MatchPage() {
       <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
           style={{ border: `1px solid ${theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
@@ -347,7 +347,7 @@ export default function MatchPage() {
         )}
         <button
           onClick={toggleDarkMode}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
           style={{ border: `1px solid ${theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
@@ -373,7 +373,7 @@ export default function MatchPage() {
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-1">
                 <p className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</p>
-                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="p-0.5">
+                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="tap-highlight p-2.5">
                   <Heart size={12} fill={homeFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
                 </button>
               </div>
@@ -461,7 +461,7 @@ export default function MatchPage() {
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-1">
                 <p className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</p>
-                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="p-0.5">
+                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="tap-highlight p-2.5">
                   <Heart size={12} fill={awayFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
                 </button>
               </div>
@@ -551,7 +551,7 @@ export default function MatchPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[12px] font-medium transition-colors"
+              className="tap-highlight flex-1 flex items-center justify-center gap-1.5 py-3 text-[12px] font-medium transition-colors"
               style={{
                 color: activeTab === tab.key ? theme.accent : theme.textSecondary,
                 borderBottom: activeTab === tab.key ? `2px solid ${theme.accent}` : '2px solid transparent',

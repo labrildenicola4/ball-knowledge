@@ -431,7 +431,7 @@ export default function HomePage() {
           <button
             onClick={() => refreshAll()}
             disabled={isLoading}
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm"
+            className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
             style={{
               backgroundColor: theme.bgSecondary,
               border: `1px solid ${theme.border}`,
@@ -451,7 +451,7 @@ export default function HomePage() {
         <div className="flex gap-2 mt-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setSelectedFilter('all')}
-            className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium flex items-center gap-1.5"
+            className="tap-highlight whitespace-nowrap rounded-full px-3 py-2.5 text-xs font-medium flex items-center gap-1.5"
             style={{
               backgroundColor: selectedFilter === 'all' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'all' ? '#fff' : theme.textSecondary,
@@ -462,7 +462,7 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('myteams')}
-            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center"
+            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center"
             style={{
               backgroundColor: selectedFilter === 'myteams' ? theme.accent : theme.bgSecondary,
               border: `1px solid ${selectedFilter === 'myteams' ? theme.accent : theme.border}`,
@@ -473,7 +473,7 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('soccer')}
-            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1"
+            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1"
             style={{
               backgroundColor: selectedFilter === 'soccer' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'soccer' ? '#fff' : theme.textSecondary,
@@ -485,7 +485,7 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('ncaa')}
-            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1"
+            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1"
             style={{
               backgroundColor: selectedFilter === 'ncaa' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'ncaa' ? '#fff' : theme.textSecondary,
@@ -497,7 +497,7 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('nba')}
-            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1"
+            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1"
             style={{
               backgroundColor: selectedFilter === 'nba' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'nba' ? '#fff' : theme.textSecondary,
@@ -509,7 +509,7 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('mlb')}
-            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1"
+            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1"
             style={{
               backgroundColor: selectedFilter === 'mlb' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'mlb' ? '#fff' : theme.textSecondary,
@@ -521,7 +521,7 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('nfl')}
-            className="rounded-full px-2.5 py-1.5 text-xs font-medium flex items-center justify-center gap-1"
+            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1"
             style={{
               backgroundColor: selectedFilter === 'nfl' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'nfl' ? '#fff' : theme.textSecondary,
@@ -555,7 +555,7 @@ export default function HomePage() {
             </p>
             <button
               onClick={() => refreshAll()}
-              className="mt-3 rounded-lg px-4 py-2 text-sm"
+              className="tap-highlight mt-3 rounded-lg px-4 py-2.5 text-sm"
               style={{ backgroundColor: theme.accent, color: '#fff' }}
             >
               Try Again
@@ -616,7 +616,7 @@ export default function HomePage() {
               >
                 <button
                   onClick={() => setLiveCollapsed(!liveCollapsed)}
-                  className="w-full flex items-center justify-between px-4 py-3"
+                  className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                   style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${theme.border}` }}
                 >
                   <div className="flex items-center gap-2">
@@ -670,7 +670,7 @@ export default function HomePage() {
               >
                 <button
                   onClick={() => toggleSection('completed')}
-                  className="w-full flex items-center justify-between px-4 py-3"
+                  className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                   style={{ borderBottom: collapsedSections.has('completed') ? 'none' : `1px solid ${theme.border}` }}
                 >
                   <div className="flex items-center gap-3">
@@ -720,7 +720,7 @@ export default function HomePage() {
                 >
                   <button
                     onClick={() => toggleSection(hour)}
-                    className="w-full flex items-center justify-between px-4 py-3"
+                    className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                     style={{ borderBottom: isCollapsed ? 'none' : `1px solid ${theme.border}` }}
                   >
                     <div className="flex items-center gap-3">

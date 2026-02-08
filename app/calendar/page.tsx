@@ -506,7 +506,7 @@ export default function CalendarPage() {
         >
           <button
             onClick={() => router.push(`/match/${lastViewedMatch}`)}
-            className="flex items-center gap-2 flex-1"
+            className="tap-highlight flex items-center gap-2 flex-1"
           >
             <span className="text-sm font-medium text-white">Continue watching match</span>
             <ChevronRight size={18} className="text-white" />
@@ -516,7 +516,7 @@ export default function CalendarPage() {
               setLastViewedMatch(null);
               localStorage.removeItem('lastViewedMatch');
             }}
-            className="text-white/70 text-xs ml-4 px-2 py-1"
+            className="tap-highlight text-white/70 text-xs ml-4 px-2 py-2.5"
           >
             Dismiss
           </button>
@@ -531,7 +531,7 @@ export default function CalendarPage() {
         <div className="relative">
           <button
             onClick={() => setYearDropdownOpen(!yearDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium"
+            className="tap-highlight flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium"
             style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
           >
             <CalendarIcon size={14} />
@@ -547,7 +547,7 @@ export default function CalendarPage() {
                 <button
                   key={year}
                   onClick={() => handleYearChange(year)}
-                  className="w-full px-3 py-2 text-sm text-left hover:opacity-80"
+                  className="tap-highlight w-full px-3 py-2.5 text-sm text-left hover:opacity-80"
                   style={{
                     backgroundColor: year === selectedYear ? theme.accent : 'transparent',
                     color: year === selectedYear ? '#fff' : theme.text,
@@ -570,7 +570,7 @@ export default function CalendarPage() {
           <button
             key={month.label}
             onClick={() => setSelectedDate(month.date)}
-            className="rounded-lg py-2 text-xs font-medium text-center"
+            className="tap-highlight rounded-lg py-2.5 text-xs font-medium text-center"
             style={{
               backgroundColor: isCurrentMonth(month.date) ? theme.accent : theme.bgTertiary,
               color: isCurrentMonth(month.date) ? '#fff' : theme.textSecondary,
@@ -624,7 +624,7 @@ export default function CalendarPage() {
                     }
                     scrollToDate(date, true);
                   }}
-                  className="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 py-2"
+                  className="tap-highlight flex-shrink-0 flex flex-col items-center justify-center gap-0.5 w-14 py-2"
                   style={{ scrollSnapAlign: 'center' }}
                 >
                   <span
@@ -666,7 +666,7 @@ export default function CalendarPage() {
       >
         <button
           onClick={() => setSelectedSport('all')}
-          className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
+          className="tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
           style={{
             backgroundColor: selectedSport === 'all' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'all' ? '#fff' : theme.textSecondary,
@@ -678,7 +678,7 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport('myteams')}
-          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'myteams' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'myteams' ? '#fff' : theme.textSecondary,
@@ -691,7 +691,7 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'soccer' ? null : 'soccer')}
-          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'soccer' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'soccer' ? '#fff' : theme.textSecondary,
@@ -704,7 +704,7 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'cbb' ? null : 'cbb')}
-          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'cbb' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'cbb' ? '#fff' : theme.textSecondary,
@@ -717,7 +717,7 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'mlb' ? null : 'mlb')}
-          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'mlb' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'mlb' ? '#fff' : theme.textSecondary,
@@ -730,7 +730,7 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'nba' ? null : 'nba')}
-          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'nba' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'nba' ? '#fff' : theme.textSecondary,
@@ -743,7 +743,7 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'nfl' ? null : 'nfl')}
-          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'nfl' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'nfl' ? '#fff' : theme.textSecondary,
@@ -756,7 +756,7 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'nhl' ? null : 'nhl')}
-          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'nhl' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'nhl' ? '#fff' : theme.textSecondary,
@@ -769,7 +769,7 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'cfb' ? null : 'cfb')}
-          className="rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
           style={{
             backgroundColor: selectedSport === 'cfb' ? theme.accent : theme.bgSecondary,
             color: selectedSport === 'cfb' ? '#fff' : theme.textSecondary,
@@ -794,7 +794,7 @@ export default function CalendarPage() {
               setSelectedNation('all');
               setSelectedTournament(null);
             }}
-            className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
+            className="tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
             style={{
               backgroundColor: selectedNation === 'all' && !selectedTournament ? theme.accent : theme.bgSecondary,
               color: selectedNation === 'all' && !selectedTournament ? '#fff' : theme.textSecondary,
@@ -814,7 +814,7 @@ export default function CalendarPage() {
                   setSelectedTournament(selectedTournament === code ? null : code);
                   if (selectedTournament !== code) setSelectedNation('all');
                 }}
-                className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1.5 md:gap-2"
+                className="tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1.5 md:gap-2"
                 style={{
                   backgroundColor: selectedTournament === code ? theme.accent : theme.bgSecondary,
                   color: selectedTournament === code ? '#fff' : theme.textSecondary,
@@ -842,7 +842,7 @@ export default function CalendarPage() {
                 setSelectedNation(filter.id);
                 setSelectedTournament(null);
               }}
-              className="whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
+              className="tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
               style={{
                 backgroundColor: selectedNation === filter.id && !selectedTournament ? theme.accent : theme.bgSecondary,
                 color: selectedNation === filter.id && !selectedTournament ? '#fff' : theme.textSecondary,
@@ -1346,7 +1346,7 @@ export default function CalendarPage() {
                   {/* Nation Header - Collapsible */}
                   <button
                     onClick={() => toggleNation(nation.id)}
-                    className="w-full flex items-center justify-between px-4 py-3"
+                    className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                     style={{ borderBottom: isCollapsed ? 'none' : `1px solid ${theme.border}` }}
                   >
                     <div className="flex items-center gap-3">

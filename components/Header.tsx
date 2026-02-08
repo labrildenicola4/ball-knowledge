@@ -155,7 +155,7 @@ export function Header() {
                   className="flex-1 bg-transparent text-sm outline-none"
                   style={{ color: theme.text }}
                 />
-                <button onClick={() => { setSearchOpen(false); setQuery(''); }}>
+                <button onClick={() => { setSearchOpen(false); setQuery(''); }} className="tap-highlight flex h-11 w-11 items-center justify-center">
                   <X size={18} style={{ color: theme.textSecondary }} />
                 </button>
               </div>
@@ -187,7 +187,7 @@ export function Header() {
                             <button
                               key={league.id}
                               onClick={() => handleLeagueClick(league)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
                               <img
@@ -222,7 +222,7 @@ export function Header() {
                             <button
                               key={league.id}
                               onClick={() => handleAmericanLeagueClick(league)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
                               <img
@@ -257,7 +257,7 @@ export function Header() {
                             <button
                               key={team.id}
                               onClick={() => handleTeamClick(team)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
                               <img
@@ -292,7 +292,7 @@ export function Header() {
                             <button
                               key={`mlb-${team.id}`}
                               onClick={() => handleMLBTeamClick(team)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
                               <img
@@ -327,7 +327,7 @@ export function Header() {
                             <button
                               key={`nba-${team.id}`}
                               onClick={() => handleNBATeamClick(team)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
                               <img
@@ -362,7 +362,7 @@ export function Header() {
                             <button
                               key={`nfl-${team.id}`}
                               onClick={() => handleNFLTeamClick(team)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
                               <img
@@ -397,7 +397,7 @@ export function Header() {
                             <button
                               key={`ncaab-${team.id}`}
                               onClick={() => handleCollegeBasketballTeamClick(team)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
                               <img
@@ -432,7 +432,7 @@ export function Header() {
                             <button
                               key={`ncaaf-${team.id}`}
                               onClick={() => handleCollegeFootballTeamClick(team)}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
                               <img
@@ -461,7 +461,7 @@ export function Header() {
           ) : (
             <button
               onClick={() => setSearchOpen(true)}
-              className="tap-highlight flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+              className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full transition-colors"
               style={{ border: `1px solid ${theme.border}` }}
               aria-label="Search"
             >
@@ -472,7 +472,7 @@ export function Header() {
           {/* Theme Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="tap-highlight flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+            className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full transition-colors"
             style={{ border: `1px solid ${theme.border}` }}
             aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >

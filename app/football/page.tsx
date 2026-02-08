@@ -123,7 +123,7 @@ export default function CollegeFootballHomePage() {
           <div className="flex items-center gap-3">
             <Link
               href="/all"
-              className="flex items-center justify-center rounded-full p-1.5 -ml-1.5 hover:opacity-70 transition-opacity"
+              className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity"
               style={{ backgroundColor: theme.bgSecondary }}
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
@@ -141,7 +141,7 @@ export default function CollegeFootballHomePage() {
             <button
               onClick={() => mutate()}
               disabled={gamesLoading}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm"
+              className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
               style={{
                 backgroundColor: theme.bgSecondary,
                 border: `1px solid ${theme.border}`,
@@ -161,7 +161,7 @@ export default function CollegeFootballHomePage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
+            className="tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
             style={{
               backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary,
               color: activeTab === tab.id ? '#fff' : theme.textSecondary,
@@ -209,7 +209,7 @@ export default function CollegeFootballHomePage() {
                   >
                     <button
                       onClick={() => setLiveCollapsed(!liveCollapsed)}
-                      className="w-full flex items-center justify-between px-4 py-3"
+                      className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                       style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
@@ -255,7 +255,7 @@ export default function CollegeFootballHomePage() {
                   >
                     <button
                       onClick={() => setRankedCollapsed(!rankedCollapsed)}
-                      className="w-full flex items-center justify-between px-4 py-3"
+                      className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                       style={{ borderBottom: rankedCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
@@ -298,7 +298,7 @@ export default function CollegeFootballHomePage() {
                   >
                     <button
                       onClick={() => setOtherCollapsed(!otherCollapsed)}
-                      className="w-full flex items-center justify-between px-4 py-3"
+                      className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                       style={{ borderBottom: otherCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
@@ -428,7 +428,7 @@ export default function CollegeFootballHomePage() {
                   <Link
                     key={ranking.team.id}
                     href={`/football/team/${ranking.team.id}`}
-                    className="flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
+                    className="card-press flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
                     style={{ borderTop: `1px solid ${theme.border}` }}
                   >
                     <span

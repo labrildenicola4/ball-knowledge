@@ -227,7 +227,7 @@ export default function MyStuffPage() {
           </div>
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-medium"
+            className="tap-highlight flex items-center gap-2 rounded-lg px-3 py-2.5 text-[12px] font-medium"
             style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
           >
             <LogOut size={16} />
@@ -279,7 +279,7 @@ export default function MyStuffPage() {
                         border: `1px solid ${theme.border}`,
                       }}
                     >
-                      <Link href={`/team/${team.teamId}`} className="flex items-center gap-3 flex-1">
+                      <Link href={`/team/${team.teamId}`} className="card-press flex items-center gap-3 flex-1">
                         {team.logo && (
                           <img
                             src={team.logo}
@@ -321,7 +321,7 @@ export default function MyStuffPage() {
                         )}
                         <button
                           onClick={() => removeFavorite('team', team.teamId)}
-                          className="ml-2 flex h-8 w-8 items-center justify-center rounded-full"
+                          className="tap-highlight ml-2 flex h-11 w-11 items-center justify-center rounded-full"
                           style={{ backgroundColor: theme.bgTertiary }}
                         >
                           <Heart size={16} color={theme.gold} fill={theme.gold} />
@@ -352,7 +352,7 @@ export default function MyStuffPage() {
                         border: `1px solid ${theme.border}`,
                       }}
                     >
-                      <Link href={`/mlb/team/${team.id}`} className="flex items-center gap-3 flex-1">
+                      <Link href={`/mlb/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
                         <img
                           src={team.logo}
                           alt={team.name}
@@ -369,7 +369,7 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('mlb_team', Number(team.id))}
-                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
                         style={{ backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
@@ -399,7 +399,7 @@ export default function MyStuffPage() {
                         border: `1px solid ${theme.border}`,
                       }}
                     >
-                      <Link href={`/nba/team/${team.id}`} className="flex items-center gap-3 flex-1">
+                      <Link href={`/nba/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
                         <img
                           src={team.logo}
                           alt={team.name}
@@ -416,7 +416,7 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('nba_team', Number(team.id))}
-                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
                         style={{ backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
@@ -446,7 +446,7 @@ export default function MyStuffPage() {
                         border: `1px solid ${theme.border}`,
                       }}
                     >
-                      <Link href={`/nfl/team/${team.id}`} className="flex items-center gap-3 flex-1">
+                      <Link href={`/nfl/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
                         <img
                           src={team.logo}
                           alt={team.name}
@@ -463,7 +463,7 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('nfl_team', Number(team.id))}
-                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
                         style={{ backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
@@ -493,7 +493,7 @@ export default function MyStuffPage() {
                         border: `1px solid ${theme.border}`,
                       }}
                     >
-                      <Link href={`/basketball/team/${team.id}`} className="flex items-center gap-3 flex-1">
+                      <Link href={`/basketball/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
                         <img
                           src={team.logo}
                           alt={team.name}
@@ -510,7 +510,7 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('ncaab_team', Number(team.id))}
-                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
                         style={{ backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
@@ -540,7 +540,7 @@ export default function MyStuffPage() {
                         border: `1px solid ${theme.border}`,
                       }}
                     >
-                      <Link href={`/football/team/${team.id}`} className="flex items-center gap-3 flex-1">
+                      <Link href={`/football/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
                         <img
                           src={team.logo}
                           alt={team.name}
@@ -557,7 +557,7 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('ncaaf_team', Number(team.id))}
-                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
                         style={{ backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
@@ -587,7 +587,7 @@ export default function MyStuffPage() {
                         border: `1px solid ${theme.border}`,
                       }}
                     >
-                      <Link href={`/league/${league.slug}`} className="flex items-center gap-3 flex-1">
+                      <Link href={`/league/${league.slug}`} className="card-press flex items-center gap-3 flex-1">
                         <img
                           src={league.logo}
                           alt={league.name}
@@ -604,7 +604,7 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('league', Number(league.id) || 0)}
-                        className="flex h-8 w-8 items-center justify-center rounded-full"
+                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
                         style={{ backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />

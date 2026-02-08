@@ -155,7 +155,7 @@ export default function MLBHomePage() {
           <div className="flex items-center gap-3">
             <Link
               href="/all"
-              className="flex items-center justify-center rounded-full p-1.5 -ml-1.5 hover:opacity-70 transition-opacity"
+              className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity"
               style={{ backgroundColor: theme.bgSecondary }}
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
@@ -173,7 +173,7 @@ export default function MLBHomePage() {
             <button
               onClick={() => mutate()}
               disabled={gamesLoading}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm"
+              className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
               style={{
                 backgroundColor: theme.bgSecondary,
                 border: `1px solid ${theme.border}`,
@@ -198,7 +198,7 @@ export default function MLBHomePage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
+            className="tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
             style={{
               backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary,
               color: activeTab === tab.id ? '#fff' : theme.textSecondary,
@@ -243,7 +243,7 @@ export default function MLBHomePage() {
                   >
                     <button
                       onClick={() => setLiveCollapsed(!liveCollapsed)}
-                      className="w-full flex items-center justify-between px-4 py-3"
+                      className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                       style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export default function MLBHomePage() {
                   >
                     <button
                       onClick={() => setUpcomingCollapsed(!upcomingCollapsed)}
-                      className="w-full flex items-center justify-between px-4 py-3"
+                      className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                       style={{ borderBottom: upcomingCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
@@ -331,7 +331,7 @@ export default function MLBHomePage() {
                   >
                     <button
                       onClick={() => setCompletedCollapsed(!completedCollapsed)}
-                      className="w-full flex items-center justify-between px-4 py-3"
+                      className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                       style={{ borderBottom: completedCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
@@ -378,7 +378,7 @@ export default function MLBHomePage() {
                 <button
                   key={view}
                   onClick={() => setStatsView(view)}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors capitalize"
+                  className="tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors capitalize"
                   style={{
                     backgroundColor: statsView === view ? theme.accent : theme.bgSecondary,
                     color: statsView === view ? '#fff' : theme.textSecondary,
@@ -430,7 +430,7 @@ export default function MLBHomePage() {
                     <button
                       key={league}
                       onClick={() => setSelectedLeague(league)}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                      className="tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors"
                       style={{
                         backgroundColor: selectedLeague === league ? theme.accent : theme.bgSecondary,
                         color: selectedLeague === league ? '#fff' : theme.textSecondary,
@@ -497,7 +497,7 @@ export default function MLBHomePage() {
                             <Link
                               key={team.id}
                               href={`/mlb/team/${team.id}`}
-                              className="flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
+                              className="card-press flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
                               style={{
                                 borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
                               }}
@@ -523,7 +523,7 @@ export default function MLBHomePage() {
                             <div key={team.team.id}>
                               <Link
                                 href={`/mlb/team/${team.team.id}`}
-                                className="flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
+                                className="card-press flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
                                 style={{
                                   borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
                                 }}

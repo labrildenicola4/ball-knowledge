@@ -28,7 +28,7 @@ export default function LoginButton() {
         <button
             onClick={handleLogin}
             disabled={loading}
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+            className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
             style={{
                 backgroundColor: theme.bgSecondary,
                 color: theme.text,

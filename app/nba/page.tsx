@@ -90,7 +90,7 @@ export default function NBAHomePage() {
           <div className="flex items-center gap-3">
             <Link
               href="/all"
-              className="flex items-center justify-center rounded-full p-1.5 -ml-1.5 hover:opacity-70 transition-opacity"
+              className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity"
               style={{ backgroundColor: theme.bgSecondary }}
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
@@ -108,7 +108,7 @@ export default function NBAHomePage() {
             <button
               onClick={() => mutate()}
               disabled={gamesLoading}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm"
+              className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
               style={{
                 backgroundColor: theme.bgSecondary,
                 border: `1px solid ${theme.border}`,
@@ -133,7 +133,7 @@ export default function NBAHomePage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
+            className="tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
             style={{
               backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary,
               color: activeTab === tab.id ? '#fff' : theme.textSecondary,
@@ -178,7 +178,7 @@ export default function NBAHomePage() {
                   >
                     <button
                       onClick={() => setLiveCollapsed(!liveCollapsed)}
-                      className="w-full flex items-center justify-between px-4 py-3"
+                      className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                       style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
@@ -224,7 +224,7 @@ export default function NBAHomePage() {
                   >
                     <button
                       onClick={() => setUpcomingCollapsed(!upcomingCollapsed)}
-                      className="w-full flex items-center justify-between px-4 py-3"
+                      className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                       style={{ borderBottom: upcomingCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
@@ -266,7 +266,7 @@ export default function NBAHomePage() {
                   >
                     <button
                       onClick={() => setCompletedCollapsed(!completedCollapsed)}
-                      className="w-full flex items-center justify-between px-4 py-3"
+                      className="tap-highlight w-full flex items-center justify-between px-4 py-3"
                       style={{ borderBottom: completedCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
@@ -313,7 +313,7 @@ export default function NBAHomePage() {
                 <button
                   key={view}
                   onClick={() => setStatsView(view)}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors capitalize"
+                  className="tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors capitalize"
                   style={{
                     backgroundColor: statsView === view ? theme.accent : theme.bgSecondary,
                     color: statsView === view ? '#fff' : theme.textSecondary,
@@ -438,7 +438,7 @@ export default function NBAHomePage() {
                     <button
                       key={conf}
                       onClick={() => setSelectedConference(conf)}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                      className="tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors"
                       style={{
                         backgroundColor: selectedConference === conf ? theme.accent : theme.bgSecondary,
                         color: selectedConference === conf ? '#fff' : theme.textSecondary,
@@ -492,7 +492,7 @@ export default function NBAHomePage() {
                             >
                               <Link
                                 href={`/nba/team/${team.id}`}
-                                className="flex items-center flex-1 hover:opacity-80 transition-opacity"
+                                className="card-press flex items-center flex-1 hover:opacity-80 transition-opacity"
                               >
                                 <span
                                   className="w-7 text-[12px] font-mono font-bold"
@@ -535,7 +535,7 @@ export default function NBAHomePage() {
                                   }
                                   toggleFavorite('nba_team', Number(team.id));
                                 }}
-                                className="ml-2 p-1.5 rounded-full hover:bg-black/10 transition-colors"
+                                className="tap-highlight ml-2 p-2.5 rounded-full hover:bg-black/10 transition-colors"
                               >
                                 <Heart
                                   size={16}
@@ -630,7 +630,7 @@ function LeaderCard({
         <Link
           key={leader.player.id}
           href={`/nba/team/${leader.team.id}`}
-          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5"
+          className="card-press flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5"
           style={{ borderBottom: index < leaders.length - 1 ? `1px solid ${theme.border}` : 'none' }}
         >
           <span
@@ -713,7 +713,7 @@ function TeamRankingCard({
         <Link
           key={ranking.team.id}
           href={`/nba/team/${ranking.team.id}`}
-          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5"
+          className="card-press flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5"
           style={{ borderBottom: index < rankings.length - 1 ? `1px solid ${theme.border}` : 'none' }}
         >
           <span

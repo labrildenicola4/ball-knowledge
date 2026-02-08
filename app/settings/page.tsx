@@ -49,12 +49,12 @@ export default function SettingsPage() {
   const Toggle = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => (
     <button
       onClick={onToggle}
-      className="relative h-7 w-12 rounded-full transition-colors"
+      className="tap-highlight relative h-11 w-16 rounded-full transition-colors"
       style={{ backgroundColor: enabled ? theme.accent : theme.bgTertiary }}
     >
       <div
-        className="absolute top-1 h-5 w-5 rounded-full bg-white transition-transform"
-        style={{ left: enabled ? '26px' : '4px' }}
+        className="absolute top-1.5 h-8 w-8 rounded-full bg-white transition-transform"
+        style={{ left: enabled ? '30px' : '6px' }}
       />
     </button>
   );
@@ -102,7 +102,7 @@ export default function SettingsPage() {
                     clearFavorites();
                   }
                 }}
-                className="rounded-lg px-4 py-2 text-[11px] font-medium"
+                className="tap-highlight rounded-lg px-4 py-2.5 text-[11px] font-medium"
                 style={{
                   backgroundColor: favorites.length > 0 ? theme.red : theme.bgTertiary,
                   color: favorites.length > 0 ? '#fff' : theme.textSecondary,
@@ -138,7 +138,7 @@ export default function SettingsPage() {
             href="https://www.api-football.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-4 rounded-xl p-4"
+            className="card-press flex items-center gap-4 rounded-xl p-4"
             style={{
               backgroundColor: theme.bgSecondary,
               border: `1px solid ${theme.border}`,

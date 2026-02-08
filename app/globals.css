@@ -202,6 +202,13 @@ a {
   filter: drop-shadow(0 0 1px rgba(255,255,255,0.6)) drop-shadow(0 0 2px rgba(255,255,255,0.3));
 }
 
+/* Disabled button styling */
+button:disabled,
+button[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .skeleton {
   background: linear-gradient(
     90deg,

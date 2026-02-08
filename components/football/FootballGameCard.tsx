@@ -21,7 +21,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
   return (
     <Link href={`/football/game/${game.id}`}>
       <div
-        className="card-hover cursor-pointer rounded-xl p-4 transition-theme"
+        className="card-hover card-press cursor-pointer rounded-xl p-4 transition-theme"
         style={{
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,

@@ -29,7 +29,7 @@ export default function AllPage() {
         </div>
         <button
           onClick={toggleDarkMode}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
           style={{ border: `1px solid ${theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
@@ -51,7 +51,7 @@ export default function AllPage() {
               <Link
                 key={hub.name}
                 href={hub.href}
-                className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80"
+                className="card-press flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80"
                 style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <img src={hub.logo} alt={hub.name} className="h-8 w-8 object-contain logo-glow" />
@@ -79,7 +79,7 @@ export default function AllPage() {
               <Link
                 key={tournament.slug}
                 href={`/tournament/${tournament.slug}`}
-                className="flex flex-col gap-1 rounded-xl p-4 transition-colors hover:opacity-80"
+                className="card-press flex flex-col gap-1 rounded-xl p-4 transition-colors hover:opacity-80"
                 style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <span className="text-sm font-medium" style={{ color: theme.text }}>
