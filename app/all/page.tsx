@@ -54,7 +54,7 @@ export default function AllPage() {
                 className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80"
                 style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
-                <img src={hub.logo} alt={hub.name} className="h-8 w-8 object-contain" />
+                <img src={hub.logo} alt={hub.name} className="h-8 w-8 object-contain logo-glow" />
                 <div className="flex-1">
                   <span className="text-sm font-medium" style={{ color: theme.text }}>{hub.name}</span>
                   <p className="text-[11px]" style={{ color: theme.textSecondary }}>{hub.description}</p>

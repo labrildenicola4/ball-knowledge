@@ -233,7 +233,7 @@ export default function ConferencePage() {
                   <img
                     src={team.logo}
                     alt={team.name}
-                    className="h-7 w-7 flex-shrink-0 object-contain"
+                    className="h-7 w-7 flex-shrink-0 object-contain logo-glow"
                     loading="lazy"
                   />
                 ) : (

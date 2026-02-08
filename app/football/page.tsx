@@ -441,7 +441,7 @@ export default function CollegeFootballHomePage() {
                       <img
                         src={ranking.team.logo}
                         alt={ranking.team.name}
-                        className="h-6 w-6 object-contain flex-shrink-0"
+                        className="h-6 w-6 object-contain logo-glow flex-shrink-0"
                       />
                       <span
                         className="text-[13px] font-medium truncate"

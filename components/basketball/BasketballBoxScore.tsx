@@ -96,7 +96,7 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
         style={{ backgroundColor: theme.bgTertiary }}
       >
         {team.logo && (
-          <img src={team.logo} alt={team.name} className="h-6 w-6 object-contain" />
+          <img src={team.logo} alt={team.name} className="h-6 w-6 object-contain logo-glow" />
         )}
         <span className="text-sm font-medium" style={{ color: theme.text }}>
           {team.displayName}
@@ -223,7 +223,7 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
             <img
               src={boxScore.homeTeam.team.logo}
               alt=""
-              className="h-5 w-5 object-contain"
+              className="h-5 w-5 object-contain logo-glow"
             />
           )}
           {boxScore.homeTeam.team.shortDisplayName}
@@ -241,7 +241,7 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
             <img
               src={boxScore.awayTeam.team.logo}
               alt=""
-              className="h-5 w-5 object-contain"
+              className="h-5 w-5 object-contain logo-glow"
             />
           )}
           {boxScore.awayTeam.team.shortDisplayName}

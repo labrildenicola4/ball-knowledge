@@ -91,7 +91,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
               style={{ color: theme.text }}
             >
               {team.logo && (
-                <img src={team.logo} alt={team.team} className="h-5 w-5 object-contain" />
+                <img src={team.logo} alt={team.team} className="h-5 w-5 object-contain logo-glow" />
               )}
               <span className="truncate">{team.team}</span>
               {isFavorite('team', team.teamId) && (
@@ -181,7 +181,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
               style={{ color: theme.text }}
             >
               {team.logo && (
-                <img src={team.logo} alt={team.team} className="h-6 w-6 object-contain" />
+                <img src={team.logo} alt={team.team} className="h-6 w-6 object-contain logo-glow" />
               )}
               <span className="truncate">{team.team}</span>
               {isFavorite('team', team.teamId) && (

@@ -504,7 +504,7 @@ export default function NBAHomePage() {
                                   <img
                                     src={team.logo}
                                     alt={team.name}
-                                    className="h-6 w-6 object-contain flex-shrink-0"
+                                    className="h-6 w-6 object-contain logo-glow flex-shrink-0"
                                   />
                                   <span
                                     className="text-[13px] font-medium truncate"
@@ -657,7 +657,7 @@ function LeaderCard({
               <img
                 src={leader.team.logo}
                 alt={leader.team.abbreviation}
-                className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-white object-contain p-0.5"
+                className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-white object-contain logo-glow p-0.5"
                 loading="lazy"
               />
             )}
@@ -726,7 +726,7 @@ function TeamRankingCard({
             <img
               src={ranking.team.logo}
               alt={ranking.team.name}
-              className="h-10 w-10 object-contain"
+              className="h-10 w-10 object-contain logo-glow"
               loading="lazy"
             />
           ) : (

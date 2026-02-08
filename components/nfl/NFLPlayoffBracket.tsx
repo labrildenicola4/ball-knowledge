@@ -46,7 +46,7 @@ function TeamRow({
           </span>
         )}
         {team.logo && (
-          <img src={team.logo} alt={team.name} className="h-4 w-4 object-contain flex-shrink-0" />
+          <img src={team.logo} alt={team.name} className="h-4 w-4 object-contain logo-glow flex-shrink-0" />
         )}
         <span
           className="text-xs font-medium truncate"

@@ -284,7 +284,7 @@ export default function MyStuffPage() {
                           <img
                             src={team.logo}
                             alt={team.team}
-                            className="h-10 w-10 object-contain"
+                            className="h-10 w-10 object-contain logo-glow"
                           />
                         )}
                         <div className="flex-1">
@@ -356,7 +356,7 @@ export default function MyStuffPage() {
                         <img
                           src={team.logo}
                           alt={team.name}
-                          className="h-10 w-10 object-contain"
+                          className="h-10 w-10 object-contain logo-glow"
                         />
                         <div className="flex-1">
                           <p className="text-[13px] font-medium" style={{ color: theme.text }}>
@@ -403,7 +403,7 @@ export default function MyStuffPage() {
                         <img
                           src={team.logo}
                           alt={team.name}
-                          className="h-10 w-10 object-contain"
+                          className="h-10 w-10 object-contain logo-glow"
                         />
                         <div className="flex-1">
                           <p className="text-[13px] font-medium" style={{ color: theme.text }}>
@@ -450,7 +450,7 @@ export default function MyStuffPage() {
                         <img
                           src={team.logo}
                           alt={team.name}
-                          className="h-10 w-10 object-contain"
+                          className="h-10 w-10 object-contain logo-glow"
                         />
                         <div className="flex-1">
                           <p className="text-[13px] font-medium" style={{ color: theme.text }}>
@@ -497,7 +497,7 @@ export default function MyStuffPage() {
                         <img
                           src={team.logo}
                           alt={team.name}
-                          className="h-10 w-10 object-contain"
+                          className="h-10 w-10 object-contain logo-glow"
                         />
                         <div className="flex-1">
                           <p className="text-[13px] font-medium" style={{ color: theme.text }}>
@@ -544,7 +544,7 @@ export default function MyStuffPage() {
                         <img
                           src={team.logo}
                           alt={team.name}
-                          className="h-10 w-10 object-contain"
+                          className="h-10 w-10 object-contain logo-glow"
                         />
                         <div className="flex-1">
                           <p className="text-[13px] font-medium" style={{ color: theme.text }}>
@@ -591,7 +591,7 @@ export default function MyStuffPage() {
                         <img
                           src={league.logo}
                           alt={league.name}
-                          className="h-10 w-10 object-contain"
+                          className="h-10 w-10 object-contain logo-glow"
                         />
                         <div className="flex-1">
                           <p className="text-[13px] font-medium" style={{ color: theme.text }}>

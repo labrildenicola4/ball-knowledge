@@ -171,7 +171,7 @@ export default function CollegeFootballTeamPage() {
 
         <div className="mx-auto mb-4 h-24 w-24">
           {team.logo ? (
-            <img src={team.logo} alt={team.name} className="h-full w-full object-contain" />
+            <img src={team.logo} alt={team.name} className="h-full w-full object-contain logo-glow" />
           ) : (
             <div
               className="h-full w-full rounded-full"
@@ -271,7 +271,7 @@ export default function CollegeFootballTeamPage() {
                     <img
                       src={game.opponent.logo}
                       alt={game.opponent.name}
-                      className="h-5 w-5 object-contain"
+                      className="h-5 w-5 object-contain logo-glow"
                     />
                   )}
                   <span className="text-sm font-medium" style={{ color: theme.text }}>

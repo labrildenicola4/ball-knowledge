@@ -506,7 +506,7 @@ export default function MLBHomePage() {
                                 <img
                                   src={team.logo}
                                   alt={team.name}
-                                  className="h-6 w-6 object-contain flex-shrink-0"
+                                  className="h-6 w-6 object-contain logo-glow flex-shrink-0"
                                 />
                                 <span
                                   className="text-[13px] font-medium truncate"
@@ -532,7 +532,7 @@ export default function MLBHomePage() {
                                   <img
                                     src={team.team.logo}
                                     alt={team.team.name}
-                                    className="h-6 w-6 object-contain flex-shrink-0"
+                                    className="h-6 w-6 object-contain logo-glow flex-shrink-0"
                                   />
                                   <span
                                     className="text-[13px] font-medium truncate"

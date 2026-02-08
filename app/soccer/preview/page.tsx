@@ -58,7 +58,7 @@ export default function LogoPreviewPage() {
                       <img
                         src={logoSrc}
                         alt={league.name}
-                        className="h-10 w-10 object-contain"
+                        className="h-10 w-10 object-contain logo-glow"
                         style={{ filter: useFilter ? 'brightness(0) invert(1)' : 'none' }}
                       />
                     </div>
@@ -99,7 +99,7 @@ export default function LogoPreviewPage() {
                     <img
                       src={league.logo}
                       alt={league.name}
-                      className="h-10 w-10 object-contain"
+                      className="h-10 w-10 object-contain logo-glow"
                     />
                   </div>
                   <span className="text-[10px] text-center" style={{ color: theme.textSecondary }}>
@@ -133,7 +133,7 @@ export default function LogoPreviewPage() {
                     <img
                       src={league.logo}
                       alt={league.name}
-                      className="h-10 w-10 object-contain"
+                      className="h-10 w-10 object-contain logo-glow"
                     />
                   </div>
                   <span className="text-[10px] text-center" style={{ color: theme.textSecondary }}>
@@ -167,7 +167,7 @@ export default function LogoPreviewPage() {
                     <img
                       src={league.logo}
                       alt={league.name}
-                      className="h-10 w-10 object-contain"
+                      className="h-10 w-10 object-contain logo-glow"
                     />
                   </div>
                   <span className="text-[10px] text-center" style={{ color: theme.textSecondary }}>
@@ -201,7 +201,7 @@ export default function LogoPreviewPage() {
                     <img
                       src={league.logo}
                       alt={league.name}
-                      className="h-10 w-10 object-contain"
+                      className="h-10 w-10 object-contain logo-glow"
                     />
                   </div>
                   <span className="text-[10px] text-center" style={{ color: theme.textSecondary }}>
@@ -240,7 +240,7 @@ export default function LogoPreviewPage() {
                       <img
                         src={league.logo}
                         alt={league.name}
-                        className="h-10 w-10 object-contain"
+                        className="h-10 w-10 object-contain logo-glow"
                         style={{ filter: darkMode && useFilter ? 'brightness(0) invert(1)' : 'none' }}
                       />
                     </div>
@@ -279,7 +279,7 @@ export default function LogoPreviewPage() {
                     <img
                       src={league.logo}
                       alt={league.name}
-                      className="h-10 w-10 object-contain"
+                      className="h-10 w-10 object-contain logo-glow"
                       style={{ filter: 'brightness(0) invert(1)' }}
                     />
                   </div>
@@ -314,7 +314,7 @@ export default function LogoPreviewPage() {
                     <img
                       src={league.logo}
                       alt={league.name}
-                      className="h-10 w-10 object-contain"
+                      className="h-10 w-10 object-contain logo-glow"
                       style={{ filter: darkMode ? 'brightness(0) invert(1)' : 'none' }}
                     />
                   </div>
@@ -346,7 +346,7 @@ export default function LogoPreviewPage() {
                     <img
                       src={league.logo}
                       alt={league.name}
-                      className="h-10 w-10 object-contain"
+                      className="h-10 w-10 object-contain logo-glow"
                     />
                   </div>
                   <span className="text-[10px] text-center" style={{ color: theme.textSecondary }}>

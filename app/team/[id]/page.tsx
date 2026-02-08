@@ -333,7 +333,7 @@ export default function TeamPage() {
           <img
             src={match.competitionLogo}
             alt=""
-            className="h-5 w-5 object-contain"
+            className="h-5 w-5 object-contain logo-glow"
             style={{ filter: darkMode && shouldUseWhiteFilterByCode(match.competitionCode || '') ? 'brightness(0) invert(1)' : 'none' }}
           />
 
@@ -352,7 +352,7 @@ export default function TeamPage() {
 
           {/* Opponent */}
           <div className="flex flex-1 items-center gap-2">
-            <img src={opponent.logo} alt={opponent.name} className="h-6 w-6 object-contain" />
+            <img src={opponent.logo} alt={opponent.name} className="h-6 w-6 object-contain logo-glow" />
             <span className="text-sm font-medium truncate" style={{ color: theme.text }}>
               {opponent.name}
             </span>
@@ -474,7 +474,7 @@ export default function TeamPage() {
           {/* Crest */}
           <div className="flex justify-center mb-4">
             <div className="h-24 w-24">
-              <img src={team.crest} alt={team.name} className="h-full w-full object-contain" />
+              <img src={team.crest} alt={team.name} className="h-full w-full object-contain logo-glow" />
             </div>
           </div>
 
@@ -558,7 +558,7 @@ export default function TeamPage() {
                     <img
                       src={comp.logo}
                       alt={comp.name}
-                      className="h-5 w-5 object-contain"
+                      className="h-5 w-5 object-contain logo-glow"
                       style={{ filter: darkMode && shouldUseWhiteFilterByCode(comp.code) ? 'brightness(0) invert(1)' : 'none' }}
                     />
                     <span className="text-xs font-medium truncate" style={{ color: theme.text }}>{comp.name}</span>
@@ -684,7 +684,7 @@ export default function TeamPage() {
                           <img
                             src={selectedCompetitionData.logo}
                             alt=""
-                            className="h-5 w-5 object-contain"
+                            className="h-5 w-5 object-contain logo-glow"
                             style={{ filter: darkMode && shouldUseWhiteFilterByCode(selectedCompetitionData.code) ? 'brightness(0) invert(1)' : 'none' }}
                           />
                         )}
@@ -724,7 +724,7 @@ export default function TeamPage() {
                             <img
                               src={comp.logo}
                               alt=""
-                              className="h-5 w-5 object-contain"
+                              className="h-5 w-5 object-contain logo-glow"
                               style={{ filter: darkMode && shouldUseWhiteFilterByCode(comp.code) ? 'brightness(0) invert(1)' : 'none' }}
                             />
                             <span
@@ -800,7 +800,7 @@ export default function TeamPage() {
                             style={{ fontWeight: isCurrentTeam ? 600 : 500, color: theme.text }}
                           >
                             {standing.logo && (
-                              <img src={standing.logo} alt={standing.team} className="h-6 w-6 object-contain" />
+                              <img src={standing.logo} alt={standing.team} className="h-6 w-6 object-contain logo-glow" />
                             )}
                             <span className="truncate">{standing.team}</span>
                           </span>
@@ -1127,7 +1127,7 @@ export default function TeamPage() {
           <div className="flex flex-col items-center text-center">
             {/* Crest */}
             <div className="mb-3 h-20 w-20">
-              <img src={team.crest} alt={team.name} className="h-full w-full object-contain" />
+              <img src={team.crest} alt={team.name} className="h-full w-full object-contain logo-glow" />
             </div>
 
             {/* Name with favorite button */}
@@ -1247,7 +1247,7 @@ export default function TeamPage() {
                       <img
                         src={selectedCompetitionData.logo}
                         alt=""
-                        className="h-5 w-5 object-contain"
+                        className="h-5 w-5 object-contain logo-glow"
                         style={{ filter: darkMode && shouldUseWhiteFilterByCode(selectedCompetitionData.code) ? 'brightness(0) invert(1)' : 'none' }}
                       />
                     )}
@@ -1287,7 +1287,7 @@ export default function TeamPage() {
                         <img
                           src={comp.logo}
                           alt=""
-                          className="h-5 w-5 object-contain"
+                          className="h-5 w-5 object-contain logo-glow"
                           style={{ filter: darkMode && shouldUseWhiteFilterByCode(comp.code) ? 'brightness(0) invert(1)' : 'none' }}
                         />
                         <span
@@ -1360,7 +1360,7 @@ export default function TeamPage() {
                         style={{ fontWeight: isCurrentTeam ? 600 : 500, color: theme.text }}
                       >
                         {standing.logo && (
-                          <img src={standing.logo} alt={standing.team} className="h-5 w-5 object-contain" />
+                          <img src={standing.logo} alt={standing.team} className="h-5 w-5 object-contain logo-glow" />
                         )}
                         <span className="truncate">{standing.team}</span>
                       </span>

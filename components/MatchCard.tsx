@@ -44,7 +44,7 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
               <img
                 src={match.leagueLogo}
                 alt={match.league}
-                className="h-5 w-5 object-contain"
+                className="h-5 w-5 object-contain logo-glow"
                 style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : 'none' }}
                 loading="lazy"
               />
@@ -72,7 +72,7 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
           {/* Home Team */}
           <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pr-1 md:pr-2">
             {match.homeLogo.startsWith('http') ? (
-              <img src={match.homeLogo} alt={match.home} className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain" loading="lazy" />
+              <img src={match.homeLogo} alt={match.home} className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain logo-glow" loading="lazy" />
             ) : (
               <span className="text-xl md:text-2xl flex-shrink-0">{match.homeLogo}</span>
             )}
@@ -99,7 +99,7 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
               <span className="text-sm md:text-base font-medium truncate text-right" style={{ color: theme.text }}>{match.away}</span>
             </div>
             {match.awayLogo.startsWith('http') ? (
-              <img src={match.awayLogo} alt={match.away} className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain" loading="lazy" />
+              <img src={match.awayLogo} alt={match.away} className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain logo-glow" loading="lazy" />
             ) : (
               <span className="text-xl md:text-2xl flex-shrink-0">{match.awayLogo}</span>
             )}

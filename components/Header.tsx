@@ -193,7 +193,7 @@ export function Header() {
                               <img
                                 src={league.logo}
                                 alt={league.name}
-                                className="h-8 w-8 object-contain"
+                                className="h-8 w-8 object-contain logo-glow"
                                 loading="lazy"
                               />
                               <div>
@@ -228,7 +228,7 @@ export function Header() {
                               <img
                                 src={league.logo}
                                 alt={league.name}
-                                className="h-8 w-8 object-contain"
+                                className="h-8 w-8 object-contain logo-glow"
                                 loading="lazy"
                               />
                               <div>
@@ -263,7 +263,7 @@ export function Header() {
                               <img
                                 src={team.logo}
                                 alt={team.name}
-                                className="h-8 w-8 object-contain"
+                                className="h-8 w-8 object-contain logo-glow"
                                 loading="lazy"
                               />
                               <div>
@@ -298,7 +298,7 @@ export function Header() {
                               <img
                                 src={team.logo}
                                 alt={team.name}
-                                className="h-8 w-8 object-contain"
+                                className="h-8 w-8 object-contain logo-glow"
                                 loading="lazy"
                               />
                               <div>
@@ -333,7 +333,7 @@ export function Header() {
                               <img
                                 src={team.logo}
                                 alt={team.name}
-                                className="h-8 w-8 object-contain"
+                                className="h-8 w-8 object-contain logo-glow"
                                 loading="lazy"
                               />
                               <div>
@@ -368,7 +368,7 @@ export function Header() {
                               <img
                                 src={team.logo}
                                 alt={team.name}
-                                className="h-8 w-8 object-contain"
+                                className="h-8 w-8 object-contain logo-glow"
                                 loading="lazy"
                               />
                               <div>
@@ -403,7 +403,7 @@ export function Header() {
                               <img
                                 src={team.logo}
                                 alt={team.name}
-                                className="h-8 w-8 object-contain"
+                                className="h-8 w-8 object-contain logo-glow"
                                 loading="lazy"
                               />
                               <div>
@@ -438,7 +438,7 @@ export function Header() {
                               <img
                                 src={team.logo}
                                 alt={team.name}
-                                className="h-8 w-8 object-contain"
+                                className="h-8 w-8 object-contain logo-glow"
                                 loading="lazy"
                               />
                               <div>

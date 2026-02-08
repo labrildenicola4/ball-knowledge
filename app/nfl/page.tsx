@@ -576,7 +576,7 @@ export default function NFLHomePage() {
                                 <img
                                   src={team.logo}
                                   alt={team.name}
-                                  className="h-6 w-6 object-contain flex-shrink-0"
+                                  className="h-6 w-6 object-contain logo-glow flex-shrink-0"
                                 />
                                 <span
                                   className="text-[13px] font-medium truncate"
@@ -602,7 +602,7 @@ export default function NFLHomePage() {
                                   <img
                                     src={team.team.logo}
                                     alt={team.team.name}
-                                    className="h-6 w-6 object-contain flex-shrink-0"
+                                    className="h-6 w-6 object-contain logo-glow flex-shrink-0"
                                   />
                                   <span
                                     className="text-[13px] font-medium truncate"
@@ -719,7 +719,7 @@ function LeaderCard({
               <img
                 src={leader.team.logo}
                 alt={leader.team.abbreviation}
-                className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-white object-contain p-0.5"
+                className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-white object-contain logo-glow p-0.5"
                 loading="lazy"
               />
             )}

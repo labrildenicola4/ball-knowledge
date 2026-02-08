@@ -333,7 +333,7 @@ export default function LeaguePage() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <img src={fixture.homeTeam.logo} alt="" className="h-5 w-5 object-contain" />
+                <img src={fixture.homeTeam.logo} alt="" className="h-5 w-5 object-contain logo-glow" />
                 <span
                   className="text-xs truncate"
                   style={{
@@ -353,7 +353,7 @@ export default function LeaguePage() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <img src={fixture.awayTeam.logo} alt="" className="h-5 w-5 object-contain" />
+                <img src={fixture.awayTeam.logo} alt="" className="h-5 w-5 object-contain logo-glow" />
                 <span
                   className="text-xs truncate"
                   style={{
@@ -431,7 +431,7 @@ export default function LeaguePage() {
                   {p.player.name}
                 </p>
                 <div className="flex items-center gap-1">
-                  {p.team && <img src={p.team.logo} alt="" className="h-3 w-3 object-contain" />}
+                  {p.team && <img src={p.team.logo} alt="" className="h-3 w-3 object-contain logo-glow" />}
                   <span className="text-[10px]" style={{ color: theme.textSecondary }}>
                     {p.team?.name || 'Unknown'}
                   </span>
@@ -494,7 +494,7 @@ export default function LeaguePage() {
               >
                 {index + 1}
               </span>
-              <img src={team.team.logo} alt="" className="h-6 w-6 object-contain" />
+              <img src={team.team.logo} alt="" className="h-6 w-6 object-contain logo-glow" />
               <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
                 {team.team.name}
               </span>
@@ -532,7 +532,7 @@ export default function LeaguePage() {
             <img
               src={data.league.logo}
               alt={data.league.name}
-              className="h-8 w-8 object-contain"
+              className="h-8 w-8 object-contain logo-glow"
               style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : 'none' }}
             />
             <div>
@@ -1020,7 +1020,7 @@ export default function LeaguePage() {
                   <img
                     src={row.team.logo}
                     alt={row.team.name}
-                    className="h-5 w-5 flex-shrink-0 object-contain"
+                    className="h-5 w-5 flex-shrink-0 object-contain logo-glow"
                     loading="lazy"
                   />
                   <span className="text-xs font-medium truncate" style={{ color: theme.text }}>

@@ -215,7 +215,7 @@ export default function NFLTeamPage() {
       >
         <div className="mx-auto mb-3 h-20 w-20">
           {team.logo ? (
-            <img src={team.logo} alt={team.name} className="h-full w-full object-contain" />
+            <img src={team.logo} alt={team.name} className="h-full w-full object-contain logo-glow" />
           ) : (
             <div
               className="h-full w-full rounded-full"
@@ -373,7 +373,7 @@ export default function NFLTeamPage() {
                                 {game.isHome ? 'vs' : '@'}
                               </span>
                               {game.opponent.logo && (
-                                <img src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain" />
+                                <img src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain logo-glow" />
                               )}
                               <span className="text-sm font-medium" style={{ color: theme.text }}>
                                 {game.opponent.shortDisplayName || game.opponent.name}
@@ -421,7 +421,7 @@ export default function NFLTeamPage() {
                                 {game.isHome ? 'vs' : '@'}
                               </span>
                               {game.opponent.logo && (
-                                <img src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain" />
+                                <img src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain logo-glow" />
                               )}
                               <span className="text-sm font-medium" style={{ color: theme.text }}>
                                 {game.opponent.shortDisplayName || game.opponent.name}
@@ -808,7 +808,7 @@ export default function NFLTeamPage() {
                           <img
                             src={standingTeam.team.logo}
                             alt={standingTeam.team.name}
-                            className="h-5 w-5 object-contain flex-shrink-0"
+                            className="h-5 w-5 object-contain logo-glow flex-shrink-0"
                           />
                           <span
                             className="text-[12px] font-medium truncate"

@@ -86,7 +86,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
                 style={{ fontWeight: highlighted ? 600 : 500, color: theme.text }}
               >
                 {team.logo && (
-                  <img src={team.logo} alt={team.team} className="h-5 w-5 object-contain" />
+                  <img src={team.logo} alt={team.team} className="h-5 w-5 object-contain logo-glow" />
                 )}
                 <span className="truncate">{team.team}</span>
               </span>

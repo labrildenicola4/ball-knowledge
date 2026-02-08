@@ -125,7 +125,7 @@ export default function FootballGamePage() {
             )}
             <div className="mx-auto mb-3 h-16 w-16">
               {game.awayTeam.logo ? (
-                <img src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-full w-full object-contain" />
+                <img src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-full w-full object-contain logo-glow" />
               ) : (
                 <div className="h-full w-full rounded-full" style={{ backgroundColor: game.awayTeam.color || theme.bgTertiary }} />
               )}
@@ -204,7 +204,7 @@ export default function FootballGamePage() {
             )}
             <div className="mx-auto mb-3 h-16 w-16">
               {game.homeTeam.logo ? (
-                <img src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-full w-full object-contain" />
+                <img src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-full w-full object-contain logo-glow" />
               ) : (
                 <div className="h-full w-full rounded-full" style={{ backgroundColor: game.homeTeam.color || theme.bgTertiary }} />
               )}
@@ -259,7 +259,7 @@ export default function FootballGamePage() {
             style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             {game.awayTeam.logo && (
-              <img src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-8 w-8 object-contain" />
+              <img src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-8 w-8 object-contain logo-glow" />
             )}
             <span className="text-sm font-medium" style={{ color: theme.text }}>
               {game.awayTeam.shortDisplayName}
@@ -271,7 +271,7 @@ export default function FootballGamePage() {
             style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             {game.homeTeam.logo && (
-              <img src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-8 w-8 object-contain" />
+              <img src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-8 w-8 object-contain logo-glow" />
             )}
             <span className="text-sm font-medium" style={{ color: theme.text }}>
               {game.homeTeam.shortDisplayName}

@@ -156,7 +156,7 @@ export function BasketballLiveStats({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           {homeTeam.logo && (
-            <img src={homeTeam.logo} alt={homeTeam.name} className="h-6 w-6 object-contain" />
+            <img src={homeTeam.logo} alt={homeTeam.name} className="h-6 w-6 object-contain logo-glow" />
           )}
           <span className="text-[12px] font-medium" style={{ color: theme.text }}>
             {homeTeam.shortDisplayName}
@@ -167,7 +167,7 @@ export function BasketballLiveStats({
             {awayTeam.shortDisplayName}
           </span>
           {awayTeam.logo && (
-            <img src={awayTeam.logo} alt={awayTeam.name} className="h-6 w-6 object-contain" />
+            <img src={awayTeam.logo} alt={awayTeam.name} className="h-6 w-6 object-contain logo-glow" />
           )}
         </div>
       </div>

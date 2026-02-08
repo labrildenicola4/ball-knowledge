@@ -367,7 +367,7 @@ export default function MatchPage() {
                 Home
               </span>
               <div className="mx-auto mb-3 h-20 w-20">
-                <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain" />
+                <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain logo-glow" />
               </div>
             </Link>
             <div className="flex flex-col items-center">
@@ -455,7 +455,7 @@ export default function MatchPage() {
                 Away
               </span>
               <div className="mx-auto mb-3 h-20 w-20">
-                <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain" />
+                <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain logo-glow" />
               </div>
             </Link>
             <div className="flex flex-col items-center">
@@ -717,7 +717,7 @@ export default function MatchPage() {
                               {pastMatch.home}
                             </span>
                             {pastMatch.homeLogo && (
-                              <img src={pastMatch.homeLogo} alt="" className="w-5 h-5 object-contain" />
+                              <img src={pastMatch.homeLogo} alt="" className="w-5 h-5 object-contain logo-glow" />
                             )}
                           </div>
 
@@ -732,7 +732,7 @@ export default function MatchPage() {
                           {/* Away Team */}
                           <div className="flex-1 flex items-center gap-2">
                             {pastMatch.awayLogo && (
-                              <img src={pastMatch.awayLogo} alt="" className="w-5 h-5 object-contain" />
+                              <img src={pastMatch.awayLogo} alt="" className="w-5 h-5 object-contain logo-glow" />
                             )}
                             <span
                               className="text-[12px] font-medium truncate"

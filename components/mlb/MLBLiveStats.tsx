@@ -120,7 +120,7 @@ export function MLBLiveStats({
                     <td className="py-2 pr-4">
                       <div className="flex items-center gap-2">
                         {awayTeam.logo && (
-                          <img src={awayTeam.logo} alt="" className="h-4 w-4 object-contain" />
+                          <img src={awayTeam.logo} alt="" className="h-4 w-4 object-contain logo-glow" />
                         )}
                         <span style={{ color: theme.text }}>{awayTeam.abbreviation}</span>
                       </div>
@@ -144,7 +144,7 @@ export function MLBLiveStats({
                     <td className="py-2 pr-4">
                       <div className="flex items-center gap-2">
                         {homeTeam.logo && (
-                          <img src={homeTeam.logo} alt="" className="h-4 w-4 object-contain" />
+                          <img src={homeTeam.logo} alt="" className="h-4 w-4 object-contain logo-glow" />
                         )}
                         <span style={{ color: theme.text }}>{homeTeam.abbreviation}</span>
                       </div>
@@ -186,7 +186,7 @@ export function MLBLiveStats({
       >
         <div className="flex items-center gap-3">
           {awayTeam.logo && (
-            <img src={awayTeam.logo} alt={awayTeam.name} className="h-8 w-8 object-contain" />
+            <img src={awayTeam.logo} alt={awayTeam.name} className="h-8 w-8 object-contain logo-glow" />
           )}
           <div>
             <p className="text-sm font-medium" style={{ color: theme.text }}>
@@ -203,7 +203,7 @@ export function MLBLiveStats({
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>Home</p>
           </div>
           {homeTeam.logo && (
-            <img src={homeTeam.logo} alt={homeTeam.name} className="h-8 w-8 object-contain" />
+            <img src={homeTeam.logo} alt={homeTeam.name} className="h-8 w-8 object-contain logo-glow" />
           )}
         </div>
       </div>

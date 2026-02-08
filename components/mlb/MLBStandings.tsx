@@ -72,7 +72,7 @@ export function MLBStandings({ standings, divisionName }: MLBStandingsProps) {
                 <img
                   src={standing.team.logo}
                   alt={standing.team.name}
-                  className="h-5 w-5 object-contain"
+                  className="h-5 w-5 object-contain logo-glow"
                 />
               )}
               <span className="font-medium truncate" style={{ color: theme.text }}>

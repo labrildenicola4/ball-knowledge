@@ -95,7 +95,7 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
               <img
                 src={game.awayTeam.logo}
                 alt={game.awayTeam.name}
-                className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain"
+                className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain logo-glow"
                 loading="lazy"
               />
             ) : (
@@ -178,7 +178,7 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
               <img
                 src={game.homeTeam.logo}
                 alt={game.homeTeam.name}
-                className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain"
+                className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain logo-glow"
                 loading="lazy"
               />
             ) : (

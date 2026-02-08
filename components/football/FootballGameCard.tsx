@@ -73,7 +73,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
               <img
                 src={game.awayTeam.logo}
                 alt={game.awayTeam.name}
-                className="h-8 w-8 flex-shrink-0 object-contain"
+                className="h-8 w-8 flex-shrink-0 object-contain logo-glow"
                 loading="lazy"
               />
             ) : (
@@ -134,7 +134,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
               <img
                 src={game.homeTeam.logo}
                 alt={game.homeTeam.name}
-                className="h-8 w-8 flex-shrink-0 object-contain"
+                className="h-8 w-8 flex-shrink-0 object-contain logo-glow"
                 loading="lazy"
               />
             ) : (

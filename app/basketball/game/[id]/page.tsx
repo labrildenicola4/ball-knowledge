@@ -134,7 +134,7 @@ export default function BasketballGamePage() {
             )}
             <div className="mx-auto mb-3 h-16 w-16">
               {game.awayTeam.logo ? (
-                <img src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-full w-full object-contain" />
+                <img src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-full w-full object-contain logo-glow" />
               ) : (
                 <div className="h-full w-full rounded-full" style={{ backgroundColor: game.awayTeam.color || theme.bgTertiary }} />
               )}
@@ -213,7 +213,7 @@ export default function BasketballGamePage() {
             )}
             <div className="mx-auto mb-3 h-16 w-16">
               {game.homeTeam.logo ? (
-                <img src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-full w-full object-contain" />
+                <img src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-full w-full object-contain logo-glow" />
               ) : (
                 <div className="h-full w-full rounded-full" style={{ backgroundColor: game.homeTeam.color || theme.bgTertiary }} />
               )}

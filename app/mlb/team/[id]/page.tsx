@@ -193,7 +193,7 @@ export default function MLBTeamPage() {
       >
         <div className="mx-auto mb-3 h-20 w-20">
           {team.logo ? (
-            <img src={team.logo} alt={team.name} className="h-full w-full object-contain" />
+            <img src={team.logo} alt={team.name} className="h-full w-full object-contain logo-glow" />
           ) : (
             <div
               className="h-full w-full rounded-full"
@@ -353,7 +353,7 @@ export default function MLBTeamPage() {
                       >
                         <div className="text-[11px] w-16" style={{ color: theme.textSecondary }}>{game.date}</div>
                         <span className="text-[10px] w-6" style={{ color: theme.textSecondary }}>{game.isHome ? 'vs' : '@'}</span>
-                        {game.opponent.logo && <img src={game.opponent.logo} alt="" className="h-5 w-5 object-contain" />}
+                        {game.opponent.logo && <img src={game.opponent.logo} alt="" className="h-5 w-5 object-contain logo-glow" />}
                         <span className="text-sm font-medium flex-1" style={{ color: theme.text }}>{game.opponent.shortDisplayName}</span>
                       </div>
                     </Link>
@@ -377,7 +377,7 @@ export default function MLBTeamPage() {
                       >
                         <div className="text-[11px] w-16" style={{ color: theme.textSecondary }}>{game.date}</div>
                         <span className="text-[10px] w-6" style={{ color: theme.textSecondary }}>{game.isHome ? 'vs' : '@'}</span>
-                        {game.opponent.logo && <img src={game.opponent.logo} alt="" className="h-5 w-5 object-contain" />}
+                        {game.opponent.logo && <img src={game.opponent.logo} alt="" className="h-5 w-5 object-contain logo-glow" />}
                         <span className="text-sm font-medium flex-1" style={{ color: theme.text }}>{game.opponent.shortDisplayName}</span>
                         {game.result && (
                           <span

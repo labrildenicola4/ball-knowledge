@@ -52,7 +52,7 @@ function LeagueCard({ league }: { league: typeof SOCCER_LEAGUES[0] }) {
       <img
         src={logoSrc}
         alt={league.name}
-        className="h-10 w-10 object-contain"
+        className="h-10 w-10 object-contain logo-glow"
         style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : 'none' }}
         loading="lazy"
       />

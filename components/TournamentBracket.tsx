@@ -58,7 +58,7 @@ function BracketMatchCard({ match }: { match: BracketMatch }) {
           >
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               {match.homeLogo && (
-                <img src={match.homeLogo} alt={match.home} className="h-4 w-4 object-contain flex-shrink-0" />
+                <img src={match.homeLogo} alt={match.home} className="h-4 w-4 object-contain logo-glow flex-shrink-0" />
               )}
               <span
                 className="text-xs font-medium truncate"
@@ -82,7 +82,7 @@ function BracketMatchCard({ match }: { match: BracketMatch }) {
           >
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               {match.awayLogo && (
-                <img src={match.awayLogo} alt={match.away} className="h-4 w-4 object-contain flex-shrink-0" />
+                <img src={match.awayLogo} alt={match.away} className="h-4 w-4 object-contain logo-glow flex-shrink-0" />
               )}
               <span
                 className="text-xs font-medium truncate"
