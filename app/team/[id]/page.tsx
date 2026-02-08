@@ -334,7 +334,7 @@ export default function TeamPage() {
             src={match.competitionLogo}
             alt=""
             className="h-5 w-5 object-contain logo-glow"
-            style={{ filter: darkMode && shouldUseWhiteFilterByCode(match.competitionCode || '') ? 'brightness(0) invert(1)' : 'none' }}
+            style={{ filter: darkMode && shouldUseWhiteFilterByCode(match.competitionCode || '') ? 'brightness(0) invert(1)' : undefined }}
           />
 
           {/* Date */}
@@ -559,7 +559,7 @@ export default function TeamPage() {
                       src={comp.logo}
                       alt={comp.name}
                       className="h-5 w-5 object-contain logo-glow"
-                      style={{ filter: darkMode && shouldUseWhiteFilterByCode(comp.code) ? 'brightness(0) invert(1)' : 'none' }}
+                      style={{ filter: darkMode && shouldUseWhiteFilterByCode(comp.code) ? 'brightness(0) invert(1)' : undefined }}
                     />
                     <span className="text-xs font-medium truncate" style={{ color: theme.text }}>{comp.name}</span>
                   </div>
@@ -685,7 +685,7 @@ export default function TeamPage() {
                             src={selectedCompetitionData.logo}
                             alt=""
                             className="h-5 w-5 object-contain logo-glow"
-                            style={{ filter: darkMode && shouldUseWhiteFilterByCode(selectedCompetitionData.code) ? 'brightness(0) invert(1)' : 'none' }}
+                            style={{ filter: darkMode && shouldUseWhiteFilterByCode(selectedCompetitionData.code) ? 'brightness(0) invert(1)' : undefined }}
                           />
                         )}
                         <span className="text-sm font-medium" style={{ color: theme.text }}>
@@ -725,7 +725,7 @@ export default function TeamPage() {
                               src={comp.logo}
                               alt=""
                               className="h-5 w-5 object-contain logo-glow"
-                              style={{ filter: darkMode && shouldUseWhiteFilterByCode(comp.code) ? 'brightness(0) invert(1)' : 'none' }}
+                              style={{ filter: darkMode && shouldUseWhiteFilterByCode(comp.code) ? 'brightness(0) invert(1)' : undefined }}
                             />
                             <span
                               className="text-sm"
@@ -1248,7 +1248,7 @@ export default function TeamPage() {
                         src={selectedCompetitionData.logo}
                         alt=""
                         className="h-5 w-5 object-contain logo-glow"
-                        style={{ filter: darkMode && shouldUseWhiteFilterByCode(selectedCompetitionData.code) ? 'brightness(0) invert(1)' : 'none' }}
+                        style={{ filter: darkMode && shouldUseWhiteFilterByCode(selectedCompetitionData.code) ? 'brightness(0) invert(1)' : undefined }}
                       />
                     )}
                     <span className="text-sm font-medium" style={{ color: theme.text }}>
@@ -1288,7 +1288,7 @@ export default function TeamPage() {
                           src={comp.logo}
                           alt=""
                           className="h-5 w-5 object-contain logo-glow"
-                          style={{ filter: darkMode && shouldUseWhiteFilterByCode(comp.code) ? 'brightness(0) invert(1)' : 'none' }}
+                          style={{ filter: darkMode && shouldUseWhiteFilterByCode(comp.code) ? 'brightness(0) invert(1)' : undefined }}
                         />
                         <span
                           className="text-sm"

@@ -699,7 +699,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src={SOCCER_ICON} alt="Soccer" className="h-5 w-5 object-contain logo-glow" />
+          <img src={SOCCER_ICON} alt="Soccer" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">Soccer</span>
         </button>
         <button
@@ -712,7 +712,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src={BASKETBALL_ICON} alt="CBB" className="h-5 w-5 object-contain logo-glow" />
+          <img src={BASKETBALL_ICON} alt="CBB" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">CBB</span>
         </button>
         <button
@@ -725,7 +725,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="MLB" className="h-5 w-5 object-contain logo-glow" />
+          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="MLB" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">MLB</span>
         </button>
         <button
@@ -738,7 +738,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA" className="h-5 w-5 object-contain logo-glow" />
+          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">NBA</span>
         </button>
         <button
@@ -751,7 +751,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="h-5 w-5 object-contain logo-glow" />
+          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">NFL</span>
         </button>
         <button
@@ -764,7 +764,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png" alt="NHL" className="h-5 w-5 object-contain logo-glow" />
+          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png" alt="NHL" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">NHL</span>
         </button>
         <button
@@ -777,7 +777,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src={FOOTBALL_ICON} alt="CFB" className="h-5 w-5 object-contain logo-glow" />
+          <img src={FOOTBALL_ICON} alt="CFB" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">CFB</span>
         </button>
       </div>
@@ -826,7 +826,7 @@ export default function CalendarPage() {
                     src={logo}
                     alt={tournament.name}
                     className="w-5 h-5 object-contain logo-glow"
-                    style={{ filter: darkMode && shouldUseWhiteFilterByCode(code) ? 'brightness(0) invert(1)' : 'none' }}
+                    style={{ filter: darkMode && shouldUseWhiteFilterByCode(code) ? 'brightness(0) invert(1)' : undefined }}
                   />
                 )}
                 <span className="hidden md:inline">{tournament.name}</span>

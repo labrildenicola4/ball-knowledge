@@ -45,7 +45,7 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
                 src={match.leagueLogo}
                 alt={match.league}
                 className="h-5 w-5 object-contain logo-glow"
-                style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : 'none' }}
+                style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : undefined }}
                 loading="lazy"
               />
             )}

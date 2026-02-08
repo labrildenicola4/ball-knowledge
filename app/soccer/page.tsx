@@ -53,7 +53,7 @@ function LeagueCard({ league }: { league: typeof SOCCER_LEAGUES[0] }) {
         src={logoSrc}
         alt={league.name}
         className="h-10 w-10 object-contain logo-glow"
-        style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : 'none' }}
+        style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : undefined }}
         loading="lazy"
       />
       <div className="flex-1 min-w-0">

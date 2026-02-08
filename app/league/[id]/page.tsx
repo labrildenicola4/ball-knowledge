@@ -533,7 +533,7 @@ export default function LeaguePage() {
               src={data.league.logo}
               alt={data.league.name}
               className="h-8 w-8 object-contain logo-glow"
-              style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : 'none' }}
+              style={{ filter: useWhiteFilter ? 'brightness(0) invert(1)' : undefined }}
             />
             <div>
               <h1 className="text-xl font-semibold" style={{ color: theme.text }}>

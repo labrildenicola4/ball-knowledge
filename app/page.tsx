@@ -480,7 +480,7 @@ export default function HomePage() {
               border: `1px solid ${selectedFilter === 'soccer' ? theme.accent : theme.border}`,
             }}
           >
-            <img src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain logo-glow" />
+            <img src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain" />
             {matches.length}
           </button>
           <button
@@ -492,7 +492,7 @@ export default function HomePage() {
               border: `1px solid ${selectedFilter === 'ncaa' ? theme.accent : theme.border}`,
             }}
           >
-            <img src={BASKETBALL_ICON} alt="" className="h-4 w-4 object-contain logo-glow" />
+            <img src={BASKETBALL_ICON} alt="" className="h-4 w-4 object-contain" />
             {basketballGames.length}
           </button>
           <button
@@ -504,7 +504,7 @@ export default function HomePage() {
               border: `1px solid ${selectedFilter === 'nba' ? theme.accent : theme.border}`,
             }}
           >
-            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain logo-glow" />
+            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain" />
             {nbaGames.length}
           </button>
           <button
@@ -516,7 +516,7 @@ export default function HomePage() {
               border: `1px solid ${selectedFilter === 'mlb' ? theme.accent : theme.border}`,
             }}
           >
-            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain logo-glow" />
+            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain" />
             {mlbGames.length}
           </button>
           <button
@@ -528,7 +528,7 @@ export default function HomePage() {
               border: `1px solid ${selectedFilter === 'nfl' ? theme.accent : theme.border}`,
             }}
           >
-            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain logo-glow" />
+            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain" />
             {nflGames.length}
           </button>
         </div>
