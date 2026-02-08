@@ -626,7 +626,7 @@ export default function TeamPage() {
           </div>
 
           {/* Tab Content - Desktop */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto pb-24 p-6">
             {/* Desktop tab content uses same content as mobile but in larger container */}
             {activeTab === 'schedule' && (
               <div>
@@ -1188,7 +1188,7 @@ export default function TeamPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-24">
         {/* Schedule Tab */}
         {activeTab === 'schedule' && (
           <div className="px-4 py-4">

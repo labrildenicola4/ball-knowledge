@@ -27,7 +27,7 @@ export default function LogoPreviewPage() {
     >
       <Header />
 
-      <main className="flex-1 overflow-y-auto px-4 py-4">
+      <main className="flex-1 overflow-y-auto pb-24 px-4 py-4">
         <h1 className="text-xl font-bold mb-6" style={{ color: theme.text }}>
           Logo Background Options Preview
         </h1>

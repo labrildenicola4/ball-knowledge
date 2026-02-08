@@ -241,7 +241,7 @@ export default function NFLGamePage() {
       </section>
 
       {/* Stats Coming Soon */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto pb-24 px-4 py-6">
         <div
           className="rounded-xl p-8 text-center"
           style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}

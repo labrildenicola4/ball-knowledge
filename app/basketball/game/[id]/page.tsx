@@ -289,7 +289,7 @@ export default function BasketballGamePage() {
       </div>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto pb-24 px-4 py-6">
         {activeTab === 'stats' && (
           <BasketballLiveStats
             homeTeam={game.homeTeam}

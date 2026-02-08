@@ -354,7 +354,7 @@ export default function NBATeamPage() {
       </div>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-24">
         {/* Schedule Tab */}
         {activeTab === 'schedule' && (
           <section className="px-4 py-4">

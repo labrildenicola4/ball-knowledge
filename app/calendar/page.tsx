@@ -881,7 +881,7 @@ export default function CalendarPage() {
       )}
 
       {/* Fixtures */}
-      <main className="flex-1 overflow-y-auto px-2 md:px-4 py-4">
+      <main className="flex-1 overflow-y-auto pb-24 px-2 md:px-4 py-4">
         <div className="mb-3 flex items-center justify-between">
           <h2
             className="text-xs font-semibold uppercase tracking-wider"
