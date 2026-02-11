@@ -73,6 +73,12 @@ function formatDateET(date: Date): string {
 }
 
 export default function CalendarPage() {
+  const triggerHaptic = (duration: number = 10) => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(duration);
+    }
+  };
+
   const { theme, darkMode } = useTheme();
   const { favorites, getFavoritesByType, isLoggedIn } = useFavorites();
   const router = useRouter();
@@ -456,6 +462,7 @@ export default function CalendarPage() {
 
   // Handle year change
   const handleYearChange = (year: number) => {
+    triggerHaptic(15);
     setSelectedYear(year);
     setYearDropdownOpen(false);
     // Update selected date to same month/day in new year
@@ -530,7 +537,7 @@ export default function CalendarPage() {
       >
         <div className="relative">
           <button
-            onClick={() => setYearDropdownOpen(!yearDropdownOpen)}
+            onClick={() => { triggerHaptic(15); setYearDropdownOpen(!yearDropdownOpen); }}
             className={`tap-highlight flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${darkMode ? 'glass-pill' : ''}`}
             style={darkMode ? { color: theme.text } : { backgroundColor: theme.bgTertiary, color: theme.text }}
           >
@@ -569,7 +576,7 @@ export default function CalendarPage() {
         {calendarMonths.map((month) => (
           <button
             key={month.label}
-            onClick={() => setSelectedDate(month.date)}
+            onClick={() => { triggerHaptic(); setSelectedDate(month.date); }}
             className={`tap-highlight rounded-lg py-2.5 text-xs font-medium text-center ${darkMode ? (isCurrentMonth(month.date) ? 'glass-pill-active' : 'glass-pill') : ''}`}
             style={{
               ...(darkMode ? {} : { backgroundColor: isCurrentMonth(month.date) ? theme.accent : theme.bgTertiary }),
@@ -618,6 +625,7 @@ export default function CalendarPage() {
                 <button
                   key={index}
                   onClick={() => {
+                    triggerHaptic();
                     setSelectedDate(date);
                     if (date.getFullYear() !== selectedYear) {
                       setSelectedYear(date.getFullYear());
@@ -665,7 +673,7 @@ export default function CalendarPage() {
         style={{ scrollbarWidth: 'none', borderBottom: selectedSport === 'all' || selectedSport === 'myteams' || !selectedSport ? `1px solid ${theme.border}` : 'none' }}
       >
         <button
-          onClick={() => setSelectedSport('all')}
+          onClick={() => { triggerHaptic(); setSelectedSport('all'); }}
           className={`tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 ${darkMode ? (selectedSport === 'all' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: selectedSport === 'all' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'all' ? theme.accent : theme.border}` }),
@@ -676,7 +684,7 @@ export default function CalendarPage() {
           <span className="md:hidden">All</span>
         </button>
         <button
-          onClick={() => setSelectedSport('myteams')}
+          onClick={() => { triggerHaptic(); setSelectedSport('myteams'); }}
           className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'myteams' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: selectedSport === 'myteams' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'myteams' ? theme.accent : theme.border}` }),
@@ -688,7 +696,7 @@ export default function CalendarPage() {
           <span className="hidden md:inline">My Teams</span>
         </button>
         <button
-          onClick={() => setSelectedSport(selectedSport === 'soccer' ? null : 'soccer')}
+          onClick={() => { triggerHaptic(); setSelectedSport(selectedSport === 'soccer' ? null : 'soccer'); }}
           className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'soccer' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: selectedSport === 'soccer' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'soccer' ? theme.accent : theme.border}` }),
@@ -700,7 +708,7 @@ export default function CalendarPage() {
           <span className="hidden md:inline">Soccer</span>
         </button>
         <button
-          onClick={() => setSelectedSport(selectedSport === 'cbb' ? null : 'cbb')}
+          onClick={() => { triggerHaptic(); setSelectedSport(selectedSport === 'cbb' ? null : 'cbb'); }}
           className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'cbb' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: selectedSport === 'cbb' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'cbb' ? theme.accent : theme.border}` }),
@@ -712,7 +720,7 @@ export default function CalendarPage() {
           <span className="hidden md:inline">CBB</span>
         </button>
         <button
-          onClick={() => setSelectedSport(selectedSport === 'mlb' ? null : 'mlb')}
+          onClick={() => { triggerHaptic(); setSelectedSport(selectedSport === 'mlb' ? null : 'mlb'); }}
           className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'mlb' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: selectedSport === 'mlb' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'mlb' ? theme.accent : theme.border}` }),
@@ -724,7 +732,7 @@ export default function CalendarPage() {
           <span className="hidden md:inline">MLB</span>
         </button>
         <button
-          onClick={() => setSelectedSport(selectedSport === 'nba' ? null : 'nba')}
+          onClick={() => { triggerHaptic(); setSelectedSport(selectedSport === 'nba' ? null : 'nba'); }}
           className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'nba' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: selectedSport === 'nba' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'nba' ? theme.accent : theme.border}` }),
@@ -736,7 +744,7 @@ export default function CalendarPage() {
           <span className="hidden md:inline">NBA</span>
         </button>
         <button
-          onClick={() => setSelectedSport(selectedSport === 'nfl' ? null : 'nfl')}
+          onClick={() => { triggerHaptic(); setSelectedSport(selectedSport === 'nfl' ? null : 'nfl'); }}
           className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'nfl' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: selectedSport === 'nfl' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'nfl' ? theme.accent : theme.border}` }),
@@ -748,7 +756,7 @@ export default function CalendarPage() {
           <span className="hidden md:inline">NFL</span>
         </button>
         <button
-          onClick={() => setSelectedSport(selectedSport === 'nhl' ? null : 'nhl')}
+          onClick={() => { triggerHaptic(); setSelectedSport(selectedSport === 'nhl' ? null : 'nhl'); }}
           className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'nhl' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: selectedSport === 'nhl' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'nhl' ? theme.accent : theme.border}` }),
@@ -760,7 +768,7 @@ export default function CalendarPage() {
           <span className="hidden md:inline">NHL</span>
         </button>
         <button
-          onClick={() => setSelectedSport(selectedSport === 'cfb' ? null : 'cfb')}
+          onClick={() => { triggerHaptic(); setSelectedSport(selectedSport === 'cfb' ? null : 'cfb'); }}
           className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'cfb' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: selectedSport === 'cfb' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'cfb' ? theme.accent : theme.border}` }),
