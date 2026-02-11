@@ -25,7 +25,7 @@ export default function StandingsPage() {
   const [activeLeague, setActiveLeague] = useState('laliga');
   const [standings, setStandings] = useState<Standing[]>([]);
   const [loading, setLoading] = useState(true);
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   useEffect(() => {
     async function fetchStandings() {
@@ -50,7 +50,7 @@ export default function StandingsPage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
       <LeagueTabs activeLeague={activeLeague} onLeagueChange={setActiveLeague} />
@@ -73,8 +73,8 @@ export default function StandingsPage() {
           />
         ) : (
           <div
-            className="rounded-lg py-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <p className="text-[12px]" style={{ color: theme.textSecondary }}>
               No standings available

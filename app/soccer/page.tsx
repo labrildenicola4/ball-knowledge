@@ -47,8 +47,8 @@ function LeagueCard({ league }: { league: typeof SOCCER_LEAGUES[0] }) {
   return (
     <Link
       href={`/league/${league.slug}`}
-      className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80"
-      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      className={`flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80 ${darkMode ? 'glass-card' : ''}`}
+      style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
     >
       <img
         src={logoSrc}
@@ -71,7 +71,7 @@ function LeagueCard({ league }: { league: typeof SOCCER_LEAGUES[0] }) {
 }
 
 export default function SoccerHubPage() {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const router = useRouter();
 
   const today = new Date();
@@ -84,7 +84,7 @@ export default function SoccerHubPage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
