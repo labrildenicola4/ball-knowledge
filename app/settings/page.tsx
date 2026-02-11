@@ -22,15 +22,15 @@ export default function SettingsPage() {
     action: React.ReactNode;
   }) => (
     <div
-      className="flex items-center gap-4 rounded-xl p-4"
-      style={{
+      className={`flex items-center gap-4 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+      style={darkMode ? undefined : {
         backgroundColor: theme.bgSecondary,
         border: `1px solid ${theme.border}`,
       }}
     >
       <div
         className="flex h-10 w-10 items-center justify-center rounded-lg"
-        style={{ backgroundColor: theme.bgTertiary }}
+        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
       >
         <Icon size={20} color={theme.accent} />
       </div>
@@ -62,7 +62,7 @@ export default function SettingsPage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
@@ -70,7 +70,7 @@ export default function SettingsPage() {
         {/* Appearance Section */}
         <h2
           className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-          style={{ color: theme.textSecondary }}
+          style={darkMode ? undefined : { color: theme.textSecondary }}
         >
           Appearance
         </h2>
@@ -86,7 +86,7 @@ export default function SettingsPage() {
         {/* Data Section */}
         <h2
           className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-          style={{ color: theme.textSecondary }}
+          style={darkMode ? undefined : { color: theme.textSecondary }}
         >
           Data
         </h2>
@@ -119,7 +119,7 @@ export default function SettingsPage() {
         {/* About Section */}
         <h2
           className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-          style={{ color: theme.textSecondary }}
+          style={darkMode ? undefined : { color: theme.textSecondary }}
         >
           About
         </h2>
@@ -138,15 +138,15 @@ export default function SettingsPage() {
             href="https://www.api-football.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="card-press flex items-center gap-4 rounded-xl p-4"
-            style={{
+            className={`card-press flex items-center gap-4 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : {
               backgroundColor: theme.bgSecondary,
               border: `1px solid ${theme.border}`,
             }}
           >
             <div
               className="flex h-10 w-10 items-center justify-center rounded-lg"
-              style={{ backgroundColor: theme.bgTertiary }}
+              style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
             >
               <ExternalLink size={20} color={theme.accent} />
             </div>
