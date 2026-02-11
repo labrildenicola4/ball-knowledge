@@ -99,7 +99,7 @@ export default function NFLHomePage() {
   const [liveCollapsed, setLiveCollapsed] = useState(false);
   const [upcomingCollapsed, setUpcomingCollapsed] = useState(false);
   const [completedCollapsed, setCompletedCollapsed] = useState(false);
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   // Fetch games
   const { data: gamesData, isLoading: gamesLoading, mutate, isValidating } = useSWR<{
@@ -156,7 +156,7 @@ export default function NFLHomePage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
@@ -169,8 +169,8 @@ export default function NFLHomePage() {
           <div className="flex items-center gap-3">
             <Link
               href="/all"
-              className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity ${darkMode ? 'glass-pill' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
             </Link>
@@ -187,8 +187,8 @@ export default function NFLHomePage() {
             <button
               onClick={() => mutate()}
               disabled={gamesLoading}
-              className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
-              style={{
+              className={`tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm ${darkMode ? 'glass-pill' : ''}`}
+              style={darkMode ? { color: theme.textSecondary } : {
                 backgroundColor: theme.bgSecondary,
                 border: `1px solid ${theme.border}`,
                 color: theme.textSecondary,
@@ -212,8 +212,8 @@ export default function NFLHomePage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
-            style={{
+            className={`tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${darkMode ? (activeTab === tab.id ? 'glass-pill-active' : 'glass-pill') : ''}`}
+            style={darkMode ? { color: activeTab === tab.id ? '#fff' : theme.textSecondary } : {
               backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary,
               color: activeTab === tab.id ? '#fff' : theme.textSecondary,
             }}
@@ -240,8 +240,8 @@ export default function NFLHomePage() {
               </div>
             ) : games.length === 0 ? (
               <div
-                className="rounded-lg py-8 text-center"
-                style={{ backgroundColor: theme.bgSecondary }}
+                className={`rounded-lg py-8 text-center ${darkMode ? 'glass-section' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
               >
                 <p className="text-sm" style={{ color: theme.textSecondary }}>
                   No games scheduled for today
@@ -252,8 +252,8 @@ export default function NFLHomePage() {
                 {/* Live Games */}
                 {liveGames.length > 0 && (
                   <section
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <button
                       onClick={() => setLiveCollapsed(!liveCollapsed)}
@@ -298,8 +298,8 @@ export default function NFLHomePage() {
                 {/* Upcoming Games */}
                 {upcomingGames.length > 0 && (
                   <section
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <button
                       onClick={() => setUpcomingCollapsed(!upcomingCollapsed)}
@@ -315,7 +315,7 @@ export default function NFLHomePage() {
                         </h2>
                         <span
                           className="rounded-full px-2.5 py-0.5 text-xs"
-                          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                          style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                         >
                           {upcomingGames.length}
                         </span>
@@ -340,8 +340,8 @@ export default function NFLHomePage() {
                 {/* Completed Games */}
                 {completedGames.length > 0 && (
                   <section
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <button
                       onClick={() => setCompletedCollapsed(!completedCollapsed)}
@@ -357,7 +357,7 @@ export default function NFLHomePage() {
                         </h2>
                         <span
                           className="rounded-full px-2.5 py-0.5 text-xs"
-                          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                          style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                         >
                           {completedGames.length}
                         </span>
@@ -404,8 +404,8 @@ export default function NFLHomePage() {
               />
             ) : (
               <div
-                className="rounded-xl p-8 text-center"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl p-8 text-center ${darkMode ? 'glass-section' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <GitMerge size={48} style={{ color: theme.textSecondary, margin: '0 auto 16px' }} />
                 <p className="text-base font-medium mb-2" style={{ color: theme.text }}>
@@ -434,8 +434,8 @@ export default function NFLHomePage() {
               </div>
             ) : !leadersData?.passingYards?.length && !leadersData?.rushingYards?.length ? (
               <div
-                className="rounded-xl p-8 text-center"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl p-8 text-center ${darkMode ? 'glass-section' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <BarChart3 size={48} style={{ color: theme.textSecondary, margin: '0 auto 16px' }} />
                 <p className="text-base font-medium mb-2" style={{ color: theme.text }}>
@@ -451,26 +451,31 @@ export default function NFLHomePage() {
                   title="Passing Yards"
                   leaders={leadersData?.passingYards || []}
                   theme={theme}
+                  darkMode={darkMode}
                 />
                 <LeaderCard
                   title="Rushing Yards"
                   leaders={leadersData?.rushingYards || []}
                   theme={theme}
+                  darkMode={darkMode}
                 />
                 <LeaderCard
                   title="Receiving Yards"
                   leaders={leadersData?.receivingYards || []}
                   theme={theme}
+                  darkMode={darkMode}
                 />
                 <LeaderCard
                   title="Passing Touchdowns"
                   leaders={leadersData?.passingTouchdowns || []}
                   theme={theme}
+                  darkMode={darkMode}
                 />
                 <LeaderCard
                   title="Sacks"
                   leaders={leadersData?.sacks || []}
                   theme={theme}
+                  darkMode={darkMode}
                 />
               </div>
             )}
@@ -498,8 +503,8 @@ export default function NFLHomePage() {
                     <button
                       key={conf}
                       onClick={() => setSelectedConference(conf)}
-                      className="tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors"
-                      style={{
+                      className={`tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${darkMode ? (selectedConference === conf ? 'glass-pill-active' : 'glass-pill') : ''}`}
+                      style={darkMode ? { color: selectedConference === conf ? '#fff' : theme.textSecondary } : {
                         backgroundColor: selectedConference === conf ? theme.accent : theme.bgSecondary,
                         color: selectedConference === conf ? '#fff' : theme.textSecondary,
                         border: `1px solid ${selectedConference === conf ? theme.accent : theme.border}`,
@@ -513,8 +518,8 @@ export default function NFLHomePage() {
                 {/* Offseason Notice */}
                 {!currentConference && (
                   <div
-                    className="rounded-lg px-4 py-3 mb-4 text-center text-sm"
-                    style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    className={`rounded-lg px-4 py-3 mb-4 text-center text-sm ${darkMode ? 'glass-pill' : ''}`}
+                    style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                   >
                     Offseason - Teams shown alphabetically
                   </div>
@@ -531,13 +536,13 @@ export default function NFLHomePage() {
                     return (
                       <div
                         key={isOffseason ? (division as { division: string }).division : (division as { id: string }).id}
-                        className="rounded-xl overflow-hidden"
-                        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                        className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                       >
                         {/* Division Header */}
                         <div
                           className="px-4 py-2.5 text-[11px] font-semibold uppercase"
-                          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                          style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                         >
                           {isOffseason
                             ? (division as { division: string }).division.replace(`${selectedConference} `, '')
@@ -627,7 +632,7 @@ export default function NFLHomePage() {
 
                               {/* Playoff Cutoff Line after 1st place (division winner) */}
                               {index === 0 && (teams as NFLStanding[]).length > 1 && (
-                                <div className="flex items-center gap-2 px-4 py-1.5" style={{ backgroundColor: theme.bgTertiary }}>
+                                <div className="flex items-center gap-2 px-4 py-1.5" style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}>
                                   <div className="flex-1 h-px" style={{ backgroundColor: theme.green }} />
                                   <span className="text-[9px] uppercase font-semibold" style={{ color: theme.green }}>
                                     Division Leader
@@ -670,17 +675,19 @@ function LeaderCard({
   title,
   leaders,
   theme,
+  darkMode,
 }: {
   title: string;
   leaders: NFLStatLeader[];
   theme: ReturnType<typeof useTheme>['theme'];
+  darkMode: boolean;
 }) {
   if (leaders.length === 0) return null;
 
   return (
     <section
-      className="rounded-xl overflow-hidden"
-      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+      style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
     >
       <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
         <h3 className="text-sm font-semibold" style={{ color: theme.text }}>
@@ -712,7 +719,7 @@ function LeaderCard({
             ) : (
               <div
                 className="h-10 w-10 rounded-full"
-                style={{ backgroundColor: theme.bgTertiary }}
+                style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
               />
             )}
             {leader.team.logo && (
