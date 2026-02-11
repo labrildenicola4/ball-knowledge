@@ -19,7 +19,7 @@ interface NFLGameCardProps {
 }
 
 export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const isLive = game.status === 'in_progress';
   const isFinal = game.status === 'final';
   const homeWon = isFinal && (game.homeTeam.score ?? 0) > (game.awayTeam.score ?? 0);
@@ -39,8 +39,8 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
   return (
     <Link href={`/nfl/game/${game.id}`}>
       <div
-        className="card-hover card-press cursor-pointer rounded-xl p-3 md:p-4 transition-theme"
-        style={{
+        className={`card-press cursor-pointer p-3 md:p-4 transition-theme ${darkMode ? 'glass-match-card' : 'card-hover rounded-xl'}`}
+        style={darkMode ? undefined : {
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
         }}
@@ -76,8 +76,10 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
             )}
           </div>
           <span
-            className="font-mono rounded-lg px-3 py-1 text-sm"
-            style={{
+            className={`font-mono rounded-lg px-3 py-1 text-sm ${darkMode ? (isLive ? 'glass-badge-live' : 'glass-badge') : ''}`}
+            style={darkMode ? {
+              color: isLive ? '#fff' : theme.textSecondary,
+            } : {
               backgroundColor: isLive ? theme.red : theme.bgTertiary,
               color: isLive ? '#fff' : theme.textSecondary,
             }}
@@ -136,8 +138,8 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
 
           {/* Score */}
           <div
-            className="font-mono rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-base md:text-lg font-semibold flex-shrink-0"
-            style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
+            className={`font-mono rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-base md:text-lg font-semibold flex-shrink-0 ${darkMode ? 'glass-score score-text' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgTertiary, color: theme.text }}
           >
             {(isLive || isFinal)
               ? `${game.awayTeam.score ?? 0} - ${game.homeTeam.score ?? 0}`

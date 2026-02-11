@@ -79,7 +79,7 @@ export default function HomePage() {
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const [liveCollapsed, setLiveCollapsed] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const { favorites, getFavoritesByType, isLoggedIn } = useFavorites();
 
   // Use SWR hook for soccer data fetching
@@ -412,18 +412,18 @@ export default function HomePage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
       {/* Today's Header */}
       <div
-        className="px-4 py-4"
+        className="px-4 py-4 glass-divider"
         style={{ borderBottom: `1px solid ${theme.border}` }}
       >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold" style={{ color: theme.text }}>Today's Games</h1>
+            <h1 className="text-2xl font-bold" style={{ color: theme.text }}>Today's Games</h1>
             <p className="text-base" style={{ color: theme.textSecondary }}>
               {dateStr} · Eastern Time
             </p>
@@ -431,8 +431,10 @@ export default function HomePage() {
           <button
             onClick={() => refreshAll()}
             disabled={isLoading}
-            className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
-            style={{
+            className={`tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm ${darkMode ? 'glass-pill' : ''}`}
+            style={darkMode ? {
+              color: theme.textSecondary,
+            } : {
               backgroundColor: theme.bgSecondary,
               border: `1px solid ${theme.border}`,
               color: theme.textSecondary,
@@ -451,8 +453,10 @@ export default function HomePage() {
         <div className="flex gap-2 mt-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setSelectedFilter('all')}
-            className="tap-highlight whitespace-nowrap rounded-full px-3 py-2.5 text-xs font-medium flex items-center gap-1.5"
-            style={{
+            className={`tap-highlight whitespace-nowrap rounded-full px-3 py-2.5 text-xs font-medium flex items-center gap-1.5 ${darkMode ? (selectedFilter === 'all' ? 'glass-pill-active' : 'glass-pill') : ''}`}
+            style={darkMode ? {
+              color: selectedFilter === 'all' ? '#fff' : theme.textSecondary,
+            } : {
               backgroundColor: selectedFilter === 'all' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'all' ? '#fff' : theme.textSecondary,
               border: `1px solid ${selectedFilter === 'all' ? theme.accent : theme.border}`,
@@ -462,8 +466,10 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('myteams')}
-            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center"
-            style={{
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center ${darkMode ? (selectedFilter === 'myteams' ? 'glass-pill-active' : 'glass-pill') : ''}`}
+            style={darkMode ? {
+              minWidth: '36px',
+            } : {
               backgroundColor: selectedFilter === 'myteams' ? theme.accent : theme.bgSecondary,
               border: `1px solid ${selectedFilter === 'myteams' ? theme.accent : theme.border}`,
               minWidth: '36px',
@@ -473,8 +479,10 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('soccer')}
-            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1"
-            style={{
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${darkMode ? (selectedFilter === 'soccer' ? 'glass-pill-active' : 'glass-pill') : ''}`}
+            style={darkMode ? {
+              color: selectedFilter === 'soccer' ? '#fff' : theme.textSecondary,
+            } : {
               backgroundColor: selectedFilter === 'soccer' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'soccer' ? '#fff' : theme.textSecondary,
               border: `1px solid ${selectedFilter === 'soccer' ? theme.accent : theme.border}`,
@@ -485,8 +493,10 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('ncaa')}
-            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1"
-            style={{
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${darkMode ? (selectedFilter === 'ncaa' ? 'glass-pill-active' : 'glass-pill') : ''}`}
+            style={darkMode ? {
+              color: selectedFilter === 'ncaa' ? '#fff' : theme.textSecondary,
+            } : {
               backgroundColor: selectedFilter === 'ncaa' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'ncaa' ? '#fff' : theme.textSecondary,
               border: `1px solid ${selectedFilter === 'ncaa' ? theme.accent : theme.border}`,
@@ -497,8 +507,10 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('nba')}
-            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1"
-            style={{
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${darkMode ? (selectedFilter === 'nba' ? 'glass-pill-active' : 'glass-pill') : ''}`}
+            style={darkMode ? {
+              color: selectedFilter === 'nba' ? '#fff' : theme.textSecondary,
+            } : {
               backgroundColor: selectedFilter === 'nba' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'nba' ? '#fff' : theme.textSecondary,
               border: `1px solid ${selectedFilter === 'nba' ? theme.accent : theme.border}`,
@@ -509,8 +521,10 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('mlb')}
-            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1"
-            style={{
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${darkMode ? (selectedFilter === 'mlb' ? 'glass-pill-active' : 'glass-pill') : ''}`}
+            style={darkMode ? {
+              color: selectedFilter === 'mlb' ? '#fff' : theme.textSecondary,
+            } : {
               backgroundColor: selectedFilter === 'mlb' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'mlb' ? '#fff' : theme.textSecondary,
               border: `1px solid ${selectedFilter === 'mlb' ? theme.accent : theme.border}`,
@@ -521,8 +535,10 @@ export default function HomePage() {
           </button>
           <button
             onClick={() => setSelectedFilter('nfl')}
-            className="tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1"
-            style={{
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${darkMode ? (selectedFilter === 'nfl' ? 'glass-pill-active' : 'glass-pill') : ''}`}
+            style={darkMode ? {
+              color: selectedFilter === 'nfl' ? '#fff' : theme.textSecondary,
+            } : {
               backgroundColor: selectedFilter === 'nfl' ? theme.accent : theme.bgSecondary,
               color: selectedFilter === 'nfl' ? '#fff' : theme.textSecondary,
               border: `1px solid ${selectedFilter === 'nfl' ? theme.accent : theme.border}`,
@@ -611,13 +627,13 @@ export default function HomePage() {
             {/* Live Games Section */}
             {liveGames.length > 0 && (
               <section
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section live-glow' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <button
                   onClick={() => setLiveCollapsed(!liveCollapsed)}
                   className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                  style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                  style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : theme.border}` }}
                 >
                   <div className="flex items-center gap-2">
                     <span
@@ -631,8 +647,8 @@ export default function HomePage() {
                       Live Now
                     </h2>
                     <span
-                      className="rounded-full px-2.5 py-0.5 text-xs font-medium"
-                      style={{ backgroundColor: theme.red, color: '#fff' }}
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${darkMode ? 'glass-badge-live' : ''}`}
+                      style={darkMode ? { color: '#fff' } : { backgroundColor: theme.red, color: '#fff' }}
                     >
                       {liveGames.length}
                     </span>
@@ -665,21 +681,21 @@ export default function HomePage() {
             {/* Completed Games Section */}
             {finishedGames.length > 0 && (
               <section
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <button
                   onClick={() => toggleSection('completed')}
                   className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                  style={{ borderBottom: collapsedSections.has('completed') ? 'none' : `1px solid ${theme.border}` }}
+                  style={{ borderBottom: collapsedSections.has('completed') ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : theme.border}` }}
                 >
                   <div className="flex items-center gap-3">
                     <h2 className="text-base font-medium" style={{ color: theme.textSecondary }}>
                       Completed
                     </h2>
                     <span
-                      className="rounded-full px-2.5 py-0.5 text-xs"
-                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                      className={`rounded-full px-2.5 py-0.5 text-xs ${darkMode ? 'glass-badge' : ''}`}
+                      style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                     >
                       {finishedGames.length}
                     </span>
@@ -715,21 +731,21 @@ export default function HomePage() {
               return (
                 <section
                   key={hour}
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                  style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                 >
                   <button
                     onClick={() => toggleSection(hour)}
                     className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                    style={{ borderBottom: isCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                    style={{ borderBottom: isCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : theme.border}` }}
                   >
                     <div className="flex items-center gap-3">
                       <h2 className="text-base font-medium" style={{ color: theme.text }}>
                         {hour} ET
                       </h2>
                       <span
-                        className="rounded-full px-2.5 py-0.5 text-xs"
-                        style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                        className={`rounded-full px-2.5 py-0.5 text-xs ${darkMode ? 'glass-badge' : ''}`}
+                        style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                       >
                         {games.length}
                       </span>

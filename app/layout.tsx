@@ -85,6 +85,12 @@ export default function RootLayout({
         />
       </head>
       <body className="dark">
+        {/* Aurora orbs - colored blobs that drift behind glass for depth */}
+        <div className="aurora-container" aria-hidden="true">
+          <div className="aurora-orb aurora-orb-1" />
+          <div className="aurora-orb aurora-orb-2" />
+          <div className="aurora-orb aurora-orb-3" />
+        </div>
         <ThemeProvider>
           <ErrorBoundary>
             <main className="page-enter" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>{children}</main>

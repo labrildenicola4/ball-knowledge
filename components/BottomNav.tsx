@@ -49,10 +49,8 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 transition-theme"
+      className="fixed bottom-0 left-0 right-0 z-50 transition-theme glass-tab-bar"
       style={{
-        backgroundColor: theme.bg,
-        borderTop: `1px solid ${theme.border}`,
         paddingBottom: 'env(safe-area-inset-bottom, 16px)',
         transform: visible ? 'translateY(0)' : 'translateY(100%)',
         transition: 'transform 0.3s ease',
