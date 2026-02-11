@@ -14,6 +14,12 @@ const navItems = [
 ];
 
 export function BottomNav() {
+  const triggerHaptic = () => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  };
+
   const { theme } = useTheme();
   const pathname = usePathname();
   const [visible, setVisible] = useState(true);
@@ -63,7 +69,8 @@ export function BottomNav() {
             <Link
               key={item.id}
               href={item.href}
-              className="tap-highlight flex flex-col items-center gap-1 px-3 py-2"
+              onClick={triggerHaptic}
+              className={`tap-highlight flex flex-col items-center gap-1 px-3 py-2 ${isActive ? 'nav-button-press-active' : 'nav-button-press'}`}
             >
               <item.icon
                 size={24}
