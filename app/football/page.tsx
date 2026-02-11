@@ -40,7 +40,7 @@ export default function CollegeFootballHomePage() {
   const [rankedCollapsed, setRankedCollapsed] = useState(false);
   const [otherCollapsed, setOtherCollapsed] = useState(false);
   const [selectedConference, setSelectedConference] = useState('acc');
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   // Fetch games
   const { data: gamesData, isLoading: gamesLoading, mutate, isValidating } = useSWR<{
@@ -110,7 +110,7 @@ export default function CollegeFootballHomePage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
@@ -123,8 +123,8 @@ export default function CollegeFootballHomePage() {
           <div className="flex items-center gap-3">
             <Link
               href="/all"
-              className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity ${darkMode ? 'glass-pill' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
             </Link>
@@ -141,10 +141,9 @@ export default function CollegeFootballHomePage() {
             <button
               onClick={() => mutate()}
               disabled={gamesLoading}
-              className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
+              className={`tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm ${darkMode ? 'glass-pill' : ''}`}
               style={{
-                backgroundColor: theme.bgSecondary,
-                border: `1px solid ${theme.border}`,
+                ...(darkMode ? {} : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }),
                 color: theme.textSecondary,
               }}
             >
@@ -161,9 +160,9 @@ export default function CollegeFootballHomePage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
+            className={`tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${darkMode ? (activeTab === tab.id ? 'glass-pill-active' : 'glass-pill') : ''}`}
             style={{
-              backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary,
+              ...(darkMode ? {} : { backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary }),
               color: activeTab === tab.id ? '#fff' : theme.textSecondary,
             }}
           >
@@ -189,8 +188,8 @@ export default function CollegeFootballHomePage() {
               </div>
             ) : games.length === 0 ? (
               <div
-                className="rounded-lg py-8 text-center"
-                style={{ backgroundColor: theme.bgSecondary }}
+                className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
               >
                 <p className="text-sm" style={{ color: theme.textSecondary }}>
                   No games scheduled for today
@@ -204,8 +203,8 @@ export default function CollegeFootballHomePage() {
                 {/* Live Games */}
                 {liveGames.length > 0 && (
                   <section
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section live-glow' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <button
                       onClick={() => setLiveCollapsed(!liveCollapsed)}
@@ -250,8 +249,8 @@ export default function CollegeFootballHomePage() {
                 {/* Ranked Matchups */}
                 {rankedGames.length > 0 && (
                   <section
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <button
                       onClick={() => setRankedCollapsed(!rankedCollapsed)}
@@ -267,8 +266,8 @@ export default function CollegeFootballHomePage() {
                           Ranked Matchups
                         </h2>
                         <span
-                          className="rounded-full px-2.5 py-0.5 text-xs"
-                          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                          className={`rounded-full px-2.5 py-0.5 text-xs ${darkMode ? 'glass-badge' : ''}`}
+                          style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                         >
                           {rankedGames.length}
                         </span>
@@ -293,8 +292,8 @@ export default function CollegeFootballHomePage() {
                 {/* Other Games */}
                 {otherGames.length > 0 && (
                   <section
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <button
                       onClick={() => setOtherCollapsed(!otherCollapsed)}
@@ -309,8 +308,8 @@ export default function CollegeFootballHomePage() {
                           All Games
                         </h2>
                         <span
-                          className="rounded-full px-2.5 py-0.5 text-xs"
-                          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                          className={`rounded-full px-2.5 py-0.5 text-xs ${darkMode ? 'glass-badge' : ''}`}
+                          style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                         >
                           {otherGames.length}
                         </span>
@@ -358,8 +357,8 @@ export default function CollegeFootballHomePage() {
               />
             ) : (
               <div
-                className="rounded-xl p-8 text-center"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl p-8 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <GitMerge size={48} style={{ color: theme.textSecondary, margin: '0 auto 16px' }} />
                 <p className="text-base font-medium mb-2" style={{ color: theme.text }}>
@@ -388,8 +387,8 @@ export default function CollegeFootballHomePage() {
               </div>
             ) : rankings.length === 0 ? (
               <div
-                className="rounded-lg py-8 text-center"
-                style={{ backgroundColor: theme.bgSecondary }}
+                className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
               >
                 <p className="text-sm" style={{ color: theme.textSecondary }}>
                   Rankings not available
@@ -400,8 +399,8 @@ export default function CollegeFootballHomePage() {
               </div>
             ) : (
               <div
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <div
                   className="px-4 py-3 flex items-center gap-2"
@@ -415,8 +414,8 @@ export default function CollegeFootballHomePage() {
 
                 {/* Header */}
                 <div
-                  className="flex items-center px-4 py-2 text-[10px] font-semibold uppercase"
-                  style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                  className={`flex items-center px-4 py-2 text-[10px] font-semibold uppercase ${darkMode ? 'glass-badge' : ''}`}
+                  style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                 >
                   <span className="w-8">#</span>
                   <span className="flex-1">Team</span>
@@ -471,11 +470,10 @@ export default function CollegeFootballHomePage() {
               <select
                 value={selectedConference}
                 onChange={(e) => setSelectedConference(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg text-sm font-medium appearance-none cursor-pointer"
+                className={`w-full px-4 py-3 rounded-lg text-sm font-medium appearance-none cursor-pointer ${darkMode ? 'glass-pill' : ''}`}
                 style={{
-                  backgroundColor: theme.bgSecondary,
+                  ...(darkMode ? {} : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }),
                   color: theme.text,
-                  border: `1px solid ${theme.border}`,
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'right 12px center',
