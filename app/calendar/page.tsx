@@ -481,7 +481,7 @@ export default function CalendarPage() {
     return (
       <div
         className="flex min-h-screen flex-col items-center justify-center transition-theme"
-        style={{ backgroundColor: theme.bg }}
+        style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
       >
         <div
           className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
@@ -494,7 +494,7 @@ export default function CalendarPage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
@@ -525,14 +525,14 @@ export default function CalendarPage() {
 
       {/* Year Selector */}
       <div
-        className="px-4 py-2 flex justify-center"
-        style={{ backgroundColor: theme.bgSecondary }}
+        className={`px-4 py-2 flex justify-center ${darkMode ? 'glass-pill' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
       >
         <div className="relative">
           <button
             onClick={() => setYearDropdownOpen(!yearDropdownOpen)}
-            className="tap-highlight flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium"
-            style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
+            className={`tap-highlight flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${darkMode ? 'glass-pill' : ''}`}
+            style={darkMode ? { color: theme.text } : { backgroundColor: theme.bgTertiary, color: theme.text }}
           >
             <CalendarIcon size={14} />
             {selectedYear}
@@ -540,8 +540,8 @@ export default function CalendarPage() {
           </button>
           {yearDropdownOpen && (
             <div
-              className="absolute top-full mt-1 left-0 right-0 rounded-lg overflow-hidden shadow-lg z-10"
-              style={{ backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
+              className={`absolute top-full mt-1 left-0 right-0 rounded-lg overflow-hidden shadow-lg z-10 ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
             >
               {AVAILABLE_YEARS.map((year) => (
                 <button
@@ -570,9 +570,9 @@ export default function CalendarPage() {
           <button
             key={month.label}
             onClick={() => setSelectedDate(month.date)}
-            className="tap-highlight rounded-lg py-2.5 text-xs font-medium text-center"
+            className={`tap-highlight rounded-lg py-2.5 text-xs font-medium text-center ${darkMode ? (isCurrentMonth(month.date) ? 'glass-pill-active' : 'glass-pill') : ''}`}
             style={{
-              backgroundColor: isCurrentMonth(month.date) ? theme.accent : theme.bgTertiary,
+              ...(darkMode ? {} : { backgroundColor: isCurrentMonth(month.date) ? theme.accent : theme.bgTertiary }),
               color: isCurrentMonth(month.date) ? '#fff' : theme.textSecondary,
             }}
           >
@@ -594,8 +594,8 @@ export default function CalendarPage() {
         <div className="relative">
           {/* Center indicator - behind content */}
           <div
-            className="absolute top-3 bottom-3 left-1/2 -translate-x-1/2 w-14 rounded-lg pointer-events-none"
-            style={{ backgroundColor: theme.accent }}
+            className={`absolute top-3 bottom-3 left-1/2 -translate-x-1/2 w-14 rounded-lg pointer-events-none ${darkMode ? 'glass-pill-active' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.accent }}
           />
 
           {/* Scrollable container */}
@@ -666,11 +666,10 @@ export default function CalendarPage() {
       >
         <button
           onClick={() => setSelectedSport('all')}
-          className="tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2"
+          className={`tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-2 ${darkMode ? (selectedSport === 'all' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: selectedSport === 'all' ? theme.accent : theme.bgSecondary,
+            ...(darkMode ? {} : { backgroundColor: selectedSport === 'all' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'all' ? theme.accent : theme.border}` }),
             color: selectedSport === 'all' ? '#fff' : theme.textSecondary,
-            border: `1px solid ${selectedSport === 'all' ? theme.accent : theme.border}`,
           }}
         >
           <span className="hidden md:inline">All Sports</span>
@@ -678,11 +677,10 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport('myteams')}
-          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'myteams' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: selectedSport === 'myteams' ? theme.accent : theme.bgSecondary,
+            ...(darkMode ? {} : { backgroundColor: selectedSport === 'myteams' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'myteams' ? theme.accent : theme.border}` }),
             color: selectedSport === 'myteams' ? '#fff' : theme.textSecondary,
-            border: `1px solid ${selectedSport === 'myteams' ? theme.accent : theme.border}`,
             minWidth: '40px',
           }}
         >
@@ -691,11 +689,10 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'soccer' ? null : 'soccer')}
-          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'soccer' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: selectedSport === 'soccer' ? theme.accent : theme.bgSecondary,
+            ...(darkMode ? {} : { backgroundColor: selectedSport === 'soccer' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'soccer' ? theme.accent : theme.border}` }),
             color: selectedSport === 'soccer' ? '#fff' : theme.textSecondary,
-            border: `1px solid ${selectedSport === 'soccer' ? theme.accent : theme.border}`,
             minWidth: '40px',
           }}
         >
@@ -704,11 +701,10 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'cbb' ? null : 'cbb')}
-          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'cbb' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: selectedSport === 'cbb' ? theme.accent : theme.bgSecondary,
+            ...(darkMode ? {} : { backgroundColor: selectedSport === 'cbb' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'cbb' ? theme.accent : theme.border}` }),
             color: selectedSport === 'cbb' ? '#fff' : theme.textSecondary,
-            border: `1px solid ${selectedSport === 'cbb' ? theme.accent : theme.border}`,
             minWidth: '40px',
           }}
         >
@@ -717,11 +713,10 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'mlb' ? null : 'mlb')}
-          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'mlb' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: selectedSport === 'mlb' ? theme.accent : theme.bgSecondary,
+            ...(darkMode ? {} : { backgroundColor: selectedSport === 'mlb' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'mlb' ? theme.accent : theme.border}` }),
             color: selectedSport === 'mlb' ? '#fff' : theme.textSecondary,
-            border: `1px solid ${selectedSport === 'mlb' ? theme.accent : theme.border}`,
             minWidth: '40px',
           }}
         >
@@ -730,11 +725,10 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'nba' ? null : 'nba')}
-          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'nba' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: selectedSport === 'nba' ? theme.accent : theme.bgSecondary,
+            ...(darkMode ? {} : { backgroundColor: selectedSport === 'nba' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'nba' ? theme.accent : theme.border}` }),
             color: selectedSport === 'nba' ? '#fff' : theme.textSecondary,
-            border: `1px solid ${selectedSport === 'nba' ? theme.accent : theme.border}`,
             minWidth: '40px',
           }}
         >
@@ -743,11 +737,10 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'nfl' ? null : 'nfl')}
-          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'nfl' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: selectedSport === 'nfl' ? theme.accent : theme.bgSecondary,
+            ...(darkMode ? {} : { backgroundColor: selectedSport === 'nfl' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'nfl' ? theme.accent : theme.border}` }),
             color: selectedSport === 'nfl' ? '#fff' : theme.textSecondary,
-            border: `1px solid ${selectedSport === 'nfl' ? theme.accent : theme.border}`,
             minWidth: '40px',
           }}
         >
@@ -756,11 +749,10 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'nhl' ? null : 'nhl')}
-          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'nhl' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: selectedSport === 'nhl' ? theme.accent : theme.bgSecondary,
+            ...(darkMode ? {} : { backgroundColor: selectedSport === 'nhl' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'nhl' ? theme.accent : theme.border}` }),
             color: selectedSport === 'nhl' ? '#fff' : theme.textSecondary,
-            border: `1px solid ${selectedSport === 'nhl' ? theme.accent : theme.border}`,
             minWidth: '40px',
           }}
         >
@@ -769,11 +761,10 @@ export default function CalendarPage() {
         </button>
         <button
           onClick={() => setSelectedSport(selectedSport === 'cfb' ? null : 'cfb')}
-          className="tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2"
+          className={`tap-highlight rounded-full px-2.5 md:px-4 py-2 text-sm font-medium flex items-center justify-center md:gap-2 ${darkMode ? (selectedSport === 'cfb' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: selectedSport === 'cfb' ? theme.accent : theme.bgSecondary,
+            ...(darkMode ? {} : { backgroundColor: selectedSport === 'cfb' ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedSport === 'cfb' ? theme.accent : theme.border}` }),
             color: selectedSport === 'cfb' ? '#fff' : theme.textSecondary,
-            border: `1px solid ${selectedSport === 'cfb' ? theme.accent : theme.border}`,
             minWidth: '40px',
           }}
         >
@@ -794,11 +785,10 @@ export default function CalendarPage() {
               setSelectedNation('all');
               setSelectedTournament(null);
             }}
-            className="tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
+            className={`tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2 ${darkMode ? (selectedNation === 'all' && !selectedTournament ? 'glass-pill-active' : 'glass-pill') : ''}`}
             style={{
-              backgroundColor: selectedNation === 'all' && !selectedTournament ? theme.accent : theme.bgSecondary,
+              ...(darkMode ? {} : { backgroundColor: selectedNation === 'all' && !selectedTournament ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedNation === 'all' && !selectedTournament ? theme.accent : theme.border}` }),
               color: selectedNation === 'all' && !selectedTournament ? '#fff' : theme.textSecondary,
-              border: `1px solid ${selectedNation === 'all' && !selectedTournament ? theme.accent : theme.border}`,
             }}
           >
             <span>All</span>
@@ -814,11 +804,10 @@ export default function CalendarPage() {
                   setSelectedTournament(selectedTournament === code ? null : code);
                   if (selectedTournament !== code) setSelectedNation('all');
                 }}
-                className="tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1.5 md:gap-2"
+                className={`tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1.5 md:gap-2 ${darkMode ? (selectedTournament === code ? 'glass-pill-active' : 'glass-pill') : ''}`}
                 style={{
-                  backgroundColor: selectedTournament === code ? theme.accent : theme.bgSecondary,
+                  ...(darkMode ? {} : { backgroundColor: selectedTournament === code ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedTournament === code ? theme.accent : theme.border}` }),
                   color: selectedTournament === code ? '#fff' : theme.textSecondary,
-                  border: `1px solid ${selectedTournament === code ? theme.accent : theme.border}`,
                 }}
               >
                 {logo && (
@@ -842,11 +831,10 @@ export default function CalendarPage() {
                 setSelectedNation(filter.id);
                 setSelectedTournament(null);
               }}
-              className="tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2"
+              className={`tap-highlight whitespace-nowrap rounded-full px-3 md:px-4 py-2 text-sm font-medium flex items-center gap-1 md:gap-2 ${darkMode ? (selectedNation === filter.id && !selectedTournament ? 'glass-pill-active' : 'glass-pill') : ''}`}
               style={{
-                backgroundColor: selectedNation === filter.id && !selectedTournament ? theme.accent : theme.bgSecondary,
+                ...(darkMode ? {} : { backgroundColor: selectedNation === filter.id && !selectedTournament ? theme.accent : theme.bgSecondary, border: `1px solid ${selectedNation === filter.id && !selectedTournament ? theme.accent : theme.border}` }),
                 color: selectedNation === filter.id && !selectedTournament ? '#fff' : theme.textSecondary,
-                border: `1px solid ${selectedNation === filter.id && !selectedTournament ? theme.accent : theme.border}`,
               }}
             >
               {'flag' in filter ? <span>{filter.flag}</span> : null}
@@ -996,8 +984,8 @@ export default function CalendarPage() {
             {/* No games message */}
             {matches.length === 0 && basketballGames.length === 0 && nbaGames.length === 0 && mlbGames.length === 0 && nflGames.length === 0 && !isLoading && (
               <div
-                className="rounded-lg py-8 text-center"
-                style={{ backgroundColor: theme.bgSecondary }}
+                className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
               >
                 <p className="text-sm" style={{ color: theme.textSecondary }}>
                   No games on this date
@@ -1031,8 +1019,8 @@ export default function CalendarPage() {
             </div>
           ) : !isLoggedIn ? (
             <div
-              className="rounded-lg py-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <Star size={24} style={{ color: theme.textSecondary, margin: '0 auto 8px' }} />
               <p className="text-sm font-medium" style={{ color: theme.text }}>
@@ -1044,8 +1032,8 @@ export default function CalendarPage() {
             </div>
           ) : myTeamsTotal === 0 ? (
             <div
-              className="rounded-lg py-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <Star size={24} style={{ color: theme.textSecondary, margin: '0 auto 8px' }} />
               <p className="text-sm font-medium" style={{ color: theme.text }}>
@@ -1141,8 +1129,8 @@ export default function CalendarPage() {
             </div>
           ) : basketballError ? (
             <div
-              className="rounded-lg py-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <p className="text-sm font-medium" style={{ color: theme.red }}>
                 Failed to load games
@@ -1150,8 +1138,8 @@ export default function CalendarPage() {
             </div>
           ) : basketballGames.length === 0 ? (
             <div
-              className="rounded-lg py-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <p className="text-sm" style={{ color: theme.textSecondary }}>
                 No basketball games on this date
@@ -1177,8 +1165,8 @@ export default function CalendarPage() {
             </div>
           ) : nbaError ? (
             <div
-              className="rounded-lg py-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <p className="text-sm font-medium" style={{ color: theme.red }}>
                 Failed to load games
@@ -1186,8 +1174,8 @@ export default function CalendarPage() {
             </div>
           ) : nbaGames.length === 0 ? (
             <div
-              className="rounded-lg py-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <p className="text-sm" style={{ color: theme.textSecondary }}>
                 No NBA games on this date
@@ -1213,8 +1201,8 @@ export default function CalendarPage() {
             </div>
           ) : mlbError ? (
             <div
-              className="rounded-lg py-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <p className="text-sm font-medium" style={{ color: theme.red }}>
                 Failed to load games
@@ -1222,8 +1210,8 @@ export default function CalendarPage() {
             </div>
           ) : mlbGames.length === 0 ? (
             <div
-              className="rounded-lg py-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <p className="text-sm" style={{ color: theme.textSecondary }}>
                 No MLB games on this date
@@ -1249,8 +1237,8 @@ export default function CalendarPage() {
             </div>
           ) : nflError ? (
             <div
-              className="rounded-lg py-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <p className="text-sm font-medium" style={{ color: theme.red }}>
                 Failed to load games
@@ -1258,8 +1246,8 @@ export default function CalendarPage() {
             </div>
           ) : nflGames.length === 0 ? (
             <div
-              className="rounded-lg py-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <p className="text-sm" style={{ color: theme.textSecondary }}>
                 No NFL games on this date
@@ -1274,8 +1262,8 @@ export default function CalendarPage() {
           )
         ) : selectedSport === 'nhl' ? (
           <div
-            className="rounded-lg py-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <p className="text-2xl mb-2">🏒</p>
             <p className="text-sm font-medium" style={{ color: theme.text }}>
@@ -1287,8 +1275,8 @@ export default function CalendarPage() {
           </div>
         ) : selectedSport === 'cfb' ? (
           <div
-            className="rounded-lg py-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <p className="text-2xl mb-2">🏈</p>
             <p className="text-sm font-medium" style={{ color: theme.text }}>
@@ -1310,8 +1298,8 @@ export default function CalendarPage() {
           </div>
         ) : isError ? (
           <div
-            className="rounded-lg py-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <p className="text-sm font-medium" style={{ color: theme.red }}>
               Failed to load fixtures
@@ -1322,8 +1310,8 @@ export default function CalendarPage() {
           </div>
         ) : matches.length === 0 ? (
           <div
-            className="rounded-lg py-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <p className="text-sm" style={{ color: theme.textSecondary }}>
               No fixtures on this date
@@ -1340,8 +1328,8 @@ export default function CalendarPage() {
               return (
                 <section
                   key={nation.id}
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                  style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                 >
                   {/* Nation Header - Collapsible */}
                   <button

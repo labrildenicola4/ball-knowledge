@@ -33,7 +33,7 @@ interface Favorite {
 }
 
 export default function MyStuffPage() {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [soccerTeams, setSoccerTeams] = useState<TeamInfo[]>([]);
@@ -169,13 +169,13 @@ export default function MyStuffPage() {
     return (
       <div
         className="flex min-h-screen flex-col"
-        style={{ backgroundColor: theme.bg }}
+        style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
       >
         <Header />
         <main className="flex flex-1 flex-col items-center justify-center px-6">
           <div
-            className="flex flex-col items-center rounded-2xl p-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary, maxWidth: '360px' }}
+            className={`flex flex-col items-center rounded-2xl p-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? { maxWidth: '360px' } : { backgroundColor: theme.bgSecondary, maxWidth: '360px' }}
           >
             <div
               className="mb-4 flex h-16 w-16 items-center justify-center rounded-full"
@@ -207,8 +207,8 @@ export default function MyStuffPage() {
       <main className="flex-1 overflow-y-auto pb-24 px-4 py-4">
         {/* User Profile Section */}
         <div
-          className="mb-6 flex items-center justify-between rounded-xl p-4"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`mb-6 flex items-center justify-between rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           <div className="flex items-center gap-3">
             <img
@@ -247,8 +247,8 @@ export default function MyStuffPage() {
           </div>
         ) : !hasAnyFavorites ? (
           <div
-            className="flex flex-col items-center justify-center rounded-xl py-12"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`flex flex-col items-center justify-center rounded-xl py-12 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <Star size={48} color={theme.textSecondary} />
             <p className="mt-4 text-[14px] font-medium" style={{ color: theme.text }}>
@@ -265,7 +265,7 @@ export default function MyStuffPage() {
               <section>
                 <h2
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: theme.textSecondary }}
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
                 >
                   Soccer Teams
                 </h2>
@@ -273,8 +273,8 @@ export default function MyStuffPage() {
                   {soccerTeams.map((team) => (
                     <div
                       key={team.teamId}
-                      className="flex items-center gap-3 rounded-xl p-4"
-                      style={{
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
                         backgroundColor: theme.bgSecondary,
                         border: `1px solid ${theme.border}`,
                       }}
@@ -338,7 +338,7 @@ export default function MyStuffPage() {
               <section>
                 <h2
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: theme.textSecondary }}
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
                 >
                   MLB Teams
                 </h2>
@@ -346,8 +346,8 @@ export default function MyStuffPage() {
                   {mlbFavorites.map((team) => (
                     <div
                       key={team.id}
-                      className="flex items-center gap-3 rounded-xl p-4"
-                      style={{
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
                         backgroundColor: theme.bgSecondary,
                         border: `1px solid ${theme.border}`,
                       }}
@@ -385,7 +385,7 @@ export default function MyStuffPage() {
               <section>
                 <h2
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: theme.textSecondary }}
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
                 >
                   NBA Teams
                 </h2>
@@ -393,8 +393,8 @@ export default function MyStuffPage() {
                   {nbaFavorites.map((team) => (
                     <div
                       key={team.id}
-                      className="flex items-center gap-3 rounded-xl p-4"
-                      style={{
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
                         backgroundColor: theme.bgSecondary,
                         border: `1px solid ${theme.border}`,
                       }}
@@ -432,7 +432,7 @@ export default function MyStuffPage() {
               <section>
                 <h2
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: theme.textSecondary }}
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
                 >
                   NFL Teams
                 </h2>
@@ -440,8 +440,8 @@ export default function MyStuffPage() {
                   {nflFavorites.map((team) => (
                     <div
                       key={team.id}
-                      className="flex items-center gap-3 rounded-xl p-4"
-                      style={{
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
                         backgroundColor: theme.bgSecondary,
                         border: `1px solid ${theme.border}`,
                       }}
@@ -479,7 +479,7 @@ export default function MyStuffPage() {
               <section>
                 <h2
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: theme.textSecondary }}
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
                 >
                   NCAA Basketball
                 </h2>
@@ -487,8 +487,8 @@ export default function MyStuffPage() {
                   {ncaabFavorites.map((team) => (
                     <div
                       key={team.id}
-                      className="flex items-center gap-3 rounded-xl p-4"
-                      style={{
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
                         backgroundColor: theme.bgSecondary,
                         border: `1px solid ${theme.border}`,
                       }}
@@ -526,7 +526,7 @@ export default function MyStuffPage() {
               <section>
                 <h2
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: theme.textSecondary }}
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
                 >
                   NCAA Football
                 </h2>
@@ -534,8 +534,8 @@ export default function MyStuffPage() {
                   {ncaafFavorites.map((team) => (
                     <div
                       key={team.id}
-                      className="flex items-center gap-3 rounded-xl p-4"
-                      style={{
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
                         backgroundColor: theme.bgSecondary,
                         border: `1px solid ${theme.border}`,
                       }}
@@ -573,7 +573,7 @@ export default function MyStuffPage() {
               <section>
                 <h2
                   className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: theme.textSecondary }}
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
                 >
                   Leagues
                 </h2>
@@ -581,8 +581,8 @@ export default function MyStuffPage() {
                   {leagueFavorites.map((league) => (
                     <div
                       key={league.id}
-                      className="flex items-center gap-3 rounded-xl p-4"
-                      style={{
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
                         backgroundColor: theme.bgSecondary,
                         border: `1px solid ${theme.border}`,
                       }}
