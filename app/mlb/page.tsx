@@ -94,7 +94,7 @@ export default function MLBHomePage() {
   const [liveCollapsed, setLiveCollapsed] = useState(false);
   const [upcomingCollapsed, setUpcomingCollapsed] = useState(false);
   const [completedCollapsed, setCompletedCollapsed] = useState(false);
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   // Fetch games
   const { data: gamesData, isLoading: gamesLoading, mutate, isValidating } = useSWR<{
@@ -142,21 +142,21 @@ export default function MLBHomePage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
       {/* Header */}
       <div
         className="px-4 py-4"
-        style={{ borderBottom: `1px solid ${theme.border}` }}
+        style={darkMode ? undefined : { borderBottom: `1px solid ${theme.border}` }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href="/all"
-              className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity ${darkMode ? 'glass-pill' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
             </Link>
@@ -173,8 +173,8 @@ export default function MLBHomePage() {
             <button
               onClick={() => mutate()}
               disabled={gamesLoading}
-              className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
-              style={{
+              className={`tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm ${darkMode ? 'glass-pill' : ''}`}
+              style={darkMode ? { color: theme.textSecondary } : {
                 backgroundColor: theme.bgSecondary,
                 border: `1px solid ${theme.border}`,
                 color: theme.textSecondary,
@@ -193,13 +193,13 @@ export default function MLBHomePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="flex gap-1 px-4 py-3" style={darkMode ? undefined : { borderBottom: `1px solid ${theme.border}` }}>
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
-            style={{
+            className={`tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${darkMode ? (activeTab === tab.id ? 'glass-pill-active' : 'glass-pill') : ''}`}
+            style={darkMode ? { color: activeTab === tab.id ? '#fff' : theme.textSecondary } : {
               backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary,
               color: activeTab === tab.id ? '#fff' : theme.textSecondary,
             }}
@@ -226,8 +226,8 @@ export default function MLBHomePage() {
               </div>
             ) : games.length === 0 ? (
               <div
-                className="rounded-lg py-8 text-center"
-                style={{ backgroundColor: theme.bgSecondary }}
+                className={`rounded-lg py-8 text-center ${darkMode ? 'glass-section' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
               >
                 <p className="text-sm" style={{ color: theme.textSecondary }}>
                   No games scheduled for today
@@ -238,13 +238,13 @@ export default function MLBHomePage() {
                 {/* Live Games */}
                 {liveGames.length > 0 && (
                   <section
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <button
                       onClick={() => setLiveCollapsed(!liveCollapsed)}
                       className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                      style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                      style={darkMode ? undefined : { borderBottom: liveCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
                         <span
@@ -284,13 +284,13 @@ export default function MLBHomePage() {
                 {/* Upcoming Games */}
                 {upcomingGames.length > 0 && (
                   <section
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <button
                       onClick={() => setUpcomingCollapsed(!upcomingCollapsed)}
                       className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                      style={{ borderBottom: upcomingCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                      style={darkMode ? undefined : { borderBottom: upcomingCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
                         <h2
@@ -300,8 +300,8 @@ export default function MLBHomePage() {
                           Upcoming
                         </h2>
                         <span
-                          className="rounded-full px-2.5 py-0.5 text-xs"
-                          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                          className={`rounded-full px-2.5 py-0.5 text-xs ${darkMode ? 'glass-card' : ''}`}
+                          style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                         >
                           {upcomingGames.length}
                         </span>
@@ -326,13 +326,13 @@ export default function MLBHomePage() {
                 {/* Completed Games */}
                 {completedGames.length > 0 && (
                   <section
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <button
                       onClick={() => setCompletedCollapsed(!completedCollapsed)}
                       className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                      style={{ borderBottom: completedCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                      style={darkMode ? undefined : { borderBottom: completedCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
                         <h2
@@ -342,8 +342,8 @@ export default function MLBHomePage() {
                           Final
                         </h2>
                         <span
-                          className="rounded-full px-2.5 py-0.5 text-xs"
-                          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                          className={`rounded-full px-2.5 py-0.5 text-xs ${darkMode ? 'glass-card' : ''}`}
+                          style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                         >
                           {completedGames.length}
                         </span>
@@ -378,8 +378,8 @@ export default function MLBHomePage() {
                 <button
                   key={view}
                   onClick={() => setStatsView(view)}
-                  className="tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors capitalize"
-                  style={{
+                  className={`tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors capitalize ${darkMode ? (statsView === view ? 'glass-pill-active' : 'glass-pill') : ''}`}
+                  style={darkMode ? { color: statsView === view ? '#fff' : theme.textSecondary } : {
                     backgroundColor: statsView === view ? theme.accent : theme.bgSecondary,
                     color: statsView === view ? '#fff' : theme.textSecondary,
                     border: `1px solid ${statsView === view ? theme.accent : theme.border}`,
@@ -392,8 +392,8 @@ export default function MLBHomePage() {
 
             {/* Stats Content */}
             <div
-              className="rounded-xl p-8 text-center"
-              style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              className={`rounded-xl p-8 text-center ${darkMode ? 'glass-section' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
             >
               <BarChart3 size={48} style={{ color: theme.textSecondary, margin: '0 auto 16px' }} />
               <p className="text-base font-medium mb-2" style={{ color: theme.text }}>
@@ -430,8 +430,8 @@ export default function MLBHomePage() {
                     <button
                       key={league}
                       onClick={() => setSelectedLeague(league)}
-                      className="tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors"
-                      style={{
+                      className={`tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${darkMode ? (selectedLeague === league ? 'glass-pill-active' : 'glass-pill') : ''}`}
+                      style={darkMode ? { color: selectedLeague === league ? '#fff' : theme.textSecondary } : {
                         backgroundColor: selectedLeague === league ? theme.accent : theme.bgSecondary,
                         color: selectedLeague === league ? '#fff' : theme.textSecondary,
                         border: `1px solid ${selectedLeague === league ? theme.accent : theme.border}`,
@@ -445,8 +445,8 @@ export default function MLBHomePage() {
                 {/* Offseason Notice */}
                 {standingsData?.standings?.length === 0 && (
                   <div
-                    className="rounded-lg px-4 py-3 mb-4 text-center text-sm"
-                    style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    className={`rounded-lg px-4 py-3 mb-4 text-center text-sm ${darkMode ? 'glass-card' : ''}`}
+                    style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                   >
                     Offseason - Teams shown alphabetically
                   </div>
@@ -463,13 +463,13 @@ export default function MLBHomePage() {
                     return (
                       <div
                         key={division.division}
-                        className="rounded-xl overflow-hidden"
-                        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                        className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                       >
                         {/* Division Header */}
                         <div
-                          className="px-4 py-2.5 text-[11px] font-semibold uppercase"
-                          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                          className={`px-4 py-2.5 text-[11px] font-semibold uppercase ${darkMode ? 'glass-card' : ''}`}
+                          style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
                         >
                           {division.division.replace('American League ', '').replace('National League ', '')}
                         </div>
@@ -477,7 +477,7 @@ export default function MLBHomePage() {
                         {/* Table Header */}
                         <div
                           className="flex items-center px-4 py-2 text-[9px] font-semibold uppercase"
-                          style={{ color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}
+                          style={darkMode ? { color: theme.textSecondary } : { color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}
                         >
                           <span className="flex-1 pl-2">Team</span>
                           {!isOffseason && (
@@ -498,7 +498,7 @@ export default function MLBHomePage() {
                               key={team.id}
                               href={`/mlb/team/${team.id}`}
                               className="card-press flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
-                              style={{
+                              style={darkMode ? undefined : {
                                 borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
                               }}
                             >
@@ -524,7 +524,7 @@ export default function MLBHomePage() {
                               <Link
                                 href={`/mlb/team/${team.team.id}`}
                                 className="card-press flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
-                                style={{
+                                style={darkMode ? undefined : {
                                   borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
                                 }}
                               >
@@ -557,7 +557,7 @@ export default function MLBHomePage() {
 
                               {/* Playoff Cutoff Line after 1st place (division winner) */}
                               {index === 0 && (teams as MLBStanding[]).length > 1 && (
-                                <div className="flex items-center gap-2 px-4 py-1.5" style={{ backgroundColor: theme.bgTertiary }}>
+                                <div className={`flex items-center gap-2 px-4 py-1.5 ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}>
                                   <div className="flex-1 h-px" style={{ backgroundColor: theme.green }} />
                                   <span className="text-[9px] uppercase font-semibold" style={{ color: theme.green }}>
                                     Division Leader
