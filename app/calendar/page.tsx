@@ -535,7 +535,7 @@ export default function CalendarPage() {
         className={`px-4 py-2 flex justify-center ${darkMode ? 'glass-pill' : ''}`}
         style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
       >
-        <div className="relative">
+        <div className="relative" style={{ zIndex: 50 }}>
           <button
             onClick={() => { triggerHaptic(15); setYearDropdownOpen(!yearDropdownOpen); }}
             className={`tap-highlight flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${darkMode ? 'glass-pill' : ''}`}
@@ -547,7 +547,7 @@ export default function CalendarPage() {
           </button>
           {yearDropdownOpen && (
             <div
-              className={`absolute top-full mt-1 left-0 right-0 rounded-lg overflow-hidden shadow-lg z-10 ${darkMode ? 'glass-card' : ''}`}
+              className={`absolute top-full mt-1 left-0 right-0 rounded-lg overflow-hidden shadow-lg z-50 ${darkMode ? 'glass-card' : ''}`}
               style={darkMode ? undefined : { backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
             >
               {AVAILABLE_YEARS.map((year) => (
