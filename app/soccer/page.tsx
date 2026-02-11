@@ -91,13 +91,13 @@ export default function SoccerHubPage() {
       {/* Header */}
       <div
         className="px-4 py-4"
-        style={{ borderBottom: `1px solid ${theme.border}` }}
+        style={darkMode ? undefined : { borderBottom: `1px solid ${theme.border}` }}
       >
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <ChevronLeft size={20} style={{ color: theme.text }} />
           </button>
