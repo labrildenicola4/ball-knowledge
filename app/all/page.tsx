@@ -21,9 +21,9 @@ export default function AllPage() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <header className={`flex items-center justify-between px-4 py-3 ${darkMode ? 'glass-header' : ''}`} style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <div>
           <h1 className="text-xl font-semibold" style={{ color: theme.text }}>Browse</h1>
         </div>
@@ -41,7 +41,7 @@ export default function AllPage() {
         <section className="mb-6">
           <h2
             className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider mb-3"
-            style={{ color: theme.textSecondary }}
+            style={darkMode ? undefined : { color: theme.textSecondary }}
           >
             <Trophy size={14} />
             Sports
@@ -51,8 +51,8 @@ export default function AllPage() {
               <Link
                 key={hub.name}
                 href={hub.href}
-                className="card-press flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`card-press flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80 ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <img src={hub.logo} alt={hub.name} className="h-8 w-8 object-contain logo-glow" />
                 <div className="flex-1">
@@ -69,7 +69,7 @@ export default function AllPage() {
         <section className="mb-6">
           <h2
             className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider mb-3"
-            style={{ color: theme.textSecondary }}
+            style={darkMode ? undefined : { color: theme.textSecondary }}
           >
             <Trophy size={14} style={{ color: theme.gold }} />
             Tournaments
@@ -79,8 +79,8 @@ export default function AllPage() {
               <Link
                 key={tournament.slug}
                 href={`/tournament/${tournament.slug}`}
-                className="card-press flex flex-col gap-1 rounded-xl p-4 transition-colors hover:opacity-80"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`card-press flex flex-col gap-1 rounded-xl p-4 transition-colors hover:opacity-80 ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <span className="text-sm font-medium" style={{ color: theme.text }}>
                   {tournament.shortName}
