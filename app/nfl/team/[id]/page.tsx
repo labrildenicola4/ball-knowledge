@@ -141,7 +141,7 @@ export default function NFLTeamPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <div
           className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
           style={{ color: theme.accent }}
@@ -153,12 +153,12 @@ export default function NFLTeamPage() {
 
   if (error || !teamInfo) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Team not found'}</p>
         <button
           onClick={() => router.back()}
-          className="mt-4 rounded-lg px-4 py-2 text-[12px]"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           Go back
         </button>
@@ -185,13 +185,13 @@ export default function NFLTeamPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
           onClick={() => router.back()}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
         </button>
@@ -202,7 +202,7 @@ export default function NFLTeamPage() {
         <button
           onClick={toggleDarkMode}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
         </button>
@@ -210,8 +210,8 @@ export default function NFLTeamPage() {
 
       {/* Team Hero */}
       <section
-        className="px-4 py-6 text-center"
-        style={{ backgroundColor: team.color ? `${team.color}20` : theme.bgSecondary }}
+        className={`px-4 py-6 text-center ${darkMode ? 'glass-section' : ''}`}
+        style={darkMode ? (team.color ? { backgroundColor: `${team.color}20` } : undefined) : { backgroundColor: team.color ? `${team.color}20` : theme.bgSecondary }}
       >
         <div className="mx-auto mb-3 h-20 w-20">
           {team.logo ? (
@@ -273,7 +273,7 @@ export default function NFLTeamPage() {
           </div>
           {teamStanding && (
             <>
-              <div className="w-px h-10" style={{ backgroundColor: theme.border }} />
+              <div className="w-px h-10" style={{ backgroundColor: darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border }} />
               <div className="text-center">
                 <p className="text-xl font-mono font-bold" style={{ color: theme.text }}>
                   {teamStanding.divisionWins}-{teamStanding.divisionLosses}
@@ -282,7 +282,7 @@ export default function NFLTeamPage() {
                   Division
                 </p>
               </div>
-              <div className="w-px h-10" style={{ backgroundColor: theme.border }} />
+              <div className="w-px h-10" style={{ backgroundColor: darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border }} />
               <div className="text-center">
                 <p className="text-xl font-mono font-bold" style={{ color: theme.text }}>
                   {teamStanding.conferenceWins}-{teamStanding.conferenceLosses}
@@ -306,7 +306,7 @@ export default function NFLTeamPage() {
       </section>
 
       {/* Tabs */}
-      <div className="flex" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="flex" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         {[
           { key: 'schedule', label: 'Schedule', icon: TrendingUp },
           { key: 'roster', label: 'Roster', icon: Users },
@@ -318,10 +318,10 @@ export default function NFLTeamPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[11px] font-medium transition-colors"
+              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[11px] font-medium transition-colors ${darkMode ? (activeTab === tab.key ? 'glass-pill-active' : 'glass-pill') : ''}`}
               style={{
                 color: activeTab === tab.key ? theme.accent : theme.textSecondary,
-                borderBottom: activeTab === tab.key ? `2px solid ${theme.accent}` : '2px solid transparent',
+                borderBottom: darkMode ? 'none' : (activeTab === tab.key ? `2px solid ${theme.accent}` : '2px solid transparent'),
               }}
             >
               <Icon size={14} />
@@ -348,8 +348,8 @@ export default function NFLTeamPage() {
                         Upcoming ({upcomingGames.length})
                       </h3>
                       <div
-                        className="rounded-xl overflow-hidden"
-                        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                        className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                       >
                         {upcomingGames.map((game, index) => (
                           <Link
@@ -357,7 +357,7 @@ export default function NFLTeamPage() {
                             href={`/nfl/game/${game.id}`}
                             className="flex items-center justify-between px-4 py-3 hover:opacity-80 transition-opacity"
                             style={{
-                              borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                              borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                             }}
                           >
                             <div className="flex items-center gap-3">
@@ -365,7 +365,7 @@ export default function NFLTeamPage() {
                                 {game.date}
                               </span>
                               {game.week && (
-                                <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
+                                <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}>
                                   {typeof game.week === 'string' ? game.week : `Wk ${game.week}`}
                                 </span>
                               )}
@@ -396,8 +396,8 @@ export default function NFLTeamPage() {
                         Completed ({completedGames.length})
                       </h3>
                       <div
-                        className="rounded-xl overflow-hidden"
-                        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                        className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                       >
                         {completedGames.map((game, index) => (
                           <Link
@@ -405,7 +405,7 @@ export default function NFLTeamPage() {
                             href={`/nfl/game/${game.id}`}
                             className="flex items-center justify-between px-4 py-3 hover:opacity-80 transition-opacity"
                             style={{
-                              borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                              borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                             }}
                           >
                             <div className="flex items-center gap-3">
@@ -413,7 +413,7 @@ export default function NFLTeamPage() {
                                 {game.date}
                               </span>
                               {game.week && (
-                                <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
+                                <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}>
                                   {typeof game.week === 'string' ? game.week : `Wk ${game.week}`}
                                 </span>
                               )}
@@ -444,8 +444,8 @@ export default function NFLTeamPage() {
               </>
             ) : (
               <div
-                className="rounded-xl p-6 text-center"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <p className="text-[12px]" style={{ color: theme.textSecondary }}>
                   No games scheduled
@@ -459,17 +459,17 @@ export default function NFLTeamPage() {
         {activeTab === 'roster' && (
           <section className="px-4 py-4">
             {roster && roster.length > 0 ? (
-              <div className="rounded-xl overflow-hidden" style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
+              <div className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
                 {roster.map((player, idx) => (
                   <div
                     key={player.id}
                     className="flex items-center gap-3 px-4 py-3"
-                    style={{ borderTop: idx > 0 ? `1px solid ${theme.border}` : 'none' }}
+                    style={{ borderTop: idx > 0 ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none' }}
                   >
                     {player.headshot ? (
                       <img src={player.headshot} alt={player.name} className="h-10 w-10 rounded-full object-cover" />
                     ) : (
-                      <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
+                      <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}>
                         {player.jersey || '#'}
                       </div>
                     )}
@@ -500,12 +500,12 @@ export default function NFLTeamPage() {
                 {/* Passing Yards */}
                 {teamStats.passing.length > 0 && (
                   <div
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <div
                       className="px-4 py-2 text-[10px] font-semibold uppercase"
-                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                      style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       Passing Yards
                     </div>
@@ -513,7 +513,7 @@ export default function NFLTeamPage() {
                       <div
                         key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
-                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
+                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                       >
                         <span
                           className="w-5 text-center text-[11px] font-bold"
@@ -552,12 +552,12 @@ export default function NFLTeamPage() {
                 {/* Rushing Yards */}
                 {teamStats.rushing.length > 0 && (
                   <div
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <div
                       className="px-4 py-2 text-[10px] font-semibold uppercase"
-                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                      style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       Rushing Yards
                     </div>
@@ -565,7 +565,7 @@ export default function NFLTeamPage() {
                       <div
                         key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
-                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
+                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                       >
                         <span
                           className="w-5 text-center text-[11px] font-bold"
@@ -604,12 +604,12 @@ export default function NFLTeamPage() {
                 {/* Receiving Yards */}
                 {teamStats.receiving.length > 0 && (
                   <div
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <div
                       className="px-4 py-2 text-[10px] font-semibold uppercase"
-                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                      style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       Receiving Yards
                     </div>
@@ -617,7 +617,7 @@ export default function NFLTeamPage() {
                       <div
                         key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
-                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
+                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                       >
                         <span
                           className="w-5 text-center text-[11px] font-bold"
@@ -656,12 +656,12 @@ export default function NFLTeamPage() {
                 {/* Tackles */}
                 {teamStats.defense.length > 0 && (
                   <div
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <div
                       className="px-4 py-2 text-[10px] font-semibold uppercase"
-                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                      style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       Total Tackles
                     </div>
@@ -669,7 +669,7 @@ export default function NFLTeamPage() {
                       <div
                         key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
-                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${theme.border}` }}
+                        style={{ borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                       >
                         <span
                           className="w-5 text-center text-[11px] font-bold"
@@ -709,8 +709,8 @@ export default function NFLTeamPage() {
                 {teamStats.passing.length === 0 && teamStats.rushing.length === 0 &&
                  teamStats.receiving.length === 0 && teamStats.defense.length === 0 && (
                   <div
-                    className="rounded-xl p-6 text-center"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <p className="text-[12px]" style={{ color: theme.textSecondary }}>
                       No stats available for this team
@@ -738,9 +738,9 @@ export default function NFLTeamPage() {
                 <button
                   key={conf}
                   onClick={() => setSelectedConference(conf)}
-                  className="flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors"
+                  className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors ${darkMode ? (selectedConference === conf ? '' : 'glass-pill') : ''}`}
                   style={{
-                    backgroundColor: selectedConference === conf ? theme.accent : theme.bgSecondary,
+                    backgroundColor: darkMode ? (selectedConference === conf ? theme.accent : undefined) : (selectedConference === conf ? theme.accent : theme.bgSecondary),
                     color: selectedConference === conf ? '#fff' : theme.textSecondary,
                   }}
                 >
@@ -753,13 +753,13 @@ export default function NFLTeamPage() {
             {currentConf?.divisions.map((division) => (
               <div
                 key={division.id}
-                className="rounded-xl overflow-hidden mb-4"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl overflow-hidden mb-4 ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 {/* Division Header */}
                 <div
                   className="px-4 py-2 text-[10px] font-semibold uppercase"
-                  style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                  style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                 >
                   {division.name.replace('American Football Conference ', '').replace('National Football Conference ', '')}
                 </div>
@@ -767,7 +767,7 @@ export default function NFLTeamPage() {
                 {/* Column Headers */}
                 <div
                   className="flex items-center px-4 py-2 text-[9px] font-semibold uppercase"
-                  style={{ color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}
+                  style={{ color: theme.textSecondary, borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                 >
                   <span className="flex-1 pl-2">Team</span>
                   <span className="w-8 text-center">W</span>
@@ -792,7 +792,7 @@ export default function NFLTeamPage() {
                         className="flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
                         style={{
                           backgroundColor: isCurrentTeam ? `${theme.accent}15` : 'transparent',
-                          borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                          borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                         }}
                       >
                         <div className="flex-1 flex items-center gap-2 min-w-0">
@@ -839,7 +839,7 @@ export default function NFLTeamPage() {
 
                       {/* Division Leader Line */}
                       {isDivisionLeader && division.teams.length > 1 && (
-                        <div className="flex items-center gap-2 px-4 py-1" style={{ backgroundColor: theme.bgTertiary }}>
+                        <div className="flex items-center gap-2 px-4 py-1" style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}>
                           <div className="flex-1 h-px" style={{ backgroundColor: theme.green }} />
                           <span className="text-[8px] uppercase font-semibold" style={{ color: theme.green }}>
                             Division Leader

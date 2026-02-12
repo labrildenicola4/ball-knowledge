@@ -121,7 +121,7 @@ export default function BasketballTeamPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <div
           className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
           style={{ color: theme.accent }}
@@ -133,12 +133,12 @@ export default function BasketballTeamPage() {
 
   if (error || !teamInfo) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Team not found'}</p>
         <button
           onClick={() => router.back()}
-          className="mt-4 rounded-lg px-4 py-2 text-[12px]"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           Go back
         </button>
@@ -153,13 +153,13 @@ export default function BasketballTeamPage() {
   const teamRank = standings?.teams?.findIndex(t => t.id === teamId);
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
           onClick={() => router.back()}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
         </button>
@@ -170,7 +170,7 @@ export default function BasketballTeamPage() {
         <button
           onClick={toggleDarkMode}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
         </button>
@@ -178,8 +178,8 @@ export default function BasketballTeamPage() {
 
       {/* Team Hero */}
       <section
-        className="px-4 py-6 text-center"
-        style={{ backgroundColor: team.color ? `${team.color}20` : theme.bgSecondary }}
+        className={`px-4 py-6 text-center ${darkMode ? 'glass-section' : ''}`}
+        style={darkMode ? (team.color ? { backgroundColor: `${team.color}20` } : undefined) : { backgroundColor: team.color ? `${team.color}20` : theme.bgSecondary }}
       >
         {rank && rank <= 25 && (
           <span
@@ -249,7 +249,7 @@ export default function BasketballTeamPage() {
               Overall
             </p>
           </div>
-          <div className="w-px h-10" style={{ backgroundColor: theme.border }} />
+          <div className="w-px h-10" style={{ backgroundColor: darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border }} />
           <div className="text-center">
             <p className="text-xl font-mono font-bold" style={{ color: theme.text }}>
               {conferenceRecord || (teamStanding ? `${teamStanding.conferenceWins}-${teamStanding.conferenceLosses}` : '-')}
@@ -260,7 +260,7 @@ export default function BasketballTeamPage() {
           </div>
           {teamRank !== undefined && teamRank >= 0 && (
             <>
-              <div className="w-px h-10" style={{ backgroundColor: theme.border }} />
+              <div className="w-px h-10" style={{ backgroundColor: darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border }} />
               <div className="text-center">
                 <p className="text-xl font-mono font-bold" style={{ color: theme.text }}>
                   #{teamRank + 1}
@@ -285,7 +285,7 @@ export default function BasketballTeamPage() {
 
       {/* Team Stats */}
       {stats && (
-        <section className="px-4 py-4" style={{ borderBottom: `1px solid ${theme.border}` }}>
+        <section className="px-4 py-4" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 size={14} style={{ color: theme.accent }} />
             <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
@@ -303,8 +303,8 @@ export default function BasketballTeamPage() {
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-lg p-2 text-center"
-                style={{ backgroundColor: theme.bgSecondary }}
+                className={`rounded-lg p-2 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
               >
                 <p className="text-lg font-mono font-bold" style={{ color: theme.text }}>
                   {stat.value}
@@ -319,7 +319,7 @@ export default function BasketballTeamPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="flex" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         {[
           { key: 'schedule', label: 'Schedule', icon: TrendingUp },
           { key: 'roster', label: 'Roster', icon: Users },
@@ -330,10 +330,10 @@ export default function BasketballTeamPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[11px] font-medium transition-colors"
+              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[11px] font-medium transition-colors ${darkMode ? (activeTab === tab.key ? 'glass-pill-active' : 'glass-pill') : ''}`}
               style={{
                 color: activeTab === tab.key ? theme.accent : theme.textSecondary,
-                borderBottom: activeTab === tab.key ? `2px solid ${theme.accent}` : '2px solid transparent',
+                borderBottom: darkMode ? 'none' : (activeTab === tab.key ? `2px solid ${theme.accent}` : '2px solid transparent'),
               }}
             >
               <Icon size={14} />
@@ -360,8 +360,8 @@ export default function BasketballTeamPage() {
                         Upcoming ({upcomingGames.length})
                       </h3>
                       <div
-                        className="rounded-xl overflow-hidden"
-                        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                        className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                       >
                         {upcomingGames.slice(0, 10).map((game, index) => (
                           <Link
@@ -369,7 +369,7 @@ export default function BasketballTeamPage() {
                             href={`/basketball/game/${game.id}`}
                             className="flex items-center justify-between px-4 py-3 hover:opacity-80 transition-opacity"
                             style={{
-                              borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                              borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                             }}
                           >
                             <div className="flex items-center gap-3">
@@ -403,8 +403,8 @@ export default function BasketballTeamPage() {
                         Completed ({completedGames.length})
                       </h3>
                       <div
-                        className="rounded-xl overflow-hidden"
-                        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                        className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                       >
                         {completedGames.slice(0, 10).map((game, index) => (
                           <Link
@@ -412,7 +412,7 @@ export default function BasketballTeamPage() {
                             href={`/basketball/game/${game.id}`}
                             className="flex items-center justify-between px-4 py-3 hover:opacity-80 transition-opacity"
                             style={{
-                              borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                              borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                             }}
                           >
                             <div className="flex items-center gap-3">
@@ -446,8 +446,8 @@ export default function BasketballTeamPage() {
               </>
             ) : (
               <div
-                className="rounded-xl p-6 text-center"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <p className="text-[12px]" style={{ color: theme.textSecondary }}>
                   No games scheduled
@@ -466,7 +466,7 @@ export default function BasketballTeamPage() {
                   {/* Stats Header */}
                   <div
                     className="flex items-center px-2 py-2 rounded-t-xl text-[8px] font-semibold uppercase whitespace-nowrap"
-                    style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                   >
                     <span className="w-[120px] flex-shrink-0">Player</span>
                     <span className="w-7 text-center flex-shrink-0">GP</span>
@@ -478,20 +478,20 @@ export default function BasketballTeamPage() {
                   </div>
 
                   <div
-                    className="rounded-b-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}`, borderTop: 'none' }}
+                    className={`rounded-b-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                    style={darkMode ? { borderTop: 'none' } : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}`, borderTop: 'none' }}
                   >
                     {roster.map((player, index) => (
                       <div
                         key={player.id}
                         className="flex items-center px-2 py-2 whitespace-nowrap"
                         style={{
-                          borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                          borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                         }}
                       >
                         {/* Player Info */}
                         <div className="w-[120px] flex-shrink-0 flex items-center gap-1.5">
-                          <div className="h-7 w-7 rounded-full overflow-hidden flex-shrink-0" style={{ backgroundColor: theme.bgTertiary }}>
+                          <div className="h-7 w-7 rounded-full overflow-hidden flex-shrink-0" style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}>
                             {player.headshot ? (
                               <img src={player.headshot} alt={player.name} className="h-full w-full object-cover" />
                             ) : (
@@ -544,8 +544,8 @@ export default function BasketballTeamPage() {
               </div>
             ) : (
               <div
-                className="rounded-xl p-6 text-center"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <p className="text-[12px]" style={{ color: theme.textSecondary }}>
                   Roster not available
@@ -567,9 +567,11 @@ export default function BasketballTeamPage() {
                 <button
                   key={view.key}
                   onClick={() => setStandingsView(view.key as 'conference' | 'top25')}
-                  className="flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors"
+                  className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-colors ${darkMode ? (standingsView === view.key ? '' : 'glass-pill') : ''}`}
                   style={{
-                    backgroundColor: standingsView === view.key ? theme.accent : theme.bgSecondary,
+                    backgroundColor: darkMode
+                      ? (standingsView === view.key ? theme.accent : undefined)
+                      : (standingsView === view.key ? theme.accent : theme.bgSecondary),
                     color: standingsView === view.key ? '#fff' : theme.textSecondary,
                   }}
                 >
@@ -602,13 +604,13 @@ export default function BasketballTeamPage() {
               <>
                 {top25 && top25.length > 0 ? (
                   <div
-                    className="rounded-xl overflow-hidden"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     {/* Header */}
                     <div
                       className="flex items-center px-4 py-2 text-[9px] font-semibold uppercase"
-                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                      style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       <span className="w-6">#</span>
                       <span className="flex-1">Team</span>
@@ -628,7 +630,7 @@ export default function BasketballTeamPage() {
                           className="flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
                           style={{
                             backgroundColor: isCurrentTeam ? `${theme.accent}15` : 'transparent',
-                            borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                            borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                           }}
                         >
                           <span
@@ -667,8 +669,8 @@ export default function BasketballTeamPage() {
                   </div>
                 ) : (
                   <div
-                    className="rounded-xl p-6 text-center"
-                    style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <p className="text-[12px]" style={{ color: theme.textSecondary }}>
                       AP Top 25 rankings not available

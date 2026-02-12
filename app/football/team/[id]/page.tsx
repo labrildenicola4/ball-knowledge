@@ -103,7 +103,7 @@ export default function CollegeFootballTeamPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <div
           className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
           style={{ color: theme.accent }}
@@ -115,12 +115,12 @@ export default function CollegeFootballTeamPage() {
 
   if (error || !teamInfo) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Team not found'}</p>
         <button
           onClick={() => router.back()}
-          className="mt-4 rounded-lg px-4 py-2 text-[12px]"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           Go back
         </button>
@@ -131,13 +131,13 @@ export default function CollegeFootballTeamPage() {
   const { team, conference, record, conferenceRecord, rank, schedule, venue } = teamInfo;
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
           onClick={() => router.back()}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
         </button>
@@ -148,7 +148,7 @@ export default function CollegeFootballTeamPage() {
         <button
           onClick={toggleDarkMode}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
         </button>
@@ -156,8 +156,8 @@ export default function CollegeFootballTeamPage() {
 
       {/* Team Hero */}
       <section
-        className="px-4 py-8 text-center"
-        style={{ backgroundColor: team.color ? `${team.color}20` : theme.bgSecondary }}
+        className={`px-4 py-8 text-center ${darkMode ? 'glass-section' : ''}`}
+        style={darkMode ? (team.color ? { backgroundColor: `${team.color}20` } : undefined) : { backgroundColor: team.color ? `${team.color}20` : theme.bgSecondary }}
       >
         {rank && rank <= 25 && (
           <span
@@ -209,7 +209,7 @@ export default function CollegeFootballTeamPage() {
           </div>
           <div
             className="w-px"
-            style={{ backgroundColor: theme.border }}
+            style={{ backgroundColor: darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border }}
           />
           <div>
             <p className="text-2xl font-mono font-bold" style={{ color: theme.text }}>
@@ -243,15 +243,15 @@ export default function CollegeFootballTeamPage() {
 
         {schedule && schedule.length > 0 ? (
           <div
-            className="rounded-xl overflow-hidden"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             {schedule.slice(0, 5).map((game, index) => (
               <div
                 key={game.id}
                 className="flex items-center justify-between px-4 py-3"
                 style={{
-                  borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
+                  borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                 }}
               >
                 <div className="flex items-center gap-3">
@@ -291,8 +291,8 @@ export default function CollegeFootballTeamPage() {
           </div>
         ) : (
           <div
-            className="rounded-xl p-6 text-center"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <p className="text-[12px]" style={{ color: theme.textSecondary }}>
               No upcoming games

@@ -124,7 +124,7 @@ export default function MLBTeamPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <div
           className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
           style={{ color: theme.accent }}
@@ -136,12 +136,12 @@ export default function MLBTeamPage() {
 
   if (error || !teamInfo) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Team not found'}</p>
         <button
           onClick={() => router.back()}
-          className="mt-4 rounded-lg px-4 py-2 text-[12px]"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           Go back
         </button>
@@ -163,13 +163,13 @@ export default function MLBTeamPage() {
   const completedGames = schedule.filter(g => g.status === 'final').slice(-10).reverse();
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
           onClick={() => router.back()}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
         </button>
@@ -180,7 +180,7 @@ export default function MLBTeamPage() {
         <button
           onClick={toggleDarkMode}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
         </button>
@@ -188,8 +188,8 @@ export default function MLBTeamPage() {
 
       {/* Team Hero */}
       <section
-        className="px-4 py-6 text-center"
-        style={{ backgroundColor: team.color ? `${team.color}20` : theme.bgSecondary }}
+        className={`px-4 py-6 text-center ${darkMode ? 'glass-section' : ''}`}
+        style={darkMode ? (team.color ? { backgroundColor: `${team.color}20` } : undefined) : { backgroundColor: team.color ? `${team.color}20` : theme.bgSecondary }}
       >
         <div className="mx-auto mb-3 h-20 w-20">
           {team.logo ? (
@@ -251,7 +251,7 @@ export default function MLBTeamPage() {
           </div>
           {teamStanding && (
             <>
-              <div className="w-px h-10" style={{ backgroundColor: theme.border }} />
+              <div className="w-px h-10" style={{ backgroundColor: darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border }} />
               <div className="text-center">
                 <p className="text-xl font-mono font-bold" style={{ color: theme.text }}>
                   {teamStanding.gamesBack === '0' || teamStanding.gamesBack === '-' ? '-' : teamStanding.gamesBack}
@@ -260,7 +260,7 @@ export default function MLBTeamPage() {
                   Games Back
                 </p>
               </div>
-              <div className="w-px h-10" style={{ backgroundColor: theme.border }} />
+              <div className="w-px h-10" style={{ backgroundColor: darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border }} />
               <div className="text-center">
                 <p className="text-xl font-mono font-bold" style={{ color: theme.text }}>
                   #{(teamRank ?? 0) + 1}
@@ -285,7 +285,7 @@ export default function MLBTeamPage() {
 
       {/* Team Stats */}
       {stats && (
-        <section className="px-4 py-4" style={{ borderBottom: `1px solid ${theme.border}` }}>
+        <section className="px-4 py-4" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 size={14} style={{ color: theme.accent }} />
             <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
@@ -299,7 +299,7 @@ export default function MLBTeamPage() {
               { label: 'RBI', value: stats.batting.rbi.displayValue },
               { label: 'ERA', value: stats.pitching.era.displayValue },
             ].map(stat => (
-              <div key={stat.label} className="text-center rounded-lg py-2" style={{ backgroundColor: theme.bgSecondary }}>
+              <div key={stat.label} className={`text-center rounded-lg py-2 ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}>
                 <p className="text-[10px] uppercase" style={{ color: theme.textSecondary }}>{stat.label}</p>
                 <p className="text-sm font-bold" style={{ color: theme.text }}>{stat.value}</p>
               </div>
@@ -309,7 +309,7 @@ export default function MLBTeamPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="flex gap-1 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         {[
           { key: 'schedule' as const, label: 'Schedule', icon: Calendar },
           { key: 'roster' as const, label: 'Roster', icon: Users },
@@ -321,9 +321,9 @@ export default function MLBTeamPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors"
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${darkMode ? (isActive ? '' : 'glass-pill') : ''}`}
               style={{
-                backgroundColor: isActive ? theme.accent : theme.bgSecondary,
+                backgroundColor: darkMode ? (isActive ? theme.accent : undefined) : (isActive ? theme.accent : theme.bgSecondary),
                 color: isActive ? '#fff' : theme.textSecondary,
               }}
             >
@@ -344,12 +344,12 @@ export default function MLBTeamPage() {
                 <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
                   Upcoming
                 </h3>
-                <div className="rounded-xl overflow-hidden" style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
+                <div className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
                   {upcomingGames.map((game, idx) => (
                     <Link key={game.id} href={`/mlb/game/${game.id}`}>
                       <div
                         className="flex items-center gap-3 px-4 py-3 hover:opacity-80 transition-opacity"
-                        style={{ borderTop: idx > 0 ? `1px solid ${theme.border}` : 'none' }}
+                        style={{ borderTop: idx > 0 ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none' }}
                       >
                         <div className="text-[11px] w-16" style={{ color: theme.textSecondary }}>{game.date}</div>
                         <span className="text-[10px] w-6" style={{ color: theme.textSecondary }}>{game.isHome ? 'vs' : '@'}</span>
@@ -368,12 +368,12 @@ export default function MLBTeamPage() {
                 <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
                   Recent Games
                 </h3>
-                <div className="rounded-xl overflow-hidden" style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
+                <div className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
                   {completedGames.map((game, idx) => (
                     <Link key={game.id} href={`/mlb/game/${game.id}`}>
                       <div
                         className="flex items-center gap-3 px-4 py-3 hover:opacity-80 transition-opacity"
-                        style={{ borderTop: idx > 0 ? `1px solid ${theme.border}` : 'none' }}
+                        style={{ borderTop: idx > 0 ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none' }}
                       >
                         <div className="text-[11px] w-16" style={{ color: theme.textSecondary }}>{game.date}</div>
                         <span className="text-[10px] w-6" style={{ color: theme.textSecondary }}>{game.isHome ? 'vs' : '@'}</span>
@@ -402,17 +402,17 @@ export default function MLBTeamPage() {
         {activeTab === 'roster' && (
           <div>
             {roster && roster.length > 0 ? (
-              <div className="rounded-xl overflow-hidden" style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
+              <div className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
                 {roster.map((player, idx) => (
                   <div
                     key={player.id}
                     className="flex items-center gap-3 px-4 py-3"
-                    style={{ borderTop: idx > 0 ? `1px solid ${theme.border}` : 'none' }}
+                    style={{ borderTop: idx > 0 ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none' }}
                   >
                     {player.headshot ? (
                       <img src={player.headshot} alt={player.name} className="h-10 w-10 rounded-full object-cover" />
                     ) : (
-                      <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}>
+                      <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}>
                         {player.jersey || '#'}
                       </div>
                     )}
@@ -453,7 +453,7 @@ export default function MLBTeamPage() {
                   { label: 'SLG', value: stats.batting.slg.displayValue },
                   { label: 'OPS', value: stats.batting.ops.displayValue },
                 ].map(stat => (
-                  <div key={stat.label} className="rounded-lg p-3" style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
+                  <div key={stat.label} className={`rounded-lg p-3 ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
                     <p className="text-[10px] uppercase mb-1" style={{ color: theme.textSecondary }}>{stat.label}</p>
                     <p className="text-lg font-bold font-mono" style={{ color: theme.text }}>{stat.value}</p>
                   </div>
@@ -475,7 +475,7 @@ export default function MLBTeamPage() {
                   { label: 'Strikeouts', value: stats.pitching.strikeouts.displayValue },
                   { label: 'WHIP', value: stats.pitching.whip.displayValue },
                 ].map(stat => (
-                  <div key={stat.label} className="rounded-lg p-3" style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
+                  <div key={stat.label} className={`rounded-lg p-3 ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
                     <p className="text-[10px] uppercase mb-1" style={{ color: theme.textSecondary }}>{stat.label}</p>
                     <p className="text-lg font-bold font-mono" style={{ color: theme.text }}>{stat.value}</p>
                   </div>
