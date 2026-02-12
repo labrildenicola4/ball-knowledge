@@ -609,12 +609,12 @@ export default function TeamPage() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Tabs */}
-          <div className="flex" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+          <div className="flex gap-2 py-3 px-4">
             {(['schedule', 'tables', 'squad', 'statistics'] as TabType[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className="px-6 py-4 text-sm font-medium transition-colors capitalize"
+                className="px-6 py-2 text-sm font-medium transition-colors capitalize"
                 style={{
                   color: activeTab === tab ? theme.accent : theme.textSecondary,
                   borderBottom: activeTab === tab ? `2px solid ${theme.accent}` : '2px solid transparent',
@@ -1171,12 +1171,12 @@ export default function TeamPage() {
         </section>
 
         {/* Tabs */}
-        <div className="flex overflow-x-auto" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+        <div className="flex overflow-x-auto gap-2 py-3 px-4">
           {(['schedule', 'tables', 'squad', 'statistics'] as TabType[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="flex-1 min-w-[80px] py-3 text-sm font-medium transition-colors capitalize"
+              className="flex-1 min-w-[80px] px-4 py-2 text-sm font-medium transition-colors capitalize"
               style={{
                 color: activeTab === tab ? theme.accent : theme.textSecondary,
                 borderBottom: activeTab === tab ? `2px solid ${theme.accent}` : '2px solid transparent',

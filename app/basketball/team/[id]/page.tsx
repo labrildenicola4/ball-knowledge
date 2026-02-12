@@ -285,7 +285,7 @@ export default function BasketballTeamPage() {
 
       {/* Team Stats */}
       {stats && (
-        <section className="px-4 py-4" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+        <section className="px-4 py-4">
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 size={14} style={{ color: theme.accent }} />
             <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
@@ -319,7 +319,7 @@ export default function BasketballTeamPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <div className="flex gap-2 py-3 px-4">
         {[
           { key: 'schedule', label: 'Schedule', icon: TrendingUp },
           { key: 'roster', label: 'Roster', icon: Users },
@@ -330,7 +330,7 @@ export default function BasketballTeamPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[11px] font-medium transition-colors ${darkMode ? (activeTab === tab.key ? 'glass-pill-active' : 'glass-pill') : ''}`}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-[11px] font-medium transition-colors ${darkMode ? (activeTab === tab.key ? 'glass-pill-active' : 'glass-pill') : ''}`}
               style={{
                 color: activeTab === tab.key ? theme.accent : theme.textSecondary,
                 borderBottom: darkMode ? 'none' : (activeTab === tab.key ? `2px solid ${theme.accent}` : '2px solid transparent'),

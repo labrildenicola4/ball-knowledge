@@ -285,7 +285,7 @@ export default function MLBTeamPage() {
 
       {/* Team Stats */}
       {stats && (
-        <section className="px-4 py-4" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+        <section className="px-4 py-4">
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 size={14} style={{ color: theme.accent }} />
             <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
@@ -309,7 +309,7 @@ export default function MLBTeamPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <div className="flex gap-2 px-4 py-3">
         {[
           { key: 'schedule' as const, label: 'Schedule', icon: Calendar },
           { key: 'roster' as const, label: 'Roster', icon: Users },
@@ -321,7 +321,7 @@ export default function MLBTeamPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${darkMode ? (isActive ? '' : 'glass-pill') : ''}`}
+              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium transition-colors ${darkMode ? (isActive ? '' : 'glass-pill') : ''}`}
               style={{
                 backgroundColor: darkMode ? (isActive ? theme.accent : undefined) : (isActive ? theme.accent : theme.bgSecondary),
                 color: isActive ? '#fff' : theme.textSecondary,
