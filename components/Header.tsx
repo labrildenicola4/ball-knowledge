@@ -179,7 +179,7 @@ export function Header() {
                         <div>
                           <div
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
-                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
                           >
                             Leagues & Cups
                           </div>
@@ -214,7 +214,7 @@ export function Header() {
                         <div>
                           <div
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
-                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
                           >
                             American Sports
                           </div>
@@ -249,7 +249,7 @@ export function Header() {
                         <div>
                           <div
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
-                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
                           >
                             Soccer
                           </div>
@@ -284,7 +284,7 @@ export function Header() {
                         <div>
                           <div
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
-                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
                           >
                             MLB
                           </div>
@@ -319,7 +319,7 @@ export function Header() {
                         <div>
                           <div
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
-                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
                           >
                             NBA
                           </div>
@@ -354,7 +354,7 @@ export function Header() {
                         <div>
                           <div
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
-                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
                           >
                             NFL
                           </div>
@@ -389,7 +389,7 @@ export function Header() {
                         <div>
                           <div
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
-                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
                           >
                             NCAA Basketball
                           </div>
@@ -424,7 +424,7 @@ export function Header() {
                         <div>
                           <div
                             className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
-                            style={{ color: theme.textSecondary, backgroundColor: theme.bgTertiary }}
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
                           >
                             NCAA Football
                           </div>

@@ -563,8 +563,8 @@ export default function HomePage() {
           </div>
         ) : isError ? (
           <div
-            className="rounded-lg py-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <p className="text-sm" style={{ color: theme.red }}>
               Failed to load games
@@ -579,8 +579,8 @@ export default function HomePage() {
           </div>
         ) : totalGames === 0 ? (
           <div
-            className="rounded-lg py-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <p className="text-sm" style={{ color: theme.textSecondary }}>
               No games scheduled for today
@@ -591,8 +591,8 @@ export default function HomePage() {
           </div>
         ) : filteredGames.length === 0 ? (
           <div
-            className="rounded-lg py-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             {selectedFilter === 'myteams' ? (
               !isLoggedIn ? (

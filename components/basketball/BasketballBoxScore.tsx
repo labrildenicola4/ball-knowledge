@@ -141,7 +141,7 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
         <>
           <div
             className="px-3 py-1 text-[9px] font-medium uppercase"
-            style={{ backgroundColor: theme.bg, color: theme.textSecondary }}
+            style={{ backgroundColor: darkMode ? 'transparent' : theme.bg, color: theme.textSecondary }}
           >
             Starters
           </div>
@@ -156,7 +156,7 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
         <>
           <div
             className="px-3 py-1 text-[9px] font-medium uppercase"
-            style={{ backgroundColor: theme.bg, color: theme.textSecondary }}
+            style={{ backgroundColor: darkMode ? 'transparent' : theme.bg, color: theme.textSecondary }}
           >
             Bench
           </div>

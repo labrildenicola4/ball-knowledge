@@ -1352,7 +1352,7 @@ export default function CalendarPage() {
                       </h2>
                       <span
                         className="rounded-full px-2.5 py-0.5 text-xs"
-                        style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                        style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                       >
                         {nationMatches.length}
                       </span>
