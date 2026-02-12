@@ -88,17 +88,17 @@ function SideBench({
   teamName: string;
   isHome: boolean;
 }) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   return (
     <div
-      className="w-44 flex flex-col rounded-xl overflow-hidden"
-      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      className={`w-44 flex flex-col rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+      style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
     >
       {/* Header */}
       <div
         className="px-3 py-2 text-center"
-        style={{ backgroundColor: theme.bgTertiary, borderBottom: `1px solid ${theme.border}` }}
+        style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
       >
         <p className="text-[11px] font-semibold" style={{ color: theme.text }}>
           {teamName}
@@ -118,7 +118,7 @@ function SideBench({
       {/* Subs header */}
       <div
         className="px-3 py-1.5 text-[9px] font-semibold uppercase tracking-wider"
-        style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+        style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
       >
         Subs ({team.bench.length})
       </div>
@@ -129,12 +129,12 @@ function SideBench({
           <div
             key={player.id}
             className="flex items-center gap-2 px-2 py-1.5"
-            style={{ borderBottom: `1px solid ${theme.border}` }}
+            style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
           >
             <span
               className="w-6 h-6 rounded-full flex items-center justify-center font-mono text-[10px] font-semibold flex-shrink-0"
               style={{
-                backgroundColor: theme.bgTertiary,
+                backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary,
                 color: theme.textSecondary,
               }}
             >
@@ -162,7 +162,7 @@ function FullPitch({
   homeShortName: string;
   awayShortName: string;
 }) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   const { homeRows, awayRows } = useMemo(() => {
     const homeFormation = parseFormation(home.formation);
@@ -185,7 +185,7 @@ function FullPitch({
       style={{
         backgroundColor: '#2d8a4e',
         minHeight: '500px',
-        border: `1px solid ${theme.border}`,
+        border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
       }}
     >
       {/* Full pitch markings */}
@@ -310,15 +310,15 @@ function FullPitch({
 }
 
 export function MatchLineup({ home, away, homeShortName, awayShortName, matchStatus, isLoading }: MatchLineupProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('home');
 
   // Show loading spinner while data is being fetched
   if (isLoading) {
     return (
       <div
-        className="rounded-xl p-8 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-8 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <div
           className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
@@ -344,8 +344,8 @@ export function MatchLineup({ home, away, homeShortName, awayShortName, matchSta
 
     return (
       <div
-        className="rounded-xl p-6 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <p className="text-[12px]" style={{ color: theme.textSecondary }}>
           {message}
@@ -390,18 +390,17 @@ export function MatchLineup({ home, away, homeShortName, awayShortName, matchSta
       <div className="lg:hidden">
         {/* Tab Selector */}
         <div
-          className="flex rounded-full p-1 mb-4"
-          style={{ backgroundColor: theme.bgTertiary }}
+          className={`flex rounded-full p-1 mb-4 ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
         >
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className="flex-1 py-2 px-4 rounded-full text-[11px] font-semibold transition-all"
+              className={`flex-1 py-2 px-4 rounded-full text-[11px] font-semibold transition-all ${darkMode ? (activeTab === tab.key ? 'glass-pill-active' : '') : ''}`}
               style={{
-                backgroundColor: activeTab === tab.key ? theme.bgSecondary : 'transparent',
+                ...(darkMode ? {} : { backgroundColor: activeTab === tab.key ? theme.bgSecondary : 'transparent', border: activeTab === tab.key ? `1px solid ${theme.border}` : '1px solid transparent' }),
                 color: activeTab === tab.key ? theme.text : theme.textSecondary,
-                border: activeTab === tab.key ? `1px solid ${theme.border}` : '1px solid transparent',
               }}
             >
               <span>{tab.label}</span>
@@ -430,7 +429,7 @@ export function MatchLineup({ home, away, homeShortName, awayShortName, matchSta
           style={{
             backgroundColor: '#2d8a4e',
             height: '220px',
-            border: `1px solid ${theme.border}`,
+            border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
           }}
         >
           <svg
@@ -491,28 +490,28 @@ export function MatchLineup({ home, away, homeShortName, awayShortName, matchSta
         {/* Substitutes */}
         {currentTeam.bench.length > 0 && (
           <div
-            className="rounded-xl overflow-hidden"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div
               className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider"
-              style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+              style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
             >
               Substitutes ({currentTeam.bench.length})
             </div>
-            <div className="grid grid-cols-2 gap-px" style={{ backgroundColor: theme.border }}>
+            <div className="grid grid-cols-2 gap-px" style={{ backgroundColor: darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border }}>
               {currentTeam.bench.map((player) => (
                 <div
                   key={player.id}
                   className="flex items-center px-3 py-2"
-                  style={{ backgroundColor: theme.bgSecondary }}
+                  style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.2)' : theme.bgSecondary }}
                 >
                   <span
                     className="w-7 h-7 rounded-full flex items-center justify-center font-mono text-[11px] font-semibold mr-2"
                     style={{
-                      backgroundColor: theme.bgTertiary,
+                      backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary,
                       color: theme.textSecondary,
-                      border: `1px solid ${theme.border}`,
+                      border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                     }}
                   >
                     {player.shirtNumber ?? '-'}

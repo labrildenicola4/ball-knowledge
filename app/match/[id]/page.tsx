@@ -261,7 +261,7 @@ export default function MatchPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center transition-theme" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <div
           className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
           style={{ color: theme.accent }}
@@ -274,12 +274,12 @@ export default function MatchPage() {
   // Error state
   if (error || !match) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center transition-theme" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error || 'Match not found'}</p>
         <button
           onClick={() => router.back()}
-          className="tap-highlight mt-4 rounded-lg px-4 py-2.5 text-[12px]"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`tap-highlight mt-4 rounded-lg px-4 py-2.5 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           Go back
         </button>
@@ -314,9 +314,9 @@ export default function MatchPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme overflow-x-hidden" style={{ backgroundColor: theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme overflow-x-hidden" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
           onClick={() => router.back()}
           className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
@@ -355,7 +355,7 @@ export default function MatchPage() {
       </header>
 
       {/* Main Score Section */}
-      <section className="px-4 py-8 overflow-hidden" style={{ backgroundColor: theme.bgSecondary }}>
+      <section className={`px-4 py-8 overflow-hidden ${darkMode ? 'glass-section' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}>
         <div className="flex items-center justify-between overflow-hidden">
           {/* Home Team */}
           <div className="flex-1 text-center">
@@ -428,7 +428,7 @@ export default function MatchPage() {
                   <span
                     className="mt-3 inline-block rounded-full px-4 py-1 text-[10px] font-medium"
                     style={{
-                      backgroundColor: theme.bgTertiary,
+                      ...(darkMode ? {} : { backgroundColor: theme.bgTertiary }),
                       color: theme.textSecondary,
                     }}
                   >
@@ -475,8 +475,8 @@ export default function MatchPage() {
         {showOdds && odds && (
           <div className="mt-6 flex justify-center">
             <div
-              className="rounded-xl px-5 py-3 w-full max-w-[280px]"
-              style={{ backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
+              className={`rounded-xl px-5 py-3 w-full max-w-[280px] ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
             >
               <div className="flex justify-between items-center">
                 <div className="text-center flex-1">
@@ -525,7 +525,7 @@ export default function MatchPage() {
       </section>
 
       {/* Match Info */}
-      <section className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <section className="px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <div className="flex justify-center gap-6">
           <div className="flex items-center gap-2">
             <Calendar size={14} style={{ color: theme.textSecondary }} />
@@ -539,7 +539,7 @@ export default function MatchPage() {
       </section>
 
       {/* Tabs */}
-      <div className="flex" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="flex" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         {[
           { key: 'stats', label: 'Stats', icon: BarChart3 },
           { key: 'lineups', label: 'Lineups', icon: Users },
@@ -616,8 +616,8 @@ export default function MatchPage() {
             ) : match.h2h && match.h2h.total > 0 ? (
               <>
               <div
-                className="rounded-xl p-5"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl p-5 ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <p className="text-center text-[11px] mb-4" style={{ color: theme.textSecondary }}>
                   Last {match.h2h.total} meetings
@@ -655,7 +655,7 @@ export default function MatchPage() {
                 </div>
 
                 {/* Visual bar */}
-                <div className="mt-4 flex h-2 overflow-hidden rounded-full" style={{ backgroundColor: theme.bgTertiary }}>
+                <div className="mt-4 flex h-2 overflow-hidden rounded-full" style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary }}>
                   <div
                     style={{
                       width: `${(match.h2h.homeWins / match.h2h.total) * 100}%`,
@@ -680,12 +680,12 @@ export default function MatchPage() {
               {/* Past Matches List */}
               {match.h2h.matches && match.h2h.matches.length > 0 && (
                 <div
-                  className="mt-4 rounded-xl overflow-hidden"
-                  style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  className={`mt-4 rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                  style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                 >
                   <p
                     className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider"
-                    style={{ color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}
+                    style={{ color: theme.textSecondary, borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                   >
                     Past Meetings
                   </p>
@@ -724,7 +724,7 @@ export default function MatchPage() {
                           {/* Score */}
                           <div
                             className="mx-3 px-3 py-1 rounded text-[12px] font-mono font-medium"
-                            style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
+                            style={{ ...(darkMode ? {} : { backgroundColor: theme.bgTertiary }), color: theme.text }}
                           >
                             {pastMatch.homeScore} - {pastMatch.awayScore}
                           </div>
@@ -750,8 +750,8 @@ export default function MatchPage() {
               </>
             ) : (
               <div
-                className="rounded-xl p-6 text-center"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <p className="text-[12px]" style={{ color: theme.textSecondary }}>
                   No head-to-head data available
@@ -780,8 +780,8 @@ export default function MatchPage() {
               />
             ) : (
               <div
-                className="rounded-xl p-6 text-center"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <p className="text-[12px]" style={{ color: theme.textSecondary }}>
                   League table not available

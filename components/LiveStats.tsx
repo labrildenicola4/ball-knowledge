@@ -27,15 +27,15 @@ interface LiveStatsProps {
 type TabType = 'all' | '1st' | '2nd';
 
 export function LiveStats({ stats, homeShortName, awayShortName, matchStatus, isLoading }: LiveStatsProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('all');
 
   // Show loading spinner while data is being fetched
   if (isLoading) {
     return (
       <div
-        className="rounded-xl p-8 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-8 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <div
           className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
@@ -56,8 +56,8 @@ export function LiveStats({ stats, homeShortName, awayShortName, matchStatus, is
 
     return (
       <div
-        className="rounded-xl p-6 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <p className="text-[12px]" style={{ color: theme.textSecondary }}>
           {message}
@@ -89,18 +89,17 @@ export function LiveStats({ stats, homeShortName, awayShortName, matchStatus, is
     <div>
       {/* Tab Selector */}
       <div
-        className="flex rounded-full p-1 mb-6"
-        style={{ backgroundColor: theme.bgTertiary }}
+        className={`flex rounded-full p-1 mb-6 ${darkMode ? 'glass-pill' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
       >
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className="flex-1 py-2 px-4 rounded-full text-[11px] font-semibold transition-all"
+            className={`flex-1 py-2 px-4 rounded-full text-[11px] font-semibold transition-all ${darkMode ? (activeTab === tab.key ? 'glass-pill-active' : '') : ''}`}
             style={{
-              backgroundColor: activeTab === tab.key ? theme.bgSecondary : 'transparent',
+              ...(darkMode ? {} : { backgroundColor: activeTab === tab.key ? theme.bgSecondary : 'transparent', border: activeTab === tab.key ? `1px solid ${theme.border}` : '1px solid transparent' }),
               color: activeTab === tab.key ? theme.text : theme.textSecondary,
-              border: activeTab === tab.key ? `1px solid ${theme.border}` : '1px solid transparent',
             }}
           >
             {tab.label}
@@ -138,7 +137,7 @@ interface StatRowProps {
 }
 
 function StatRow({ stat, homeShortName, awayShortName }: StatRowProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   const formatValue = (value: number): string => {
     if (stat.type === 'decimal') {
@@ -192,7 +191,7 @@ function StatRow({ stat, homeShortName, awayShortName }: StatRowProps) {
         <div className="flex-1 flex justify-end">
           <div
             className="h-2 rounded-full"
-            style={{ backgroundColor: theme.bgTertiary, width: '100%' }}
+            style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary, width: '100%' }}
           >
             <div
               className="h-2 rounded-full ml-auto transition-all duration-500"
@@ -208,7 +207,7 @@ function StatRow({ stat, homeShortName, awayShortName }: StatRowProps) {
         <div className="flex-1">
           <div
             className="h-2 rounded-full"
-            style={{ backgroundColor: theme.bgTertiary, width: '100%' }}
+            style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary, width: '100%' }}
           >
             <div
               className="h-2 rounded-full transition-all duration-500"

@@ -25,7 +25,7 @@ interface MatchStandingsProps {
 }
 
 export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }: MatchStandingsProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   const isHighlighted = (teamId: number) => teamId === homeTeamId || teamId === awayTeamId;
 
@@ -39,8 +39,8 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
       </h3>
 
       <div
-        className="overflow-hidden rounded-xl"
-        style={{
+        className={`overflow-hidden rounded-xl ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : {
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
         }}
@@ -48,7 +48,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
         {/* Header */}
         <div
           className="grid grid-cols-[28px_1fr_36px_36px_44px] px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider"
-          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+          style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
         >
           <span>#</span>
           <span>Club</span>
@@ -66,7 +66,7 @@ export function MatchStandings({ standings, homeTeamId, awayTeamId, leagueName }
               href={`/team/${team.teamId}`}
               className="grid grid-cols-[28px_1fr_36px_36px_44px] items-center px-3 py-3 transition-opacity hover:opacity-80"
               style={{
-                borderTop: `1px solid ${theme.border}`,
+                borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                 backgroundColor: highlighted ? `${theme.accent}30` : 'transparent',
                 borderLeft: highlighted ? `3px solid ${theme.accent}` : '3px solid transparent',
               }}
