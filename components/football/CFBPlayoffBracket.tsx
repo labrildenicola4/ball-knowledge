@@ -57,7 +57,7 @@ function TeamRow({
 }
 
 function BracketMatchCard({ game }: { game: CFBBracketGame }) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const isLive = game.status === 'in_progress';
   const isFinal = game.status === 'final';
 
@@ -85,8 +85,8 @@ function BracketMatchCard({ game }: { game: CFBBracketGame }) {
 
         {/* Match Box */}
         <div
-          className="rounded p-1 transition-all hover:scale-[1.02] cursor-pointer w-full"
-          style={{
+          className={`rounded p-1 transition-all hover:scale-[1.02] cursor-pointer w-full ${darkMode ? 'glass-card' : ''}`}
+          style={darkMode ? (isLive ? { border: `1px solid ${theme.red}` } : undefined) : {
             backgroundColor: theme.bgTertiary,
             border: `1px solid ${isLive ? theme.red : theme.border}`,
           }}
@@ -96,7 +96,7 @@ function BracketMatchCard({ game }: { game: CFBBracketGame }) {
             isWinner={isFinal ? game.awayTeam.isWinner : undefined}
             isLive={isLive}
           />
-          <div style={{ borderTop: `1px solid ${theme.border}` }} />
+          <div style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }} />
           <TeamRow
             team={game.homeTeam}
             isWinner={isFinal ? game.homeTeam.isWinner : undefined}
@@ -109,12 +109,12 @@ function BracketMatchCard({ game }: { game: CFBBracketGame }) {
 }
 
 function EmptyMatchCard({ label }: { label?: string }) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   return (
     <div
-      className="rounded p-2 flex items-center justify-center w-full"
-      style={{
+      className={`rounded p-2 flex items-center justify-center w-full ${darkMode ? 'glass-card' : ''}`}
+      style={darkMode ? { minHeight: '60px', opacity: 0.5 } : {
         backgroundColor: theme.bgTertiary,
         border: `1px dashed ${theme.border}`,
         minHeight: '60px',
@@ -129,15 +129,16 @@ function EmptyMatchCard({ label }: { label?: string }) {
 }
 
 export function CFBPlayoffBracket({ firstRound, quarterfinals, semifinals, championship }: CFBPlayoffBracketProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
+  const connectorColor = darkMode ? 'rgba(120, 160, 100, 0.15)' : theme.border;
 
   const hasGames = firstRound.length > 0 || quarterfinals.length > 0 || semifinals.length > 0 || championship;
 
   if (!hasGames) {
     return (
       <div
-        className="rounded-xl p-8 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-8 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <p className="text-base font-medium mb-2" style={{ color: theme.text }}>
           CFP Bracket Coming Soon
@@ -200,10 +201,10 @@ export function CFBPlayoffBracket({ firstRound, quarterfinals, semifinals, champ
             {[0, 1].map((i) => (
               <div key={`fr-qf-${i}`} className="flex-1 flex items-center">
                 <svg width="12" height="100%" preserveAspectRatio="none">
-                  <line x1="0" y1="25%" x2="6" y2="25%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="6" y1="25%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="0" y1="75%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="6" y1="50%" x2="12" y2="50%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="0" y1="25%" x2="6" y2="25%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="6" y1="25%" x2="6" y2="75%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="0" y1="75%" x2="6" y2="75%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="6" y1="50%" x2="12" y2="50%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
                 </svg>
               </div>
             ))}
@@ -223,10 +224,10 @@ export function CFBPlayoffBracket({ firstRound, quarterfinals, semifinals, champ
             {[0, 1].map((i) => (
               <div key={`qf-sf-${i}`} className="flex-1 flex items-center">
                 <svg width="12" height="100%" preserveAspectRatio="none">
-                  <line x1="0" y1="25%" x2="6" y2="25%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="6" y1="25%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="0" y1="75%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="6" y1="50%" x2="12" y2="50%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="0" y1="25%" x2="6" y2="25%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="6" y1="25%" x2="6" y2="75%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="0" y1="75%" x2="6" y2="75%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="6" y1="50%" x2="12" y2="50%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
                 </svg>
               </div>
             ))}
@@ -244,10 +245,10 @@ export function CFBPlayoffBracket({ firstRound, quarterfinals, semifinals, champ
           {/* SF to Championship Connector */}
           <div className="flex flex-col justify-center py-2" style={{ width: '12px' }}>
             <svg width="12" height="100%" preserveAspectRatio="none">
-              <line x1="0" y1="25%" x2="6" y2="25%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              <line x1="6" y1="25%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              <line x1="0" y1="75%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              <line x1="6" y1="50%" x2="12" y2="50%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              <line x1="0" y1="25%" x2="6" y2="25%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              <line x1="6" y1="25%" x2="6" y2="75%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              <line x1="0" y1="75%" x2="6" y2="75%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              <line x1="6" y1="50%" x2="12" y2="50%" stroke={connectorColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
             </svg>
           </div>
 

@@ -9,7 +9,7 @@ interface FootballGameCardProps {
 }
 
 export function FootballGameCard({ game }: FootballGameCardProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const isLive = game.status === 'in_progress';
   const isFinal = game.status === 'final';
   const homeWon = isFinal && (game.homeTeam.score ?? 0) > (game.awayTeam.score ?? 0);
@@ -21,8 +21,8 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
   return (
     <Link href={`/football/game/${game.id}`}>
       <div
-        className="card-hover card-press cursor-pointer rounded-xl p-4 transition-theme"
-        style={{
+        className={`card-press cursor-pointer p-4 transition-theme ${darkMode ? 'glass-match-card' : 'card-hover rounded-xl'}`}
+        style={darkMode ? undefined : {
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
         }}
@@ -56,7 +56,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
           <span
             className="font-mono rounded-lg px-3 py-1 text-sm"
             style={{
-              backgroundColor: isLive ? theme.red : theme.bgTertiary,
+              backgroundColor: isLive ? theme.red : (darkMode ? 'rgba(255, 255, 255, 0.06)' : theme.bgTertiary),
               color: isLive ? '#fff' : theme.textSecondary,
             }}
           >
@@ -104,7 +104,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
           {/* Score */}
           <div
             className="font-mono rounded-lg px-4 py-2 text-lg font-semibold flex-shrink-0"
-            style={{ backgroundColor: theme.bgTertiary, color: theme.text }}
+            style={{ backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.06)' : theme.bgTertiary, color: theme.text }}
           >
             {(isLive || isFinal)
               ? `${game.awayTeam.score ?? 0} - ${game.homeTeam.score ?? 0}`

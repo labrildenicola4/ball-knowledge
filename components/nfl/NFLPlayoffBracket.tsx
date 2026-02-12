@@ -66,7 +66,7 @@ function TeamRow({
 }
 
 function BracketMatchCard({ game }: { game: BracketGame }) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const isLive = game.status === 'in_progress';
   const isFinal = game.status === 'final';
 
@@ -87,8 +87,8 @@ function BracketMatchCard({ game }: { game: BracketGame }) {
 
         {/* Match Box */}
         <div
-          className="rounded p-1 transition-all hover:scale-[1.02] cursor-pointer w-full"
-          style={{
+          className={`rounded p-1 transition-all hover:scale-[1.02] cursor-pointer w-full ${darkMode ? 'glass-card' : ''}`}
+          style={darkMode ? (isLive ? { border: `1px solid ${theme.red}` } : undefined) : {
             backgroundColor: theme.bgTertiary,
             border: `1px solid ${isLive ? theme.red : theme.border}`,
           }}
@@ -98,7 +98,7 @@ function BracketMatchCard({ game }: { game: BracketGame }) {
             isWinner={isFinal ? game.awayTeam.isWinner : undefined}
             isLive={isLive}
           />
-          <div style={{ borderTop: `1px solid ${theme.border}` }} />
+          <div style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }} />
           <TeamRow
             team={game.homeTeam}
             isWinner={isFinal ? game.homeTeam.isWinner : undefined}
@@ -111,12 +111,12 @@ function BracketMatchCard({ game }: { game: BracketGame }) {
 }
 
 function EmptyMatchCard({ label }: { label?: string }) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   return (
     <div
-      className="rounded p-2 flex items-center justify-center w-full"
-      style={{
+      className={`rounded p-2 flex items-center justify-center w-full ${darkMode ? 'glass-card' : ''}`}
+      style={darkMode ? { minHeight: '60px', opacity: 0.5 } : {
         backgroundColor: theme.bgTertiary,
         border: `1px dashed ${theme.border}`,
         minHeight: '60px',
@@ -223,15 +223,15 @@ function ConferenceBracket({
 }
 
 export function NFLPlayoffBracket({ afc, nfc, superBowl }: NFLPlayoffBracketProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   const hasGames = afc.wildCard.length > 0 || nfc.wildCard.length > 0 || superBowl;
 
   if (!hasGames) {
     return (
       <div
-        className="rounded-xl p-8 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-8 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <p className="text-base font-medium mb-2" style={{ color: theme.text }}>
           Playoff Bracket Coming Soon
@@ -253,8 +253,8 @@ export function NFLPlayoffBracket({ afc, nfc, superBowl }: NFLPlayoffBracketProp
 
       {/* Super Bowl */}
       <div
-        className="rounded-xl p-4"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <div className="text-center mb-3">
           <span
