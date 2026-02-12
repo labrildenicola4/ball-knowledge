@@ -39,13 +39,13 @@ export default function BasketballStandingsPage() {
     : null;
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
           onClick={() => router.back()}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
         </button>
@@ -56,19 +56,19 @@ export default function BasketballStandingsPage() {
         <button
           onClick={toggleDarkMode}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
         </button>
       </header>
 
       {/* Conference Selector */}
-      <div className="px-4 py-4" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="px-4 py-4" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <div className="relative">
           <button
             onClick={() => setShowConferenceDropdown(!showConferenceDropdown)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-left"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-left ${darkMode ? 'glass-pill' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <span className="text-sm font-medium" style={{ color: theme.text }}>
               {currentConference?.name || 'All Conferences'}
@@ -85,8 +85,8 @@ export default function BasketballStandingsPage() {
 
           {showConferenceDropdown && (
             <div
-              className="absolute z-20 mt-2 w-full rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto"
-              style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              className={`absolute z-20 mt-2 w-full rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? { zIndex: 50 } : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}`, zIndex: 50 }}
             >
               <button
                 onClick={() => {
@@ -96,7 +96,7 @@ export default function BasketballStandingsPage() {
                 className="w-full px-4 py-3 text-left text-sm hover:opacity-80"
                 style={{
                   color: !selectedConference ? theme.accent : theme.text,
-                  backgroundColor: !selectedConference ? theme.bgTertiary : 'transparent',
+                  backgroundColor: !selectedConference ? (darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary) : 'transparent',
                 }}
               >
                 All Conferences
@@ -115,7 +115,7 @@ export default function BasketballStandingsPage() {
                   className="w-full px-4 py-3 text-left text-sm hover:opacity-80"
                   style={{
                     color: selectedConference === conf.id ? theme.accent : theme.text,
-                    backgroundColor: selectedConference === conf.id ? theme.bgTertiary : 'transparent',
+                    backgroundColor: selectedConference === conf.id ? (darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary) : 'transparent',
                   }}
                 >
                   {conf.name}
@@ -135,7 +135,7 @@ export default function BasketballStandingsPage() {
                   className="w-full px-4 py-3 text-left text-sm hover:opacity-80"
                   style={{
                     color: selectedConference === conf.id ? theme.accent : theme.text,
-                    backgroundColor: selectedConference === conf.id ? theme.bgTertiary : 'transparent',
+                    backgroundColor: selectedConference === conf.id ? (darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary) : 'transparent',
                   }}
                 >
                   {conf.name}
@@ -176,8 +176,8 @@ export default function BasketballStandingsPage() {
 
             {(!data?.standings || data.standings.length === 0) && (
               <div
-                className="rounded-xl p-6 text-center"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <p className="text-[12px]" style={{ color: theme.textSecondary }}>
                   No standings available
