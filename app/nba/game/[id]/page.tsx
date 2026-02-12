@@ -48,7 +48,7 @@ export default function NBAGamePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <div
           className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
           style={{ color: theme.accent }}
@@ -60,12 +60,12 @@ export default function NBAGamePage() {
 
   if (error || !game) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Game not found'}</p>
         <button
           onClick={() => router.back()}
-          className="mt-4 rounded-lg px-4 py-2 text-[12px]"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           Go back
         </button>
@@ -77,13 +77,13 @@ export default function NBAGamePage() {
   const awayWon = isFinal && (game.awayTeam.score ?? 0) > (game.homeTeam.score ?? 0);
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
           onClick={() => router.back()}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
         </button>
@@ -113,14 +113,14 @@ export default function NBAGamePage() {
         <button
           onClick={toggleDarkMode}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
         </button>
       </header>
 
       {/* Score Section */}
-      <section className="px-4 py-8" style={{ backgroundColor: theme.bgSecondary }}>
+      <section className={`px-4 py-8 ${darkMode ? 'glass-section' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}>
         <div className="flex items-start justify-between">
           {/* Away Team */}
           <Link href={`/nba/team/${game.awayTeam.id}`} className="flex-1 text-center">
@@ -187,7 +187,7 @@ export default function NBAGamePage() {
                 ) : (
                   <span
                     className="mt-3 inline-block rounded-full px-4 py-1 text-[10px] font-medium"
-                    style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                    style={{ ...(darkMode ? {} : { backgroundColor: theme.bgTertiary }), color: theme.textSecondary }}
                   >
                     {game.statusDetail}
                   </span>
@@ -226,7 +226,7 @@ export default function NBAGamePage() {
         {isLive && lastPlay && (
           <div
             className="mt-4 rounded-lg p-3 text-center"
-            style={{ backgroundColor: theme.bgTertiary }}
+            style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
           >
             <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: theme.textSecondary }}>
               Last Play
@@ -239,7 +239,7 @@ export default function NBAGamePage() {
       </section>
 
       {/* Game Info */}
-      <section className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <section className="px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <div className="flex justify-center gap-6">
           <div className="flex items-center gap-2">
             <Calendar size={14} style={{ color: theme.textSecondary }} />
@@ -255,7 +255,7 @@ export default function NBAGamePage() {
       </section>
 
       {/* Tabs */}
-      <div className="flex" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="flex" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         {[
           { key: 'stats', label: 'Stats', icon: BarChart3 },
           { key: 'boxscore', label: 'Box Score', icon: Users },
