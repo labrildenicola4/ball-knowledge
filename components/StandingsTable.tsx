@@ -26,7 +26,7 @@ interface StandingsTableProps {
 }
 
 export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const { isFavorite, toggleFavorite, isLoggedIn } = useFavorites();
   const router = useRouter();
 
@@ -49,8 +49,8 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
 
       {/* MOBILE VIEW */}
       <div
-        className="lg:hidden overflow-hidden rounded-xl transition-theme"
-        style={{
+        className={`lg:hidden overflow-hidden rounded-xl transition-theme ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : {
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
         }}
@@ -58,7 +58,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
         {/* Header */}
         <div
           className="grid grid-cols-[28px_1fr_36px_36px_44px_28px] px-3 py-2 text-[9px] font-semibold uppercase tracking-wider"
-          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+          style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
         >
           <span>#</span>
           <span>Club</span>
@@ -73,7 +73,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
           <div
             key={team.teamId}
             className="grid grid-cols-[28px_1fr_36px_36px_44px_28px] items-center px-3 py-3 transition-theme"
-            style={{ borderTop: `1px solid ${theme.border}` }}
+            style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
           >
             <span
               className="font-mono text-xs"
@@ -136,8 +136,8 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
 
       {/* DESKTOP VIEW - Full table with all columns */}
       <div
-        className="hidden lg:block overflow-hidden rounded-xl transition-theme"
-        style={{
+        className={`hidden lg:block overflow-hidden rounded-xl transition-theme ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : {
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
         }}
@@ -145,7 +145,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
         {/* Header */}
         <div
           className="grid grid-cols-[40px_1fr_50px_50px_50px_50px_60px_60px_40px] px-4 py-3 text-[10px] font-semibold uppercase tracking-wider"
-          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+          style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
         >
           <span>#</span>
           <span>Club</span>
@@ -163,7 +163,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
           <div
             key={`desktop-${team.teamId}`}
             className="grid grid-cols-[40px_1fr_50px_50px_50px_50px_60px_60px_40px] items-center px-4 py-3 transition-theme hover:bg-opacity-50"
-            style={{ borderTop: `1px solid ${theme.border}` }}
+            style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
           >
             <span
               className="font-mono text-sm"

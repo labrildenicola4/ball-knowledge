@@ -24,7 +24,7 @@ interface ConferenceStandingsTableProps {
 }
 
 export function ConferenceStandingsTable({ teams, sport, highlightTeamId, emptyMessage }: ConferenceStandingsTableProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   const getTeamHref = (teamId: string) => {
     switch (sport) {
@@ -44,8 +44,8 @@ export function ConferenceStandingsTable({ teams, sport, highlightTeamId, emptyM
   if (teams.length === 0) {
     return (
       <div
-        className="rounded-xl p-6 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <p className="text-[12px]" style={{ color: theme.textSecondary }}>
           {emptyMessage || 'Standings not available'}
@@ -56,13 +56,13 @@ export function ConferenceStandingsTable({ teams, sport, highlightTeamId, emptyM
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+      style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
     >
       {/* Header */}
       <div
         className="flex items-center px-4 py-2 text-[10px] font-semibold uppercase"
-        style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+        style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
       >
         <span className="w-7">#</span>
         <span className="flex-1">Team</span>
@@ -81,7 +81,7 @@ export function ConferenceStandingsTable({ teams, sport, highlightTeamId, emptyM
             className="flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
             style={{
               backgroundColor: isHighlighted ? `${theme.accent}15` : 'transparent',
-              borderTop: `1px solid ${theme.border}`,
+              borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
             }}
           >
             <span

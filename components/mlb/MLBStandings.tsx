@@ -10,17 +10,17 @@ interface MLBStandingsProps {
 }
 
 export function MLBStandings({ standings, divisionName }: MLBStandingsProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+      style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
     >
       {/* Division Header */}
       <div
         className="px-4 py-3"
-        style={{ backgroundColor: theme.bgTertiary }}
+        style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
       >
         <h3 className="text-sm font-semibold" style={{ color: theme.text }}>
           {divisionName}
@@ -32,7 +32,7 @@ export function MLBStandings({ standings, divisionName }: MLBStandingsProps) {
         className="grid items-center px-3 py-2 text-[9px] font-semibold uppercase tracking-wider"
         style={{
           gridTemplateColumns: '1fr 35px 35px 45px 45px 50px 50px 45px 45px',
-          borderBottom: `1px solid ${theme.border}`,
+          borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
           color: theme.textSecondary,
         }}
       >
@@ -58,7 +58,7 @@ export function MLBStandings({ standings, divisionName }: MLBStandingsProps) {
             className="grid items-center px-3 py-2.5 text-[11px] hover:opacity-80 transition-opacity"
             style={{
               gridTemplateColumns: '1fr 35px 35px 45px 45px 50px 50px 45px 45px',
-              borderTop: idx > 0 ? `1px solid ${theme.border}` : 'none',
+              borderTop: idx > 0 ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none',
             }}
           >
             <div className="flex items-center gap-2 min-w-0">

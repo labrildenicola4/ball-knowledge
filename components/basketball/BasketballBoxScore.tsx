@@ -15,7 +15,7 @@ interface PlayerRowProps {
 }
 
 function PlayerRow({ player, showExtended }: PlayerRowProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   return (
     <div
@@ -24,7 +24,7 @@ function PlayerRow({ player, showExtended }: PlayerRowProps) {
         gridTemplateColumns: showExtended
           ? '1fr 35px 35px 35px 35px 35px 35px 35px 50px 50px 50px'
           : '1fr 35px 35px 35px 35px 35px',
-        borderTop: `1px solid ${theme.border}`,
+        borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
       }}
     >
       <div className="flex items-center gap-2 min-w-0">
@@ -80,20 +80,20 @@ interface TeamBoxScoreProps {
 }
 
 function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   const starters = players.filter(p => p.starter);
   const bench = players.filter(p => !p.starter);
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+      style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
     >
       {/* Team Header */}
       <div
         className="flex items-center gap-3 px-4 py-3"
-        style={{ backgroundColor: theme.bgTertiary }}
+        style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
       >
         {team.logo && (
           <img src={team.logo} alt={team.name} className="h-6 w-6 object-contain logo-glow" />
@@ -115,7 +115,7 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
           gridTemplateColumns: showExtended
             ? '1fr 35px 35px 35px 35px 35px 35px 35px 50px 50px 50px'
             : '1fr 35px 35px 35px 35px 35px',
-          backgroundColor: theme.bgTertiary,
+          backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary,
           color: theme.textSecondary,
         }}
       >
@@ -170,15 +170,15 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
 }
 
 export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScoreProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const [activeTeam, setActiveTeam] = useState<'home' | 'away'>('home');
   const [showExtended, setShowExtended] = useState(false);
 
   if (isLoading) {
     return (
       <div
-        className="rounded-xl p-8 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-8 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <div
           className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
@@ -194,8 +194,8 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
   if (!boxScore) {
     return (
       <div
-        className="rounded-xl p-6 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <p className="text-[12px]" style={{ color: theme.textSecondary }}>
           Box score will appear once the game starts
@@ -212,10 +212,9 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
       <div className="flex gap-2 mb-4">
         <button
           onClick={() => setActiveTeam('home')}
-          className="flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+          className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${darkMode ? (activeTeam === 'home' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: activeTeam === 'home' ? theme.bgSecondary : 'transparent',
-            border: `1px solid ${activeTeam === 'home' ? theme.border : 'transparent'}`,
+            ...(darkMode ? {} : { backgroundColor: activeTeam === 'home' ? theme.bgSecondary : 'transparent', border: `1px solid ${activeTeam === 'home' ? theme.border : 'transparent'}` }),
             color: activeTeam === 'home' ? theme.text : theme.textSecondary,
           }}
         >
@@ -230,10 +229,9 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
         </button>
         <button
           onClick={() => setActiveTeam('away')}
-          className="flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+          className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${darkMode ? (activeTeam === 'away' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
-            backgroundColor: activeTeam === 'away' ? theme.bgSecondary : 'transparent',
-            border: `1px solid ${activeTeam === 'away' ? theme.border : 'transparent'}`,
+            ...(darkMode ? {} : { backgroundColor: activeTeam === 'away' ? theme.bgSecondary : 'transparent', border: `1px solid ${activeTeam === 'away' ? theme.border : 'transparent'}` }),
             color: activeTeam === 'away' ? theme.text : theme.textSecondary,
           }}
         >
@@ -254,7 +252,7 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
           onClick={() => setShowExtended(!showExtended)}
           className="text-[10px] px-2 py-1 rounded"
           style={{
-            backgroundColor: theme.bgTertiary,
+            backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary,
             color: theme.textSecondary,
           }}
         >

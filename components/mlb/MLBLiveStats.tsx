@@ -23,7 +23,7 @@ interface StatBarProps {
 }
 
 function StatBar({ label, homeValue, awayValue, format = (v) => String(v) }: StatBarProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const total = homeValue + awayValue || 1;
   const homePercent = (homeValue / total) * 100;
   const awayPercent = (awayValue / total) * 100;
@@ -41,7 +41,7 @@ function StatBar({ label, homeValue, awayValue, format = (v) => String(v) }: Sta
           {format(homeValue)}
         </span>
       </div>
-      <div className="flex h-1.5 gap-1 rounded-full overflow-hidden" style={{ backgroundColor: theme.bgTertiary }}>
+      <div className="flex h-1.5 gap-1 rounded-full overflow-hidden" style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary }}>
         <div
           className="h-full transition-all"
           style={{
@@ -69,13 +69,13 @@ export function MLBLiveStats({
   lineScore,
   isLoading,
 }: MLBLiveStatsProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   if (isLoading) {
     return (
       <div
-        className="rounded-xl p-8 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-8 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <div
           className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
@@ -92,8 +92,8 @@ export function MLBLiveStats({
   if (!homeStats || !awayStats) {
     return (
       <div
-        className="rounded-xl p-6"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-6 ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         {lineScore && (lineScore.home.length > 0 || lineScore.away.length > 0) ? (
           <div>
@@ -103,7 +103,7 @@ export function MLBLiveStats({
             <div className="overflow-x-auto">
               <table className="w-full text-[11px]">
                 <thead>
-                  <tr style={{ borderBottom: `1px solid ${theme.border}` }}>
+                  <tr style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
                     <th className="text-left py-2 pr-4" style={{ color: theme.textSecondary }}>Team</th>
                     {Array.from({ length: Math.max(lineScore.home.length, lineScore.away.length, 9) }).map((_, i) => (
                       <th key={i} className="text-center px-2 py-2" style={{ color: theme.textSecondary }}>
@@ -116,7 +116,7 @@ export function MLBLiveStats({
                   </tr>
                 </thead>
                 <tbody>
-                  <tr style={{ borderBottom: `1px solid ${theme.border}` }}>
+                  <tr style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
                     <td className="py-2 pr-4">
                       <div className="flex items-center gap-2">
                         {awayTeam.logo && (
@@ -181,8 +181,8 @@ export function MLBLiveStats({
     <div className="space-y-4">
       {/* Team Headers */}
       <div
-        className="flex items-center justify-between rounded-xl p-4"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`flex items-center justify-between rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <div className="flex items-center gap-3">
           {awayTeam.logo && (
@@ -210,8 +210,8 @@ export function MLBLiveStats({
 
       {/* Stats Comparison */}
       <div
-        className="rounded-xl p-4"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <h3 className="text-[12px] font-semibold uppercase tracking-wider mb-4" style={{ color: theme.textSecondary }}>
           Team Stats

@@ -10,13 +10,13 @@ interface BasketballStandingsProps {
 }
 
 export function BasketballStandings({ standings, conferenceName }: BasketballStandingsProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   if (!standings || standings.length === 0) {
     return (
       <div
-        className="rounded-xl p-6 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <p className="text-[12px]" style={{ color: theme.textSecondary }}>
           No standings available
@@ -36,13 +36,13 @@ export function BasketballStandings({ standings, conferenceName }: BasketballSta
 
       {/* Mobile View */}
       <div
-        className="lg:hidden overflow-hidden rounded-xl"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`lg:hidden overflow-hidden rounded-xl ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         {/* Header */}
         <div
           className="grid grid-cols-[28px_1fr_50px_50px] px-3 py-2 text-[9px] font-semibold uppercase tracking-wider"
-          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+          style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
         >
           <span>#</span>
           <span>Team</span>
@@ -55,7 +55,7 @@ export function BasketballStandings({ standings, conferenceName }: BasketballSta
           <div
             key={standing.team.id}
             className="grid grid-cols-[28px_1fr_50px_50px] items-center px-3 py-3"
-            style={{ borderTop: `1px solid ${theme.border}` }}
+            style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
           >
             <span
               className="font-mono text-xs"
@@ -96,13 +96,13 @@ export function BasketballStandings({ standings, conferenceName }: BasketballSta
 
       {/* Desktop View */}
       <div
-        className="hidden lg:block overflow-hidden rounded-xl"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`hidden lg:block overflow-hidden rounded-xl ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         {/* Header */}
         <div
           className="grid grid-cols-[40px_1fr_80px_80px_80px] px-4 py-3 text-[10px] font-semibold uppercase tracking-wider"
-          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+          style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
         >
           <span>#</span>
           <span>Team</span>
@@ -116,7 +116,7 @@ export function BasketballStandings({ standings, conferenceName }: BasketballSta
           <div
             key={`desktop-${standing.team.id}`}
             className="grid grid-cols-[40px_1fr_80px_80px_80px] items-center px-4 py-3 hover:bg-opacity-50"
-            style={{ borderTop: `1px solid ${theme.border}` }}
+            style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
           >
             <span
               className="font-mono text-sm"
@@ -172,7 +172,7 @@ interface BasketballRankingsProps {
 }
 
 export function BasketballRankings({ rankings }: BasketballRankingsProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   if (!rankings || rankings.length === 0) {
     return null;
@@ -188,13 +188,13 @@ export function BasketballRankings({ rankings }: BasketballRankingsProps) {
       </h2>
 
       <div
-        className="overflow-hidden rounded-xl"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`overflow-hidden rounded-xl ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         {/* Header */}
         <div
           className="grid grid-cols-[40px_1fr_80px_60px] px-4 py-2 text-[9px] font-semibold uppercase tracking-wider"
-          style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+          style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
         >
           <span>Rank</span>
           <span>Team</span>
@@ -207,7 +207,7 @@ export function BasketballRankings({ rankings }: BasketballRankingsProps) {
           <div
             key={ranking.team.id}
             className="grid grid-cols-[40px_1fr_80px_60px] items-center px-4 py-3"
-            style={{ borderTop: `1px solid ${theme.border}` }}
+            style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
           >
             <span className="font-mono text-sm font-semibold" style={{ color: theme.accent }}>
               {ranking.rank}

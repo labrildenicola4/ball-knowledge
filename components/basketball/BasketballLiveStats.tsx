@@ -19,7 +19,7 @@ interface StatRowProps {
 }
 
 function StatRow({ label, home, away, isPercentage }: StatRowProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   const homeVal = typeof home === 'string' ? parseFloat(home) || 0 : home;
   const awayVal = typeof away === 'string' ? parseFloat(away) || 0 : away;
@@ -66,7 +66,7 @@ function StatRow({ label, home, away, isPercentage }: StatRowProps) {
         <div className="flex-1 flex justify-end">
           <div
             className="h-2 rounded-full"
-            style={{ backgroundColor: theme.bgTertiary, width: '100%' }}
+            style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary, width: '100%' }}
           >
             <div
               className="h-2 rounded-full ml-auto transition-all duration-500"
@@ -81,7 +81,7 @@ function StatRow({ label, home, away, isPercentage }: StatRowProps) {
         <div className="flex-1">
           <div
             className="h-2 rounded-full"
-            style={{ backgroundColor: theme.bgTertiary, width: '100%' }}
+            style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary, width: '100%' }}
           >
             <div
               className="h-2 rounded-full transition-all duration-500"
@@ -104,13 +104,13 @@ export function BasketballLiveStats({
   awayStats,
   isLoading,
 }: BasketballLiveStatsProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   if (isLoading) {
     return (
       <div
-        className="rounded-xl p-8 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-8 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <div
           className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
@@ -126,8 +126,8 @@ export function BasketballLiveStats({
   if (!homeStats || !awayStats) {
     return (
       <div
-        className="rounded-xl p-6 text-center"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
         <p className="text-[12px]" style={{ color: theme.textSecondary }}>
           Stats will appear once the game starts

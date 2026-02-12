@@ -26,7 +26,7 @@ interface TournamentBracketProps {
 }
 
 function BracketMatchCard({ match }: { match: BracketMatch }) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const isFinished = match.status === 'FT';
   const isLive = ['1H', '2H', 'HT', 'ET', 'PT'].includes(match.status);
   const homeWon = isFinished && match.homeScore !== null && match.awayScore !== null && match.homeScore > match.awayScore;
@@ -42,8 +42,8 @@ function BracketMatchCard({ match }: { match: BracketMatch }) {
 
         {/* Match Box */}
         <div
-          className="rounded p-2 transition-all hover:scale-[1.02] cursor-pointer w-full"
-          style={{
+          className={`rounded p-2 transition-all hover:scale-[1.02] cursor-pointer w-full ${darkMode ? 'glass-card' : ''}`}
+          style={darkMode ? (isLive ? { border: `1px solid ${theme.accent}` } : undefined) : {
             backgroundColor: theme.bgTertiary,
             border: `1px solid ${isLive ? theme.accent : theme.border}`,
           }}
@@ -52,7 +52,7 @@ function BracketMatchCard({ match }: { match: BracketMatch }) {
           <div
             className="flex items-center justify-between gap-1.5 pb-1.5"
             style={{
-              borderBottom: `1px solid ${theme.border}`,
+              borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
               opacity: awayWon ? 0.5 : 1,
             }}
           >
@@ -105,12 +105,15 @@ function BracketMatchCard({ match }: { match: BracketMatch }) {
 }
 
 function EmptyMatchCard() {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
 
   return (
     <div
-      className="rounded p-1.5 flex items-center justify-center w-full"
-      style={{
+      className={`rounded p-1.5 flex items-center justify-center w-full ${darkMode ? 'glass-card' : ''}`}
+      style={darkMode ? {
+        minHeight: '36px',
+        opacity: 0.5,
+      } : {
         backgroundColor: theme.bgTertiary,
         border: `1px dashed ${theme.border}`,
         minHeight: '36px',
@@ -125,7 +128,8 @@ function EmptyMatchCard() {
 }
 
 // Connector lines component
-function BracketConnector({ theme, height }: { theme: any; height: string }) {
+function BracketConnector({ theme, height, darkMode }: { theme: any; height: string; darkMode: boolean }) {
+  const lineColor = darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border;
   return (
     <div className="flex items-center" style={{ width: '12px', height }}>
       <svg width="12" height="100%" viewBox="0 0 12 100" preserveAspectRatio="none">
@@ -133,7 +137,7 @@ function BracketConnector({ theme, height }: { theme: any; height: string }) {
         <path
           d="M 0 25 L 6 25 L 6 50"
           fill="none"
-          stroke={theme.border}
+          stroke={lineColor}
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         />
@@ -141,7 +145,7 @@ function BracketConnector({ theme, height }: { theme: any; height: string }) {
         <path
           d="M 0 75 L 6 75 L 6 50"
           fill="none"
-          stroke={theme.border}
+          stroke={lineColor}
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         />
@@ -149,7 +153,7 @@ function BracketConnector({ theme, height }: { theme: any; height: string }) {
         <path
           d="M 6 50 L 12 50"
           fill="none"
-          stroke={theme.border}
+          stroke={lineColor}
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
         />
@@ -159,7 +163,8 @@ function BracketConnector({ theme, height }: { theme: any; height: string }) {
 }
 
 export function TournamentBracket({ bracket, stages, stageNames }: TournamentBracketProps) {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
+  const lineColor = darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border;
 
   const r16 = bracket['LAST_16'] || [];
   const qf = bracket['QUARTER_FINALS'] || [];
@@ -218,10 +223,10 @@ export function TournamentBracket({ bracket, stages, stageNames }: TournamentBra
             {[0, 1, 2, 3].map((i) => (
               <div key={`r16-qf-${i}`} className="flex-1 flex items-center">
                 <svg width="12" height="100%" preserveAspectRatio="none">
-                  <line x1="0" y1="25%" x2="6" y2="25%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="6" y1="25%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="0" y1="75%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="6" y1="50%" x2="12" y2="50%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="0" y1="25%" x2="6" y2="25%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="6" y1="25%" x2="6" y2="75%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="0" y1="75%" x2="6" y2="75%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="6" y1="50%" x2="12" y2="50%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
                 </svg>
               </div>
             ))}
@@ -241,10 +246,10 @@ export function TournamentBracket({ bracket, stages, stageNames }: TournamentBra
             {[0, 1].map((i) => (
               <div key={`qf-sf-${i}`} className="flex-1 flex items-center">
                 <svg width="12" height="100%" preserveAspectRatio="none">
-                  <line x1="0" y1="25%" x2="6" y2="25%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="6" y1="25%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="0" y1="75%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                  <line x1="6" y1="50%" x2="12" y2="50%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="0" y1="25%" x2="6" y2="25%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="6" y1="25%" x2="6" y2="75%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="0" y1="75%" x2="6" y2="75%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <line x1="6" y1="50%" x2="12" y2="50%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
                 </svg>
               </div>
             ))}
@@ -262,10 +267,10 @@ export function TournamentBracket({ bracket, stages, stageNames }: TournamentBra
           {/* SF to Final Connector */}
           <div className="flex flex-col justify-center py-2" style={{ width: '12px' }}>
             <svg width="12" height="100%" preserveAspectRatio="none">
-              <line x1="0" y1="25%" x2="6" y2="25%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              <line x1="6" y1="25%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              <line x1="0" y1="75%" x2="6" y2="75%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
-              <line x1="6" y1="50%" x2="12" y2="50%" stroke={theme.border} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              <line x1="0" y1="25%" x2="6" y2="25%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              <line x1="6" y1="25%" x2="6" y2="75%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              <line x1="0" y1="75%" x2="6" y2="75%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              <line x1="6" y1="50%" x2="12" y2="50%" stroke={lineColor} strokeWidth="1" vectorEffect="non-scaling-stroke" />
             </svg>
           </div>
 
