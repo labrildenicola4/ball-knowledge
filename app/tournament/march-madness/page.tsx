@@ -15,13 +15,13 @@ export default function MarchMadnessPage() {
   const isTournamentSeason = month >= 2 && month <= 3; // March (2) and April (3)
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
           onClick={() => router.back()}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
         </button>
@@ -36,7 +36,7 @@ export default function MarchMadnessPage() {
         <button
           onClick={toggleDarkMode}
           className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
         </button>
@@ -46,8 +46,8 @@ export default function MarchMadnessPage() {
       <main className="flex-1 px-4 py-4">
         {/* Tournament Status Card */}
         <section
-          className="rounded-xl p-6 text-center mb-4"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`rounded-xl p-6 text-center mb-4 ${darkMode ? 'glass-card' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           <Trophy size={48} className="mx-auto mb-4" style={{ color: theme.gold }} />
           <h2 className="text-xl font-semibold mb-2" style={{ color: theme.text }}>
@@ -71,7 +71,7 @@ export default function MarchMadnessPage() {
             <>
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium mb-4"
-                style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
               >
                 Off Season
               </span>
@@ -84,10 +84,10 @@ export default function MarchMadnessPage() {
 
         {/* Quick Links */}
         <section
-          className="rounded-xl overflow-hidden"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
-          <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+          <div className="px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
             <h3 className="text-sm font-semibold" style={{ color: theme.text }}>
               Quick Links
             </h3>
@@ -95,8 +95,8 @@ export default function MarchMadnessPage() {
           <div className="flex flex-col">
             <button
               onClick={() => router.push('/basketball')}
-              className="flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-black/5"
-              style={{ borderBottom: `1px solid ${theme.border}` }}
+              className={`flex items-center gap-3 px-4 py-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
+              style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
             >
               <Calendar size={18} style={{ color: theme.accent }} />
               <div>
@@ -110,8 +110,8 @@ export default function MarchMadnessPage() {
             </button>
             <button
               onClick={() => router.push('/conference/acc')}
-              className="flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-black/5"
-              style={{ borderBottom: `1px solid ${theme.border}` }}
+              className={`flex items-center gap-3 px-4 py-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
+              style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
             >
               <Trophy size={18} style={{ color: theme.gold }} />
               <div>
@@ -129,15 +129,15 @@ export default function MarchMadnessPage() {
         {/* Bracket Placeholder */}
         {isTournamentSeason && (
           <section
-            className="rounded-xl p-4 mt-4"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-4 mt-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <h3 className="text-sm font-semibold mb-4" style={{ color: theme.text }}>
               Tournament Bracket
             </h3>
             <div
-              className="rounded-lg p-8 text-center"
-              style={{ backgroundColor: theme.bgTertiary, border: `1px dashed ${theme.border}` }}
+              className={`rounded-lg p-8 text-center ${darkMode ? 'glass-card' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgTertiary, border: `1px dashed ${theme.border}` }}
             >
               <p className="text-sm" style={{ color: theme.textSecondary }}>
                 Bracket visualization coming soon

@@ -38,7 +38,7 @@ const competitions = [
 ];
 
 export default function BracketPage() {
-  const { theme } = useTheme();
+  const { theme, darkMode } = useTheme();
   const [selectedCompetition, setSelectedCompetition] = useState('championsleague');
   const [bracketData, setBracketData] = useState<BracketData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,14 +76,14 @@ export default function BracketPage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
       {/* Competition Selector */}
       <div
         className="px-4 py-3"
-        style={{ borderBottom: `1px solid ${theme.border}` }}
+        style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
       >
         <div className="flex items-center gap-2 mb-3">
           <Trophy size={20} style={{ color: theme.gold }} />
@@ -97,11 +97,11 @@ export default function BracketPage() {
             <button
               key={comp.id}
               onClick={() => setSelectedCompetition(comp.id)}
-              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium"
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium ${darkMode ? (selectedCompetition === comp.id ? 'glass-pill-active' : 'glass-pill') : ''}`}
               style={{
-                backgroundColor: selectedCompetition === comp.id ? theme.accent : theme.bgSecondary,
+                backgroundColor: darkMode ? (selectedCompetition === comp.id ? theme.accent : undefined) : (selectedCompetition === comp.id ? theme.accent : theme.bgSecondary),
                 color: selectedCompetition === comp.id ? '#fff' : theme.textSecondary,
-                border: `1px solid ${selectedCompetition === comp.id ? theme.accent : theme.border}`,
+                border: darkMode ? undefined : `1px solid ${selectedCompetition === comp.id ? theme.accent : theme.border}`,
               }}
             >
               <span>{comp.icon}</span>
@@ -125,8 +125,8 @@ export default function BracketPage() {
           </div>
         ) : error ? (
           <div
-            className="rounded-lg py-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <p className="text-sm" style={{ color: theme.red }}>
               {error}
@@ -176,8 +176,8 @@ export default function BracketPage() {
           </>
         ) : (
           <div
-            className="rounded-lg py-8 text-center"
-            style={{ backgroundColor: theme.bgSecondary }}
+            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
           >
             <Trophy size={32} className="mx-auto mb-3" style={{ color: theme.textSecondary }} />
             <p className="text-sm" style={{ color: theme.textSecondary }}>
