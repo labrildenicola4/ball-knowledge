@@ -228,7 +228,7 @@ export default function LeaguePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <div
           className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
           style={{ color: theme.accent }}
@@ -240,12 +240,12 @@ export default function LeaguePage() {
 
   if (error || !data) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-sm" style={{ color: theme.red }}>{error?.message || 'League not found'}</p>
         <button
           onClick={() => router.back()}
-          className="tap-highlight mt-4 rounded-lg px-4 py-2.5 text-sm"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}`, color: theme.text }}
+          className={`tap-highlight mt-4 rounded-lg px-4 py-2.5 text-sm ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? { color: theme.text } : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}`, color: theme.text }}
         >
           Go back
         </button>
@@ -311,8 +311,10 @@ export default function LeaguePage() {
     return (
       <Link href={`/match/${fixture.id}`}>
         <div
-          className="rounded-xl p-3 transition-all hover:scale-[1.02] cursor-pointer"
-          style={{
+          className={`rounded-xl p-3 transition-all hover:scale-[1.02] cursor-pointer ${darkMode ? 'glass-match-card' : ''}`}
+          style={darkMode ? {
+            border: live ? `1px solid ${theme.red}` : undefined,
+          } : {
             backgroundColor: theme.bgTertiary,
             border: `1px solid ${live ? theme.red : theme.border}`,
           }}
@@ -324,7 +326,7 @@ export default function LeaguePage() {
             <span
               className="text-[10px] font-medium px-2 py-0.5 rounded"
               style={{
-                backgroundColor: live ? theme.red : theme.bgSecondary,
+                backgroundColor: live ? theme.red : (darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgSecondary),
                 color: live ? '#fff' : theme.textSecondary,
               }}
             >
@@ -403,10 +405,10 @@ export default function LeaguePage() {
 
     return (
       <section
-        className="rounded-xl overflow-hidden"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
-        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
           <h3 className="text-sm font-semibold" style={{ color: theme.text }}>{title}</h3>
         </div>
         <div>
@@ -414,7 +416,7 @@ export default function LeaguePage() {
             <div
               key={p.player.id}
               className="flex items-center gap-3 px-4 py-2.5"
-              style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+              style={{ borderBottom: index < 4 ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none' }}
             >
               <span
                 className="text-sm font-bold w-5"
@@ -475,10 +477,10 @@ export default function LeaguePage() {
 
     return (
       <section
-        className="rounded-xl overflow-hidden"
-        style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+        className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+        style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
       >
-        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
           <h3 className="text-sm font-semibold" style={{ color: theme.text }}>{title}</h3>
         </div>
         <div>
@@ -486,8 +488,8 @@ export default function LeaguePage() {
             <Link
               key={team.team.id}
               href={`/team/${team.team.id}`}
-              className="flex items-center gap-3 px-4 py-2.5 hover:bg-black/5"
-              style={{ borderBottom: index < 4 ? `1px solid ${theme.border}` : 'none' }}
+              className={`flex items-center gap-3 px-4 py-2.5 ${darkMode ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
+              style={{ borderBottom: index < 4 ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none' }}
             >
               <span
                 className="text-sm font-bold w-5"
@@ -512,21 +514,21 @@ export default function LeaguePage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
       {/* Page Header */}
       <div
         className="px-4 py-4"
-        style={{ borderBottom: `1px solid ${theme.border}` }}
+        style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity"
-              style={{ backgroundColor: theme.bgSecondary }}
+              className={`tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity ${darkMode ? 'glass-pill' : ''}`}
+              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
             </button>
@@ -549,8 +551,8 @@ export default function LeaguePage() {
             <button
               onClick={() => mutate()}
               disabled={isLoading}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm"
-              style={{
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${darkMode ? 'glass-pill' : ''}`}
+              style={darkMode ? { color: theme.textSecondary } : {
                 backgroundColor: theme.bgSecondary,
                 border: `1px solid ${theme.border}`,
                 color: theme.textSecondary,
@@ -564,14 +566,14 @@ export default function LeaguePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="flex gap-1 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
+            className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${darkMode ? (activeTab === tab.id ? 'glass-pill-active' : 'glass-pill') : ''}`}
             style={{
-              backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary,
+              ...(darkMode ? {} : { backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary }),
               color: activeTab === tab.id ? '#fff' : theme.textSecondary,
             }}
           >
@@ -588,13 +590,13 @@ export default function LeaguePage() {
             {/* Live Games */}
             {liveGames.length > 0 && (
               <section
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <button
                   onClick={() => setLiveCollapsed(!liveCollapsed)}
                   className="w-full flex items-center justify-between px-4 py-3"
-                  style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                  style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                 >
                   <div className="flex items-center gap-2">
                     <span
@@ -633,13 +635,13 @@ export default function LeaguePage() {
             {/* Upcoming Games */}
             {upcomingGames.length > 0 && (
               <section
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <button
                   onClick={() => setUpcomingCollapsed(!upcomingCollapsed)}
                   className="w-full flex items-center justify-between px-4 py-3"
-                  style={{ borderBottom: upcomingCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                  style={{ borderBottom: upcomingCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                 >
                   <div className="flex items-center gap-2">
                     <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: theme.text }}>
@@ -647,7 +649,7 @@ export default function LeaguePage() {
                     </h2>
                     <span
                       className="rounded-full px-2.5 py-0.5 text-xs"
-                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                      style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       {upcomingGames.length}
                     </span>
@@ -671,13 +673,13 @@ export default function LeaguePage() {
             {/* Completed Games */}
             {completedGames.length > 0 && (
               <section
-                className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <button
                   onClick={() => setCompletedCollapsed(!completedCollapsed)}
                   className="w-full flex items-center justify-between px-4 py-3"
-                  style={{ borderBottom: completedCollapsed ? 'none' : `1px solid ${theme.border}` }}
+                  style={{ borderBottom: completedCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                 >
                   <div className="flex items-center gap-2">
                     <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: theme.text }}>
@@ -685,7 +687,7 @@ export default function LeaguePage() {
                     </h2>
                     <span
                       className="rounded-full px-2.5 py-0.5 text-xs"
-                      style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                      style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       {completedGames.length}
                     </span>
@@ -707,7 +709,7 @@ export default function LeaguePage() {
             )}
 
             {liveGames.length === 0 && upcomingGames.length === 0 && completedGames.length === 0 && (
-              <div className="rounded-lg py-8 text-center" style={{ backgroundColor: theme.bgSecondary }}>
+              <div className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}>
                 <p className="text-sm" style={{ color: theme.textSecondary }}>No fixtures available</p>
               </div>
             )}
@@ -721,9 +723,9 @@ export default function LeaguePage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setStatsView('players')}
-                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium"
+                className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium ${darkMode ? (statsView === 'players' ? 'glass-pill-active' : 'glass-pill') : ''}`}
                 style={{
-                  backgroundColor: statsView === 'players' ? theme.accent : theme.bgSecondary,
+                  ...(darkMode ? {} : { backgroundColor: statsView === 'players' ? theme.accent : theme.bgSecondary }),
                   color: statsView === 'players' ? '#fff' : theme.textSecondary,
                 }}
               >
@@ -731,9 +733,9 @@ export default function LeaguePage() {
               </button>
               <button
                 onClick={() => setStatsView('teams')}
-                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium"
+                className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium ${darkMode ? (statsView === 'teams' ? 'glass-pill-active' : 'glass-pill') : ''}`}
                 style={{
-                  backgroundColor: statsView === 'teams' ? theme.accent : theme.bgSecondary,
+                  ...(darkMode ? {} : { backgroundColor: statsView === 'teams' ? theme.accent : theme.bgSecondary }),
                   color: statsView === 'teams' ? '#fff' : theme.textSecondary,
                 }}
               >
@@ -978,15 +980,15 @@ export default function LeaguePage() {
         {/* Standings Tab */}
         {activeTab === 'standings' && (
           <section
-            className="rounded-xl overflow-hidden"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div
               className="grid items-center gap-1 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider"
               style={{
                 gridTemplateColumns: '24px minmax(0, 1fr) 32px 32px 32px 32px 32px 32px',
                 color: theme.textSecondary,
-                borderBottom: `1px solid ${theme.border}`,
+                borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
               }}
             >
               <span>#</span>
@@ -1003,10 +1005,10 @@ export default function LeaguePage() {
               <Link
                 key={row.team.id}
                 href={`/team/${row.team.id}`}
-                className="grid items-center gap-1 px-3 py-2.5 transition-colors hover:bg-black/5"
+                className={`grid items-center gap-1 px-3 py-2.5 transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
                 style={{
                   gridTemplateColumns: '24px minmax(0, 1fr) 32px 32px 32px 32px 32px 32px',
-                  borderBottom: index < data.standings.length - 1 ? `1px solid ${theme.border}` : 'none',
+                  borderBottom: index < data.standings.length - 1 ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none',
                 }}
               >
                 <span
@@ -1086,8 +1088,8 @@ export default function LeaguePage() {
               </>
             ) : (
               <div
-                className="rounded-lg py-8 text-center"
-                style={{ backgroundColor: theme.bgSecondary }}
+                className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
               >
                 <GitBranch size={32} className="mx-auto mb-3" style={{ color: theme.textSecondary }} />
                 <p className="text-sm" style={{ color: theme.textSecondary }}>
