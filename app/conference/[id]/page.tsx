@@ -80,7 +80,7 @@ export default function ConferencePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <div
           className="h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
           style={{ color: theme.accent }}
@@ -92,12 +92,12 @@ export default function ConferencePage() {
 
   if (error || !data) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: theme.bg }}>
+      <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Conference not found'}</p>
         <button
           onClick={() => router.back()}
-          className="mt-4 rounded-lg px-4 py-2 text-[12px]"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           Go back
         </button>
@@ -106,13 +106,13 @@ export default function ConferencePage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          className={`flex h-9 w-9 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? undefined : { border: `1px solid ${theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
         </button>
@@ -126,8 +126,8 @@ export default function ConferencePage() {
         </div>
         <button
           onClick={toggleDarkMode}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
+          className={`flex h-9 w-9 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+          style={darkMode ? undefined : { border: `1px solid ${theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
         </button>
@@ -135,12 +135,14 @@ export default function ConferencePage() {
 
       {/* Sport Selector (only show if both sports available) */}
       {hasBasketball && hasFootball && (
-        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
           <div className="flex gap-2">
             <button
               onClick={() => setSelectedSport('basketball')}
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
-              style={{
+              className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${darkMode ? (effectiveSport === 'basketball' ? 'glass-pill-active' : 'glass-pill') : ''}`}
+              style={darkMode ? {
+                color: effectiveSport === 'basketball' ? '#fff' : theme.textSecondary,
+              } : {
                 backgroundColor: effectiveSport === 'basketball' ? theme.accent : theme.bgSecondary,
                 color: effectiveSport === 'basketball' ? '#fff' : theme.textSecondary,
                 border: `1px solid ${effectiveSport === 'basketball' ? theme.accent : theme.border}`,
@@ -150,8 +152,10 @@ export default function ConferencePage() {
             </button>
             <button
               onClick={() => setSelectedSport('football')}
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
-              style={{
+              className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${darkMode ? (effectiveSport === 'football' ? 'glass-pill-active' : 'glass-pill') : ''}`}
+              style={darkMode ? {
+                color: effectiveSport === 'football' ? '#fff' : theme.textSecondary,
+              } : {
                 backgroundColor: effectiveSport === 'football' ? theme.accent : theme.bgSecondary,
                 color: effectiveSport === 'football' ? '#fff' : theme.textSecondary,
                 border: `1px solid ${effectiveSport === 'football' ? theme.accent : theme.border}`,
@@ -165,10 +169,10 @@ export default function ConferencePage() {
 
       {/* Sport indicator if only one sport */}
       {(!hasBasketball || !hasFootball) && (
-        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+        <div className="px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
           <span
-            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
-            style={{ backgroundColor: theme.bgSecondary, color: theme.textSecondary }}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${darkMode ? 'glass-pill' : ''}`}
+            style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgSecondary, color: theme.textSecondary }}
           >
             {hasBasketball ? 'Basketball Only' : 'Football Only'}
           </span>
@@ -178,11 +182,11 @@ export default function ConferencePage() {
       {/* Standings Section */}
       <main className="flex-1 px-4 py-4">
         <section
-          className="rounded-xl overflow-hidden"
-          style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+          className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+          style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           {/* Section Header */}
-          <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+          <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
             <Trophy size={16} style={{ color: theme.gold }} />
             <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: theme.text }}>
               {effectiveSport === 'basketball' ? 'Basketball' : 'Football'} Standings
@@ -190,7 +194,7 @@ export default function ConferencePage() {
             {standings?.teams && (
               <span
                 className="ml-auto rounded-full px-2.5 py-0.5 text-xs"
-                style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                style={{ backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.06)' : theme.bgTertiary, color: theme.textSecondary }}
               >
                 {standings.teams.length} teams
               </span>
@@ -203,7 +207,7 @@ export default function ConferencePage() {
             style={{
               gridTemplateColumns: 'minmax(0, 1fr) 70px 70px',
               color: theme.textSecondary,
-              borderBottom: `1px solid ${theme.border}`,
+              borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
             }}
           >
             <span>Team</span>
@@ -219,7 +223,7 @@ export default function ConferencePage() {
               className="grid items-center gap-2 px-4 py-3 transition-colors hover:bg-black/5"
               style={{
                 gridTemplateColumns: 'minmax(0, 1fr) 70px 70px',
-                borderBottom: index < (standings.teams.length - 1) ? `1px solid ${theme.border}` : 'none',
+                borderBottom: index < (standings.teams.length - 1) ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none',
               }}
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -239,7 +243,7 @@ export default function ConferencePage() {
                 ) : (
                   <div
                     className="h-7 w-7 flex-shrink-0 rounded-full"
-                    style={{ backgroundColor: theme.bgTertiary }}
+                    style={{ backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.06)' : theme.bgTertiary }}
                   />
                 )}
                 <span

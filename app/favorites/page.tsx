@@ -179,7 +179,7 @@ export default function MyStuffPage() {
           >
             <div
               className="mb-4 flex h-16 w-16 items-center justify-center rounded-full"
-              style={{ backgroundColor: theme.bgTertiary }}
+              style={{ backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.06)' : theme.bgTertiary }}
             >
               <User size={32} color={theme.accent} />
             </div>
@@ -201,7 +201,7 @@ export default function MyStuffPage() {
   return (
     <div
       className="flex min-h-screen flex-col"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
       <main className="flex-1 overflow-y-auto pb-24 px-4 py-4">
@@ -227,8 +227,8 @@ export default function MyStuffPage() {
           </div>
           <button
             onClick={handleSignOut}
-            className="tap-highlight flex items-center gap-2 rounded-lg px-3 py-2.5 text-[12px] font-medium"
-            style={{ backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+            className={`tap-highlight flex items-center gap-2 rounded-lg px-3 py-2.5 text-[12px] font-medium ${darkMode ? 'glass-pill' : ''}`}
+            style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
           >
             <LogOut size={16} />
             Sign Out
@@ -321,8 +321,8 @@ export default function MyStuffPage() {
                         )}
                         <button
                           onClick={() => removeFavorite('team', team.teamId)}
-                          className="tap-highlight ml-2 flex h-11 w-11 items-center justify-center rounded-full"
-                          style={{ backgroundColor: theme.bgTertiary }}
+                          className={`tap-highlight ml-2 flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                          style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
                         >
                           <Heart size={16} color={theme.gold} fill={theme.gold} />
                         </button>
@@ -369,8 +369,8 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('mlb_team', Number(team.id))}
-                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
-                        style={{ backgroundColor: theme.bgTertiary }}
+                        className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
                       </button>
@@ -416,8 +416,8 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('nba_team', Number(team.id))}
-                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
-                        style={{ backgroundColor: theme.bgTertiary }}
+                        className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
                       </button>
@@ -463,8 +463,8 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('nfl_team', Number(team.id))}
-                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
-                        style={{ backgroundColor: theme.bgTertiary }}
+                        className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
                       </button>
@@ -510,8 +510,8 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('ncaab_team', Number(team.id))}
-                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
-                        style={{ backgroundColor: theme.bgTertiary }}
+                        className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
                       </button>
@@ -557,8 +557,8 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('ncaaf_team', Number(team.id))}
-                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
-                        style={{ backgroundColor: theme.bgTertiary }}
+                        className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
                       </button>
@@ -604,8 +604,8 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('league', Number(league.id) || 0)}
-                        className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
-                        style={{ backgroundColor: theme.bgTertiary }}
+                        className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
                       >
                         <Heart size={16} color={theme.gold} fill={theme.gold} />
                       </button>
