@@ -23,7 +23,7 @@ export default function LogoPreviewPage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
@@ -44,8 +44,8 @@ export default function LogoPreviewPage() {
             EPL → custom white logo | UCL & Ligue 1 → white filter | Others → original
           </p>
           <div
-            className="rounded-xl p-4"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div className="flex flex-wrap gap-4">
               {SAMPLE_LOGOS.map(league => {
@@ -86,8 +86,8 @@ export default function LogoPreviewPage() {
             Option 1: White Circular Background
           </h2>
           <div
-            className="rounded-xl p-4"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div className="flex flex-wrap gap-4">
               {SAMPLE_LOGOS.map(league => (
@@ -120,8 +120,8 @@ export default function LogoPreviewPage() {
             Option 5: Semi-transparent Background
           </h2>
           <div
-            className="rounded-xl p-4"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div className="flex flex-wrap gap-4">
               {SAMPLE_LOGOS.map(league => (
@@ -154,8 +154,8 @@ export default function LogoPreviewPage() {
             Option 1B: White Rounded Square
           </h2>
           <div
-            className="rounded-xl p-4"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div className="flex flex-wrap gap-4">
               {SAMPLE_LOGOS.map(league => (
@@ -188,8 +188,8 @@ export default function LogoPreviewPage() {
             Option 1C: Off-white/Light Gray Background
           </h2>
           <div
-            className="rounded-xl p-4"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div className="flex flex-wrap gap-4">
               {SAMPLE_LOGOS.map(league => (
@@ -225,8 +225,8 @@ export default function LogoPreviewPage() {
             UCL & Ligue 1 → white filter | EPL, La Liga, Serie A, Bundesliga → white background
           </p>
           <div
-            className="rounded-xl p-4"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div className="flex flex-wrap gap-4">
               {SAMPLE_LOGOS.map(league => {
@@ -269,8 +269,8 @@ export default function LogoPreviewPage() {
             Already used in MatchCard.tsx and team pages. Creates a clean white version.
           </p>
           <div
-            className="rounded-xl p-4"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div className="flex flex-wrap gap-4">
               {SAMPLE_LOGOS.map(league => (
@@ -304,8 +304,8 @@ export default function LogoPreviewPage() {
             Filter only applies when dark mode is active. Toggle theme to see difference.
           </p>
           <div
-            className="rounded-xl p-4"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div className="flex flex-wrap gap-4">
               {SAMPLE_LOGOS.map(league => (
@@ -336,8 +336,8 @@ export default function LogoPreviewPage() {
             Current (No Background)
           </h2>
           <div
-            className="rounded-xl p-4"
-            style={{ backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+            className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             <div className="flex flex-wrap gap-4">
               {SAMPLE_LOGOS.map(league => (
