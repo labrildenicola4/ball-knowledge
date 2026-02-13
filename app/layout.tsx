@@ -84,7 +84,7 @@ export default function RootLayout({
           media="(device-width: 428px) and (device-height: 926px)"
         />
       </head>
-      <body className="dark">
+      <body className="">
         {/* Aurora orbs - colored blobs that drift behind glass for depth */}
         <div className="aurora-container" aria-hidden="true">
           <div className="aurora-orb aurora-orb-1" />

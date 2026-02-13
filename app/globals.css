@@ -412,6 +412,235 @@ body {
   animation: liveGlow 2s ease-in-out infinite;
 }
 
+/* ============================================
+   LIQUID GLASS DESIGN SYSTEM - Light Mode
+   Warm parchment background → frosted white glass cards
+   ============================================ */
+
+/* STEP 1: Background Depth - Warm parchment/cream */
+html:not(.dark) body {
+  background: linear-gradient(165deg, #f5f2e8 0%, #f0ede3 30%, #eae5d6 60%, #f2efe5 100%);
+  overflow-x: hidden;
+}
+
+html:not(.dark) .aurora-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateZ(0);
+  contain: strict;
+}
+
+html:not(.dark) .aurora-orb {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+html:not(.dark) .aurora-orb-1 {
+  width: 90vw;
+  height: 90vw;
+  max-width: 800px;
+  max-height: 800px;
+  background: radial-gradient(circle, rgba(160, 180, 140, 0.25) 0%, rgba(150, 170, 130, 0.12) 40%, transparent 70%);
+  top: -15%;
+  left: -10%;
+  filter: blur(80px);
+  animation: auroraDrift1 22s ease-in-out infinite;
+}
+
+html:not(.dark) .aurora-orb-2 {
+  width: 80vw;
+  height: 80vw;
+  max-width: 700px;
+  max-height: 700px;
+  background: radial-gradient(circle, rgba(200, 185, 130, 0.22) 0%, rgba(190, 175, 120, 0.10) 40%, transparent 70%);
+  top: 20%;
+  right: -10%;
+  filter: blur(80px);
+  animation: auroraDrift2 28s ease-in-out infinite;
+}
+
+html:not(.dark) .aurora-orb-3 {
+  width: 85vw;
+  height: 85vw;
+  max-width: 750px;
+  max-height: 750px;
+  background: radial-gradient(circle, rgba(140, 170, 150, 0.20) 0%, rgba(130, 160, 140, 0.08) 40%, transparent 70%);
+  bottom: -10%;
+  left: -10%;
+  filter: blur(80px);
+  animation: auroraDrift3 24s ease-in-out infinite;
+}
+
+html:not(.dark) body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(180, 170, 150, 0.12) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+html:not(.dark) body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+html:not(.dark) .flex.min-h-screen {
+  background-color: transparent !important;
+}
+
+html:not(.dark) body > *:not(.aurora-container) {
+  position: relative;
+  z-index: 2;
+}
+
+/* STEP 2: Glass Card - Light mode */
+html:not(.dark) .glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 8px 32px rgba(60, 80, 50, 0.08), 0 2px 8px rgba(60, 80, 50, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+html:not(.dark) .glass-card:hover {
+  box-shadow: 0 12px 40px rgba(60, 80, 50, 0.12), 0 4px 12px rgba(60, 80, 50, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+/* STEP 3: Glass Section - Light mode */
+html:not(.dark) .glass-section {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 20px rgba(60, 80, 50, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* STEP 4: Glass Match Card - Light mode */
+html:not(.dark) .glass-match-card {
+  background: rgba(255, 255, 255, 0.60);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.70);
+  box-shadow: 0 6px 24px rgba(60, 80, 50, 0.10), 0 2px 6px rgba(60, 80, 50, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(200, 195, 180, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+html:not(.dark) .glass-match-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(60, 80, 50, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 12px rgba(255, 255, 255, 0.05);
+}
+
+/* STEP 5: Glass Header - Light mode */
+html:not(.dark) .glass-header {
+  background: rgba(245, 242, 232, 0.75);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border-bottom: 1px solid rgba(200, 195, 180, 0.35);
+  box-shadow: 0 4px 24px rgba(60, 80, 50, 0.06), inset 0 -1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+/* STEP 6: Glass Tab Bar - Light mode */
+html:not(.dark) .glass-tab-bar {
+  background: rgba(245, 242, 232, 0.72);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border-top: 1px solid rgba(200, 195, 180, 0.35);
+  box-shadow: 0 -4px 24px rgba(60, 80, 50, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+/* STEP 7: Glass Pills - Light mode */
+html:not(.dark) .glass-pill {
+  background: rgba(255, 255, 255, 0.50);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.60);
+  border-radius: 50px;
+  box-shadow: 0 2px 8px rgba(60, 80, 50, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+}
+
+html:not(.dark) .glass-pill-active {
+  background: rgba(74, 93, 58, 0.12);
+  backdrop-filter: blur(12px) saturate(170%);
+  -webkit-backdrop-filter: blur(12px) saturate(170%);
+  border: 1px solid rgba(74, 93, 58, 0.25);
+  border-radius: 50px;
+  box-shadow: 0 2px 12px rgba(74, 93, 58, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* STEP 8: Glass Badges - Light mode */
+html:not(.dark) .glass-badge {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(200, 195, 180, 0.30);
+  box-shadow: 0 2px 8px rgba(60, 80, 50, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+html:not(.dark) .glass-badge-live {
+  background: rgba(220, 50, 50, 0.15);
+  border: 1px solid rgba(220, 50, 50, 0.30);
+  box-shadow: 0 2px 12px rgba(220, 50, 50, 0.15), inset 0 1px 0 rgba(255, 200, 200, 0.25);
+}
+
+/* STEP 9: Glass Score - Light mode */
+html:not(.dark) .glass-score {
+  background: rgba(235, 231, 219, 0.75);
+  border: 1px solid rgba(200, 195, 180, 0.30);
+  box-shadow: inset 0 2px 6px rgba(60, 80, 50, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(60, 80, 50, 0.03), 0 1px 0 rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+}
+
+/* STEP 10: Glass Dropdown - Light mode */
+html:not(.dark) .glass-dropdown {
+  background: rgba(250, 248, 243, 0.92);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(200, 195, 180, 0.35);
+  box-shadow: 0 16px 48px rgba(60, 80, 50, 0.12), 0 4px 16px rgba(60, 80, 50, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* STEP 11: Glass Divider - Light mode */
+html:not(.dark) .glass-divider {
+  border-color: rgba(200, 195, 180, 0.30);
+}
+
+/* STEP 12: Live Glow - Light mode */
+@keyframes liveGlowLight {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(200, 50, 50, 0.20), 0 0 16px rgba(200, 50, 50, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(200, 50, 50, 0.35), 0 0 32px rgba(200, 50, 50, 0.15);
+  }
+}
+
+html:not(.dark) .live-glow {
+  animation: liveGlowLight 2s ease-in-out infinite;
+}
+
 /* Hide scrollbars but allow scrolling */
 ::-webkit-scrollbar {
   display: none;

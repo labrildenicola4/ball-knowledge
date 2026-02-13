@@ -25,11 +25,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
   return (
     <Link href={`/mlb/game/${game.id}`}>
       <div
-        className={`card-press cursor-pointer p-3 md:p-4 transition-theme ${darkMode ? 'glass-match-card' : 'card-hover rounded-xl'}`}
-        style={darkMode ? undefined : {
-          backgroundColor: theme.bgSecondary,
-          border: `1px solid ${theme.border}`,
-        }}
+        className="card-press cursor-pointer p-3 md:p-4 transition-theme glass-match-card"
       >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
@@ -60,13 +56,8 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
             )}
           </div>
           <span
-            className={`font-mono rounded-lg px-3 py-1 text-sm ${darkMode ? (isLive ? 'glass-badge-live' : 'glass-badge') : ''}`}
-            style={darkMode ? {
-              color: isLive ? '#fff' : theme.textSecondary,
-            } : {
-              backgroundColor: isLive ? theme.red : theme.bgTertiary,
-              color: isLive ? '#fff' : theme.textSecondary,
-            }}
+            className={`font-mono rounded-lg px-3 py-1 text-sm ${isLive ? 'glass-badge-live' : 'glass-badge'}`}
+            style={{ color: isLive ? '#fff' : theme.textSecondary }}
           >
             {isLive && '● '}
             {isLive ? getInningDisplay() : isFinal ? 'Final' : game.startTime}
@@ -108,8 +99,8 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
 
           {/* Score */}
           <div
-            className={`font-mono rounded-lg px-4 py-2 text-lg font-semibold flex-shrink-0 ${darkMode ? 'glass-score score-text' : ''}`}
-            style={darkMode ? undefined : { backgroundColor: theme.bgTertiary, color: theme.text }}
+            className="font-mono rounded-lg px-4 py-2 text-lg font-semibold flex-shrink-0 glass-score score-text"
+            style={{ color: theme.text }}
           >
             {(isLive || isFinal)
               ? `${game.awayTeam.score ?? 0} - ${game.homeTeam.score ?? 0}`
@@ -151,8 +142,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
         {/* Live Situation */}
         {isLive && game.situation && (
           <div
-            className={`mt-3 flex items-center gap-3 rounded-lg px-3 py-2 ${darkMode ? 'glass-badge' : ''}`}
-            style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
+            className="mt-3 flex items-center gap-3 rounded-lg px-3 py-2 glass-badge"
           >
             {/* Base diagram */}
             <div className="relative h-8 w-8 flex-shrink-0">

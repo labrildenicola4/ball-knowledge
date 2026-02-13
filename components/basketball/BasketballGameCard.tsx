@@ -19,11 +19,7 @@ export const BasketballGameCard = memo(function BasketballGameCard({ game }: Bas
   return (
     <Link href={`/basketball/game/${game.id}`}>
       <div
-        className={`card-press cursor-pointer p-3 md:p-4 transition-theme ${darkMode ? 'glass-match-card' : 'card-hover rounded-xl'}`}
-        style={darkMode ? undefined : {
-          backgroundColor: theme.bgSecondary,
-          border: `1px solid ${theme.border}`,
-        }}
+        className="card-press cursor-pointer p-3 md:p-4 transition-theme glass-match-card"
       >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
@@ -44,13 +40,8 @@ export const BasketballGameCard = memo(function BasketballGameCard({ game }: Bas
             )}
           </div>
           <span
-            className={`font-mono rounded-lg px-3 py-1 text-sm ${darkMode ? (isLive ? 'glass-badge-live' : 'glass-badge') : ''}`}
-            style={darkMode ? {
-              color: isLive ? '#fff' : theme.textSecondary,
-            } : {
-              backgroundColor: isLive ? theme.red : theme.bgTertiary,
-              color: isLive ? '#fff' : theme.textSecondary,
-            }}
+            className={`font-mono rounded-lg px-3 py-1 text-sm ${isLive ? 'glass-badge-live' : 'glass-badge'}`}
+            style={{ color: isLive ? '#fff' : theme.textSecondary }}
           >
             {isLive && '● '}
             {isLive ? `${game.period > 2 ? 'OT' : game.period === 2 ? '2H' : '1H'} ${game.clock}` : isFinal ? 'Final' : game.startTime}
@@ -92,8 +83,8 @@ export const BasketballGameCard = memo(function BasketballGameCard({ game }: Bas
 
           {/* Score */}
           <div
-            className={`font-mono rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-base md:text-lg font-semibold flex-shrink-0 ${darkMode ? 'glass-score score-text' : ''}`}
-            style={darkMode ? undefined : { backgroundColor: theme.bgTertiary, color: theme.text }}
+            className="font-mono rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-base md:text-lg font-semibold flex-shrink-0 glass-score score-text"
+            style={{ color: theme.text }}
           >
             {(isLive || isFinal)
               ? `${game.awayTeam.score ?? 0} - ${game.homeTeam.score ?? 0}`

@@ -412,7 +412,6 @@ export default function HomePage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
       <Header />
 
@@ -431,14 +430,8 @@ export default function HomePage() {
           <button
             onClick={() => refreshAll()}
             disabled={isLoading}
-            className={`tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm ${darkMode ? 'glass-pill' : ''}`}
-            style={darkMode ? {
-              color: theme.textSecondary,
-            } : {
-              backgroundColor: theme.bgSecondary,
-              border: `1px solid ${theme.border}`,
-              color: theme.textSecondary,
-            }}
+            className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm glass-pill"
+            style={{ color: theme.textSecondary }}
           >
             <RefreshCw size={16} className={isRefreshing || basketballLoading || nbaLoading || mlbLoading || nflLoading ? 'animate-spin' : ''} />
             Refresh
@@ -453,96 +446,54 @@ export default function HomePage() {
         <div className="flex gap-2 mt-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setSelectedFilter('all')}
-            className={`tap-highlight whitespace-nowrap rounded-full px-3 py-2.5 text-xs font-medium flex items-center gap-1.5 ${darkMode ? (selectedFilter === 'all' ? 'glass-pill-active' : 'glass-pill') : ''}`}
-            style={darkMode ? {
-              color: selectedFilter === 'all' ? '#fff' : theme.textSecondary,
-            } : {
-              backgroundColor: selectedFilter === 'all' ? theme.accent : theme.bgSecondary,
-              color: selectedFilter === 'all' ? '#fff' : theme.textSecondary,
-              border: `1px solid ${selectedFilter === 'all' ? theme.accent : theme.border}`,
-            }}
+            className={`tap-highlight whitespace-nowrap rounded-full px-3 py-2.5 text-xs font-medium flex items-center gap-1.5 ${selectedFilter === 'all' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'all' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
             All
           </button>
           <button
             onClick={() => setSelectedFilter('myteams')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center ${darkMode ? (selectedFilter === 'myteams' ? 'glass-pill-active' : 'glass-pill') : ''}`}
-            style={darkMode ? {
-              minWidth: '36px',
-            } : {
-              backgroundColor: selectedFilter === 'myteams' ? theme.accent : theme.bgSecondary,
-              border: `1px solid ${selectedFilter === 'myteams' ? theme.accent : theme.border}`,
-              minWidth: '36px',
-            }}
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center ${selectedFilter === 'myteams' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ minWidth: '36px' }}
           >
             <Star size={14} fill={selectedFilter === 'myteams' ? '#fff' : '#D4AF37'} color={selectedFilter === 'myteams' ? '#fff' : '#D4AF37'} />
           </button>
           <button
             onClick={() => setSelectedFilter('soccer')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${darkMode ? (selectedFilter === 'soccer' ? 'glass-pill-active' : 'glass-pill') : ''}`}
-            style={darkMode ? {
-              color: selectedFilter === 'soccer' ? '#fff' : theme.textSecondary,
-            } : {
-              backgroundColor: selectedFilter === 'soccer' ? theme.accent : theme.bgSecondary,
-              color: selectedFilter === 'soccer' ? '#fff' : theme.textSecondary,
-              border: `1px solid ${selectedFilter === 'soccer' ? theme.accent : theme.border}`,
-            }}
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${selectedFilter === 'soccer' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'soccer' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
             <img src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain" />
             {matches.length}
           </button>
           <button
             onClick={() => setSelectedFilter('ncaa')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${darkMode ? (selectedFilter === 'ncaa' ? 'glass-pill-active' : 'glass-pill') : ''}`}
-            style={darkMode ? {
-              color: selectedFilter === 'ncaa' ? '#fff' : theme.textSecondary,
-            } : {
-              backgroundColor: selectedFilter === 'ncaa' ? theme.accent : theme.bgSecondary,
-              color: selectedFilter === 'ncaa' ? '#fff' : theme.textSecondary,
-              border: `1px solid ${selectedFilter === 'ncaa' ? theme.accent : theme.border}`,
-            }}
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${selectedFilter === 'ncaa' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'ncaa' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
             <img src={BASKETBALL_ICON} alt="" className="h-4 w-4 object-contain" />
             {basketballGames.length}
           </button>
           <button
             onClick={() => setSelectedFilter('nba')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${darkMode ? (selectedFilter === 'nba' ? 'glass-pill-active' : 'glass-pill') : ''}`}
-            style={darkMode ? {
-              color: selectedFilter === 'nba' ? '#fff' : theme.textSecondary,
-            } : {
-              backgroundColor: selectedFilter === 'nba' ? theme.accent : theme.bgSecondary,
-              color: selectedFilter === 'nba' ? '#fff' : theme.textSecondary,
-              border: `1px solid ${selectedFilter === 'nba' ? theme.accent : theme.border}`,
-            }}
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${selectedFilter === 'nba' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'nba' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
             <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain" />
             {nbaGames.length}
           </button>
           <button
             onClick={() => setSelectedFilter('mlb')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${darkMode ? (selectedFilter === 'mlb' ? 'glass-pill-active' : 'glass-pill') : ''}`}
-            style={darkMode ? {
-              color: selectedFilter === 'mlb' ? '#fff' : theme.textSecondary,
-            } : {
-              backgroundColor: selectedFilter === 'mlb' ? theme.accent : theme.bgSecondary,
-              color: selectedFilter === 'mlb' ? '#fff' : theme.textSecondary,
-              border: `1px solid ${selectedFilter === 'mlb' ? theme.accent : theme.border}`,
-            }}
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${selectedFilter === 'mlb' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'mlb' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
             <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain" />
             {mlbGames.length}
           </button>
           <button
             onClick={() => setSelectedFilter('nfl')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${darkMode ? (selectedFilter === 'nfl' ? 'glass-pill-active' : 'glass-pill') : ''}`}
-            style={darkMode ? {
-              color: selectedFilter === 'nfl' ? '#fff' : theme.textSecondary,
-            } : {
-              backgroundColor: selectedFilter === 'nfl' ? theme.accent : theme.bgSecondary,
-              color: selectedFilter === 'nfl' ? '#fff' : theme.textSecondary,
-              border: `1px solid ${selectedFilter === 'nfl' ? theme.accent : theme.border}`,
-            }}
+            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${selectedFilter === 'nfl' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'nfl' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
             <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain" />
             {nflGames.length}
@@ -563,8 +514,7 @@ export default function HomePage() {
           </div>
         ) : isError ? (
           <div
-            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
-            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
+            className="rounded-lg py-8 text-center glass-card"
           >
             <p className="text-sm" style={{ color: theme.red }}>
               Failed to load games
@@ -579,8 +529,7 @@ export default function HomePage() {
           </div>
         ) : totalGames === 0 ? (
           <div
-            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
-            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
+            className="rounded-lg py-8 text-center glass-card"
           >
             <p className="text-sm" style={{ color: theme.textSecondary }}>
               No games scheduled for today
@@ -591,8 +540,7 @@ export default function HomePage() {
           </div>
         ) : filteredGames.length === 0 ? (
           <div
-            className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
-            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
+            className="rounded-lg py-8 text-center glass-card"
           >
             {selectedFilter === 'myteams' ? (
               !isLoggedIn ? (
@@ -627,8 +575,7 @@ export default function HomePage() {
             {/* Live Games Section */}
             {liveGames.length > 0 && (
               <section
-                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section live-glow' : ''}`}
-                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className="rounded-xl overflow-hidden glass-section live-glow"
               >
                 <button
                   onClick={() => setLiveCollapsed(!liveCollapsed)}
@@ -647,8 +594,8 @@ export default function HomePage() {
                       Live Now
                     </h2>
                     <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${darkMode ? 'glass-badge-live' : ''}`}
-                      style={darkMode ? { color: '#fff' } : { backgroundColor: theme.red, color: '#fff' }}
+                      className="rounded-full px-2.5 py-0.5 text-xs font-medium glass-badge-live"
+                      style={{ color: '#fff' }}
                     >
                       {liveGames.length}
                     </span>
@@ -681,8 +628,7 @@ export default function HomePage() {
             {/* Completed Games Section */}
             {finishedGames.length > 0 && (
               <section
-                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
-                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className="rounded-xl overflow-hidden glass-section"
               >
                 <button
                   onClick={() => toggleSection('completed')}
@@ -694,8 +640,8 @@ export default function HomePage() {
                       Completed
                     </h2>
                     <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs ${darkMode ? 'glass-badge' : ''}`}
-                      style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                      className="rounded-full px-2.5 py-0.5 text-xs glass-badge"
+                      style={{ color: theme.textSecondary }}
                     >
                       {finishedGames.length}
                     </span>
@@ -731,8 +677,7 @@ export default function HomePage() {
               return (
                 <section
                   key={hour}
-                  className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
-                  style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  className="rounded-xl overflow-hidden glass-section"
                 >
                   <button
                     onClick={() => toggleSection(hour)}
@@ -744,8 +689,8 @@ export default function HomePage() {
                         {hour} ET
                       </h2>
                       <span
-                        className={`rounded-full px-2.5 py-0.5 text-xs ${darkMode ? 'glass-badge' : ''}`}
-                        style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                        className="rounded-full px-2.5 py-0.5 text-xs glass-badge"
+                        style={{ color: theme.textSecondary }}
                       >
                         {games.length}
                       </span>

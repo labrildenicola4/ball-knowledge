@@ -109,8 +109,6 @@ export function Header() {
     <header
       className="sticky top-0 z-50 transition-theme glass-header"
       style={{
-        backgroundColor: darkMode ? undefined : 'rgba(245, 242, 232, 0.95)',
-        borderBottom: darkMode ? undefined : `1px solid ${theme.border}`,
         paddingTop: 'env(safe-area-inset-top)',
       }}
     >
@@ -142,8 +140,7 @@ export function Header() {
           {searchOpen ? (
             <div className="relative flex-1 sm:w-72">
               <div
-                className={`flex items-center gap-2 rounded-full px-4 py-2 ${darkMode ? 'glass-pill' : ''}`}
-                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className="flex items-center gap-2 rounded-full px-4 py-2 glass-pill"
               >
                 <Search size={18} style={{ color: theme.textSecondary }} />
                 <input
@@ -163,8 +160,7 @@ export function Header() {
               {/* Results Dropdown */}
               {query.length >= 2 && (
                 <div
-                  className={`absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto rounded-xl shadow-lg ${darkMode ? 'glass-dropdown' : ''}`}
-                  style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                  className="absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto rounded-xl shadow-lg glass-dropdown"
                 >
                   {!hasResults ? (
                     <div className="px-4 py-6 text-center">
@@ -461,8 +457,7 @@ export function Header() {
           ) : (
             <button
               onClick={() => setSearchOpen(true)}
-              className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full transition-colors ${darkMode ? 'glass-pill' : ''}`}
-              style={darkMode ? undefined : { border: `1px solid ${theme.border}` }}
+              className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full transition-colors glass-pill"
               aria-label="Search"
             >
               <Search size={20} color={theme.text} />
@@ -472,8 +467,7 @@ export function Header() {
           {/* Theme Toggle */}
           <button
             onClick={toggleDarkMode}
-            className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full transition-colors ${darkMode ? 'glass-pill' : ''}`}
-            style={darkMode ? undefined : { border: `1px solid ${theme.border}` }}
+            className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full transition-colors glass-pill"
             aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {darkMode ? <Sun size={20} color={theme.text} /> : <Moon size={20} color={theme.text} />}
