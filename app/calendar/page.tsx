@@ -508,22 +508,23 @@ export default function CalendarPage() {
       {/* Continue watching banner */}
       {lastViewedMatch && (
         <div
-          className="flex items-center justify-between px-4 py-3"
-          style={{ backgroundColor: theme.accent }}
+          className="flex items-center justify-between px-4 py-3 mx-3 mt-2 rounded-xl glass-match-card"
+          style={{ borderLeft: `3px solid ${theme.accent}` }}
         >
           <button
             onClick={() => router.push(`/match/${lastViewedMatch}`)}
             className="tap-highlight flex items-center gap-2 flex-1"
           >
-            <span className="text-sm font-medium text-white">Continue watching match</span>
-            <ChevronRight size={18} className="text-white" />
+            <span className="text-sm font-medium" style={{ color: theme.text }}>Continue watching match</span>
+            <ChevronRight size={18} style={{ color: theme.accent }} />
           </button>
           <button
             onClick={() => {
               setLastViewedMatch(null);
               localStorage.removeItem('lastViewedMatch');
             }}
-            className="tap-highlight text-white/70 text-xs ml-4 px-2 py-2.5"
+            className="tap-highlight text-xs ml-4 px-2 py-2.5"
+            style={{ color: theme.textSecondary }}
           >
             Dismiss
           </button>
