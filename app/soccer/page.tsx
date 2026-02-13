@@ -47,8 +47,7 @@ function LeagueCard({ league }: { league: typeof SOCCER_LEAGUES[0] }) {
   return (
     <Link
       href={`/league/${league.slug}`}
-      className={`flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80 ${darkMode ? 'glass-card' : ''}`}
-      style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80 glass-card"
     >
       <img
         src={logoSrc}
@@ -84,20 +83,18 @@ export default function SoccerHubPage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
+      style={{ backgroundColor: 'transparent' }}
     >
       <Header />
 
       {/* Header */}
       <div
         className="px-4 py-4"
-        style={darkMode ? undefined : { borderBottom: `1px solid ${theme.border}` }}
       >
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className={`tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity ${darkMode ? 'glass-card' : ''}`}
-            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
+            className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity glass-card"
           >
             <ChevronLeft size={20} style={{ color: theme.text }} />
           </button>

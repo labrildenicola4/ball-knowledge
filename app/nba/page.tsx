@@ -77,21 +77,19 @@ export default function NBAHomePage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
+      style={{ backgroundColor: 'transparent' }}
     >
       <Header />
 
       {/* Header */}
       <div
         className="px-4 py-4"
-        style={{ borderBottom: `1px solid ${theme.border}` }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href="/all"
-              className={`tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity ${darkMode ? 'glass-pill' : ''}`}
-              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
+              className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity glass-pill"
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
             </Link>
@@ -108,12 +106,8 @@ export default function NBAHomePage() {
             <button
               onClick={() => mutate()}
               disabled={gamesLoading}
-              className={`tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm ${darkMode ? 'glass-pill' : ''}`}
-              style={darkMode ? { color: theme.textSecondary } : {
-                backgroundColor: theme.bgSecondary,
-                border: `1px solid ${theme.border}`,
-                color: theme.textSecondary,
-              }}
+              className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm glass-pill"
+              style={{ color: theme.textSecondary }}
             >
               <RefreshCw size={16} className={isValidating ? 'animate-spin' : ''} />
               Refresh
@@ -128,19 +122,13 @@ export default function NBAHomePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="flex gap-1 px-4 py-3">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${darkMode && activeTab !== tab.id ? 'glass-pill' : ''} ${darkMode && activeTab === tab.id ? 'glass-pill-active' : ''}`}
-            style={darkMode ? {
-              backgroundColor: activeTab === tab.id ? theme.accent : undefined,
-              color: activeTab === tab.id ? '#fff' : theme.textSecondary,
-            } : {
-              backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary,
-              color: activeTab === tab.id ? '#fff' : theme.textSecondary,
-            }}
+            className={`tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${activeTab === tab.id ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: activeTab === tab.id ? '#fff' : theme.textSecondary }}
           >
             <tab.icon size={16} />
             {tab.label}
@@ -164,8 +152,7 @@ export default function NBAHomePage() {
               </div>
             ) : games.length === 0 ? (
               <div
-                className={`rounded-lg py-8 text-center ${darkMode ? 'glass-section' : ''}`}
-                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
+                className="rounded-lg py-8 text-center glass-section"
               >
                 <p className="text-sm" style={{ color: theme.textSecondary }}>
                   No games scheduled for today
@@ -176,13 +163,11 @@ export default function NBAHomePage() {
                 {/* Live Games */}
                 {liveGames.length > 0 && (
                   <section
-                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
-                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className="rounded-xl overflow-hidden glass-section"
                   >
                     <button
                       onClick={() => setLiveCollapsed(!liveCollapsed)}
                       className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                      style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
                         <span
@@ -222,13 +207,11 @@ export default function NBAHomePage() {
                 {/* Upcoming Games */}
                 {upcomingGames.length > 0 && (
                   <section
-                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
-                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className="rounded-xl overflow-hidden glass-section"
                   >
                     <button
                       onClick={() => setUpcomingCollapsed(!upcomingCollapsed)}
                       className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                      style={{ borderBottom: upcomingCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
                         <h2
@@ -238,8 +221,8 @@ export default function NBAHomePage() {
                           Upcoming
                         </h2>
                         <span
-                          className={`rounded-full px-2.5 py-0.5 text-xs ${darkMode ? 'glass-pill' : ''}`}
-                          style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                          className="rounded-full px-2.5 py-0.5 text-xs glass-pill"
+                          style={{ color: theme.textSecondary }}
                         >
                           {upcomingGames.length}
                         </span>
@@ -264,13 +247,11 @@ export default function NBAHomePage() {
                 {/* Completed Games */}
                 {completedGames.length > 0 && (
                   <section
-                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
-                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className="rounded-xl overflow-hidden glass-section"
                   >
                     <button
                       onClick={() => setCompletedCollapsed(!completedCollapsed)}
                       className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                      style={{ borderBottom: completedCollapsed ? 'none' : `1px solid ${theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
                         <h2
@@ -280,8 +261,8 @@ export default function NBAHomePage() {
                           Final
                         </h2>
                         <span
-                          className={`rounded-full px-2.5 py-0.5 text-xs ${darkMode ? 'glass-pill' : ''}`}
-                          style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                          className="rounded-full px-2.5 py-0.5 text-xs glass-pill"
+                          style={{ color: theme.textSecondary }}
                         >
                           {completedGames.length}
                         </span>
@@ -316,15 +297,8 @@ export default function NBAHomePage() {
                 <button
                   key={view}
                   onClick={() => setStatsView(view)}
-                  className={`tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors capitalize ${darkMode && statsView !== view ? 'glass-pill' : ''} ${darkMode && statsView === view ? 'glass-pill-active' : ''}`}
-                  style={darkMode ? {
-                    backgroundColor: statsView === view ? theme.accent : undefined,
-                    color: statsView === view ? '#fff' : theme.textSecondary,
-                  } : {
-                    backgroundColor: statsView === view ? theme.accent : theme.bgSecondary,
-                    color: statsView === view ? '#fff' : theme.textSecondary,
-                    border: `1px solid ${statsView === view ? theme.accent : theme.border}`,
-                  }}
+                  className={`tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors capitalize ${statsView === view ? 'glass-pill-active' : 'glass-pill'}`}
+                  style={{ color: statsView === view ? '#fff' : theme.textSecondary }}
                 >
                   {view === 'players' ? 'Player Leaders' : 'Team Rankings'}
                 </button>
@@ -454,15 +428,8 @@ export default function NBAHomePage() {
                     <button
                       key={conf}
                       onClick={() => setSelectedConference(conf)}
-                      className={`tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${darkMode && selectedConference !== conf ? 'glass-pill' : ''} ${darkMode && selectedConference === conf ? 'glass-pill-active' : ''}`}
-                      style={darkMode ? {
-                        backgroundColor: selectedConference === conf ? theme.accent : undefined,
-                        color: selectedConference === conf ? '#fff' : theme.textSecondary,
-                      } : {
-                        backgroundColor: selectedConference === conf ? theme.accent : theme.bgSecondary,
-                        color: selectedConference === conf ? '#fff' : theme.textSecondary,
-                        border: `1px solid ${selectedConference === conf ? theme.accent : theme.border}`,
-                      }}
+                      className={`tap-highlight flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${selectedConference === conf ? 'glass-pill-active' : 'glass-pill'}`}
+                      style={{ color: selectedConference === conf ? '#fff' : theme.textSecondary }}
                     >
                       {conf}
                     </button>
@@ -478,13 +445,12 @@ export default function NBAHomePage() {
 
                   return (
                     <div
-                      className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
-                      style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                      className="rounded-xl overflow-hidden glass-card"
                     >
                       {/* Header */}
                       <div
                         className="flex items-center px-4 py-2.5 text-[10px] font-semibold uppercase"
-                        style={darkMode ? { color: theme.textSecondary } : { backgroundColor: theme.bgTertiary, color: theme.textSecondary }}
+                        style={{ color: theme.textSecondary }}
                       >
                         <span className="w-7">#</span>
                         <span className="flex-1">Team</span>
@@ -505,9 +471,6 @@ export default function NBAHomePage() {
                           <div key={team.id}>
                             <div
                               className="flex items-center px-4 py-2.5"
-                              style={{
-                                borderTop: index === 0 ? 'none' : `1px solid ${theme.border}`,
-                              }}
                             >
                               <Link
                                 href={`/nba/team/${team.id}`}
@@ -566,7 +529,7 @@ export default function NBAHomePage() {
 
                             {/* Playoff Cutoff Line */}
                             {isPlayoffCutoff && (
-                              <div className="flex items-center gap-2 px-4 py-1.5" style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}>
+                              <div className="flex items-center gap-2 px-4 py-1.5">
                                 <div className="flex-1 h-px" style={{ backgroundColor: theme.green }} />
                                 <span className="text-[9px] uppercase font-semibold" style={{ color: theme.green }}>
                                   Playoff Line
@@ -577,7 +540,7 @@ export default function NBAHomePage() {
 
                             {/* Play-In Cutoff Line */}
                             {isPlayInCutoff && (
-                              <div className="flex items-center gap-2 px-4 py-1.5" style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}>
+                              <div className="flex items-center gap-2 px-4 py-1.5">
                                 <div className="flex-1 h-px" style={{ backgroundColor: theme.gold }} />
                                 <span className="text-[9px] uppercase font-semibold" style={{ color: theme.gold }}>
                                   Play-In Line
@@ -592,7 +555,7 @@ export default function NBAHomePage() {
                       {/* Legend */}
                       <div
                         className="flex items-center justify-center gap-6 px-4 py-2.5 text-[10px]"
-                        style={darkMode ? { borderTop: `1px solid ${theme.border}` } : { backgroundColor: theme.bgTertiary, borderTop: `1px solid ${theme.border}` }}
+                        style={{ borderTop: `1px solid ${theme.border}` }}
                       >
                         <div className="flex items-center gap-1.5">
                           <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: theme.green }} />
@@ -638,10 +601,9 @@ function LeaderCard({
 
   return (
     <section
-      className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
-      style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      className="rounded-xl overflow-hidden glass-card"
     >
-      <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="px-4 py-3">
         <h3 className="text-sm font-semibold" style={{ color: theme.text }}>
           {title}
         </h3>
@@ -652,7 +614,6 @@ function LeaderCard({
           key={leader.player.id}
           href={`/nba/team/${leader.team.id}`}
           className="card-press flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5"
-          style={{ borderBottom: index < leaders.length - 1 ? `1px solid ${theme.border}` : 'none' }}
         >
           <span
             className="w-5 text-center text-sm font-bold"
@@ -671,7 +632,6 @@ function LeaderCard({
             ) : (
               <div
                 className="h-10 w-10 rounded-full"
-                style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
               />
             )}
             {leader.team.logo && (
@@ -723,10 +683,9 @@ function TeamRankingCard({
 
   return (
     <section
-      className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
-      style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+      className="rounded-xl overflow-hidden glass-card"
     >
-      <div className="px-4 py-3" style={{ borderBottom: `1px solid ${theme.border}` }}>
+      <div className="px-4 py-3">
         <h3 className="text-sm font-semibold" style={{ color: theme.text }}>
           {title}
         </h3>
@@ -737,7 +696,6 @@ function TeamRankingCard({
           key={ranking.team.id}
           href={`/nba/team/${ranking.team.id}`}
           className="card-press flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5"
-          style={{ borderBottom: index < rankings.length - 1 ? `1px solid ${theme.border}` : 'none' }}
         >
           <span
             className="w-5 text-center text-sm font-bold"
@@ -755,7 +713,6 @@ function TeamRankingCard({
           ) : (
             <div
               className="h-10 w-10 rounded-full"
-              style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
             />
           )}
           <div className="flex-1 min-w-0">

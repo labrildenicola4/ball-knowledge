@@ -418,7 +418,7 @@ export default function HomePage() {
       {/* Today's Header */}
       <div
         className="px-4 py-4 glass-divider"
-        style={{ borderBottom: `1px solid ${theme.border}` }}
+        style={{ borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}` }}
       >
         <div className="flex items-center justify-between">
           <div>
@@ -580,7 +580,7 @@ export default function HomePage() {
                 <button
                   onClick={() => setLiveCollapsed(!liveCollapsed)}
                   className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                  style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : theme.border}` }}
+                  style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}` }}
                 >
                   <div className="flex items-center gap-2">
                     <span
@@ -633,7 +633,7 @@ export default function HomePage() {
                 <button
                   onClick={() => toggleSection('completed')}
                   className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                  style={{ borderBottom: collapsedSections.has('completed') ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : theme.border}` }}
+                  style={{ borderBottom: collapsedSections.has('completed') ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}` }}
                 >
                   <div className="flex items-center gap-3">
                     <h2 className="text-base font-medium" style={{ color: theme.textSecondary }}>
@@ -682,7 +682,7 @@ export default function HomePage() {
                   <button
                     onClick={() => toggleSection(hour)}
                     className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                    style={{ borderBottom: isCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : theme.border}` }}
+                    style={{ borderBottom: isCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}` }}
                   >
                     <div className="flex items-center gap-3">
                       <h2 className="text-base font-medium" style={{ color: theme.text }}>

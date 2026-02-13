@@ -91,21 +91,19 @@ export default function BasketballHomePage() {
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
-      style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
+      style={{ backgroundColor: 'transparent' }}
     >
       <Header />
 
       {/* Header */}
       <div
         className="px-4 py-4"
-        style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href="/all"
-              className={`tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity ${darkMode ? 'glass-pill' : ''}`}
-              style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
+              className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity glass-pill"
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
             </Link>
@@ -122,11 +120,8 @@ export default function BasketballHomePage() {
             <button
               onClick={() => mutate()}
               disabled={gamesLoading}
-              className={`tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm ${darkMode ? 'glass-pill' : ''}`}
-              style={{
-                ...(darkMode ? {} : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }),
-                color: theme.textSecondary,
-              }}
+              className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm glass-pill"
+              style={{ color: theme.textSecondary }}
             >
               <RefreshCw size={16} className={isValidating ? 'animate-spin' : ''} />
               Refresh
@@ -136,16 +131,13 @@ export default function BasketballHomePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <div className="flex gap-1 px-4 py-3">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${darkMode ? (activeTab === tab.id ? 'glass-pill-active' : 'glass-pill') : ''}`}
-            style={{
-              ...(darkMode ? {} : { backgroundColor: activeTab === tab.id ? theme.accent : theme.bgSecondary }),
-              color: activeTab === tab.id ? '#fff' : theme.textSecondary,
-            }}
+            className={`tap-highlight flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${activeTab === tab.id ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: activeTab === tab.id ? '#fff' : theme.textSecondary }}
           >
             <tab.icon size={16} />
             {tab.label}
@@ -169,8 +161,7 @@ export default function BasketballHomePage() {
               </div>
             ) : games.length === 0 ? (
               <div
-                className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
-                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
+                className="rounded-lg py-8 text-center glass-card"
               >
                 <p className="text-sm" style={{ color: theme.textSecondary }}>
                   No games scheduled for today
@@ -181,13 +172,11 @@ export default function BasketballHomePage() {
                 {/* Live Games */}
                 {liveGames.length > 0 && (
                   <section
-                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
-                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className="rounded-xl overflow-hidden glass-section"
                   >
                     <button
                       onClick={() => setLiveCollapsed(!liveCollapsed)}
                       className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                      style={{ borderBottom: liveCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
                         <span
@@ -227,13 +216,11 @@ export default function BasketballHomePage() {
                 {/* Ranked Matchups */}
                 {rankedGames.length > 0 && (
                   <section
-                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
-                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className="rounded-xl overflow-hidden glass-section"
                   >
                     <button
                       onClick={() => setRankedCollapsed(!rankedCollapsed)}
                       className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                      style={{ borderBottom: rankedCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
                         <Trophy size={16} style={{ color: theme.gold }} />
@@ -245,7 +232,7 @@ export default function BasketballHomePage() {
                         </h2>
                         <span
                           className="rounded-full px-2.5 py-0.5 text-xs"
-                          style={{ ...(darkMode ? {} : { backgroundColor: theme.bgTertiary }), color: theme.textSecondary }}
+                          style={{ color: theme.textSecondary }}
                         >
                           {rankedGames.length}
                         </span>
@@ -270,13 +257,11 @@ export default function BasketballHomePage() {
                 {/* Other Games */}
                 {otherGames.length > 0 && (
                   <section
-                    className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
-                    style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                    className="rounded-xl overflow-hidden glass-section"
                   >
                     <button
                       onClick={() => setOtherCollapsed(!otherCollapsed)}
                       className="tap-highlight w-full flex items-center justify-between px-4 py-3"
-                      style={{ borderBottom: otherCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                     >
                       <div className="flex items-center gap-2">
                         <h2
@@ -287,7 +272,7 @@ export default function BasketballHomePage() {
                         </h2>
                         <span
                           className="rounded-full px-2.5 py-0.5 text-xs"
-                          style={{ ...(darkMode ? {} : { backgroundColor: theme.bgTertiary }), color: theme.textSecondary }}
+                          style={{ color: theme.textSecondary }}
                         >
                           {otherGames.length}
                         </span>
@@ -328,8 +313,7 @@ export default function BasketballHomePage() {
               </div>
             ) : rankings.length === 0 ? (
               <div
-                className={`rounded-lg py-8 text-center ${darkMode ? 'glass-card' : ''}`}
-                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
+                className="rounded-lg py-8 text-center glass-card"
               >
                 <p className="text-sm" style={{ color: theme.textSecondary }}>
                   Rankings not available
@@ -337,12 +321,10 @@ export default function BasketballHomePage() {
               </div>
             ) : (
               <div
-                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-section' : ''}`}
-                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className="rounded-xl overflow-hidden glass-section"
               >
                 <div
                   className="px-4 py-3 flex items-center gap-2"
-                  style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                 >
                   <Trophy size={18} style={{ color: theme.gold }} />
                   <h3 className="text-sm font-semibold" style={{ color: theme.text }}>
@@ -353,7 +335,7 @@ export default function BasketballHomePage() {
                 {/* Header */}
                 <div
                   className="flex items-center px-4 py-2 text-[10px] font-semibold uppercase"
-                  style={{ ...(darkMode ? {} : { backgroundColor: theme.bgTertiary }), color: theme.textSecondary }}
+                  style={{ color: theme.textSecondary }}
                 >
                   <span className="w-8">#</span>
                   <span className="flex-1">Team</span>
@@ -366,7 +348,6 @@ export default function BasketballHomePage() {
                     key={ranking.team.id}
                     href={`/basketball/team/${ranking.team.id}`}
                     className="card-press flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
-                    style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                   >
                     <span
                       className="w-8 text-[13px] font-bold"
@@ -408,9 +389,8 @@ export default function BasketballHomePage() {
               <select
                 value={selectedConference}
                 onChange={(e) => setSelectedConference(e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg text-sm font-medium appearance-none cursor-pointer ${darkMode ? 'glass-card' : ''}`}
+                className="w-full px-4 py-3 rounded-lg text-sm font-medium appearance-none cursor-pointer glass-card"
                 style={{
-                  ...(darkMode ? {} : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }),
                   color: theme.text,
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
                   backgroundRepeat: 'no-repeat',

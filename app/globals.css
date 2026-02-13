@@ -95,7 +95,7 @@ body {
   top: -15%;
   left: -10%;
   filter: blur(70px);
-  animation: auroraDrift1 22s ease-in-out infinite;
+  animation: auroraDrift1 19s ease-in-out infinite;
 }
 
 /* Orb 2: Olive-gold — warm green accent that keeps it country club, not forest */
@@ -108,7 +108,7 @@ body {
   top: 20%;
   right: -10%;
   filter: blur(70px);
-  animation: auroraDrift2 28s ease-in-out infinite;
+  animation: auroraDrift2 24s ease-in-out infinite;
 }
 
 /* Orb 3: Deep pine — cool dark green, fills the bottom */
@@ -121,28 +121,28 @@ body {
   bottom: -10%;
   left: -10%;
   filter: blur(70px);
-  animation: auroraDrift3 24s ease-in-out infinite;
+  animation: auroraDrift3 20s ease-in-out infinite;
 }
 
 @keyframes auroraDrift1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(12vw, 8vh) scale(1.15); }
-  50% { transform: translate(5vw, 15vh) scale(1.05); }
-  75% { transform: translate(-8vw, 6vh) scale(0.9); }
+  25% { transform: translate(12vw, 8vh) scale(1.20); }
+  50% { transform: translate(5vw, 15vh) scale(1.10); }
+  75% { transform: translate(-8vw, 6vh) scale(0.82); }
 }
 
 @keyframes auroraDrift2 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(-15vw, -8vh) scale(1.1); }
-  50% { transform: translate(-5vw, -15vh) scale(0.95); }
-  75% { transform: translate(10vw, -5vh) scale(1.15); }
+  25% { transform: translate(-15vw, -8vh) scale(1.18); }
+  50% { transform: translate(-5vw, -15vh) scale(0.85); }
+  75% { transform: translate(10vw, -5vh) scale(1.20); }
 }
 
 @keyframes auroraDrift3 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(10vw, -10vh) scale(1.12); }
-  50% { transform: translate(-5vw, -5vh) scale(0.88); }
-  75% { transform: translate(-12vw, 5vh) scale(1.08); }
+  25% { transform: translate(10vw, -10vh) scale(1.20); }
+  50% { transform: translate(-5vw, -5vh) scale(0.80); }
+  75% { transform: translate(-12vw, 5vh) scale(1.16); }
 }
 
 /* Vignette overlay - very subtle, just a touch of depth at edges */
@@ -419,7 +419,7 @@ body {
 
 /* STEP 1: Background Depth - Warm parchment/cream */
 html:not(.dark) body {
-  background: linear-gradient(165deg, #f5f2e8 0%, #f0ede3 30%, #eae5d6 60%, #f2efe5 100%);
+  background: linear-gradient(165deg, #faf8f0 0%, #f7f4eb 30%, #f2efe6 60%, #f8f5ed 100%);
   overflow-x: hidden;
 }
 
@@ -445,11 +445,11 @@ html:not(.dark) .aurora-orb-1 {
   height: 90vw;
   max-width: 800px;
   max-height: 800px;
-  background: radial-gradient(circle, rgba(160, 180, 140, 0.25) 0%, rgba(150, 170, 130, 0.12) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(205, 185, 140, 0.65) 0%, rgba(195, 175, 130, 0.35) 40%, transparent 70%);
   top: -15%;
   left: -10%;
-  filter: blur(80px);
-  animation: auroraDrift1 22s ease-in-out infinite;
+  filter: blur(50px);
+  animation: auroraDrift1 19s ease-in-out infinite;
 }
 
 html:not(.dark) .aurora-orb-2 {
@@ -457,11 +457,11 @@ html:not(.dark) .aurora-orb-2 {
   height: 80vw;
   max-width: 700px;
   max-height: 700px;
-  background: radial-gradient(circle, rgba(200, 185, 130, 0.22) 0%, rgba(190, 175, 120, 0.10) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(190, 170, 130, 0.60) 0%, rgba(180, 160, 120, 0.30) 40%, transparent 70%);
   top: 20%;
   right: -10%;
-  filter: blur(80px);
-  animation: auroraDrift2 28s ease-in-out infinite;
+  filter: blur(50px);
+  animation: auroraDrift2 24s ease-in-out infinite;
 }
 
 html:not(.dark) .aurora-orb-3 {
@@ -469,18 +469,18 @@ html:not(.dark) .aurora-orb-3 {
   height: 85vw;
   max-width: 750px;
   max-height: 750px;
-  background: radial-gradient(circle, rgba(140, 170, 150, 0.20) 0%, rgba(130, 160, 140, 0.08) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(215, 195, 150, 0.60) 0%, rgba(200, 180, 140, 0.30) 40%, transparent 70%);
   bottom: -10%;
   left: -10%;
-  filter: blur(80px);
-  animation: auroraDrift3 24s ease-in-out infinite;
+  filter: blur(50px);
+  animation: auroraDrift3 20s ease-in-out infinite;
 }
 
 html:not(.dark) body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(180, 170, 150, 0.12) 100%);
+  background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(190, 175, 145, 0.08) 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -514,14 +514,14 @@ html:not(.dark) .glass-card {
   -webkit-backdrop-filter: blur(30px) saturate(180%);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 8px 32px rgba(60, 80, 50, 0.08), 0 2px 8px rgba(60, 80, 50, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(80, 70, 50, 0.06), 0 2px 8px rgba(80, 70, 50, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   contain: layout style paint;
   transform: translateZ(0);
 }
 
 html:not(.dark) .glass-card:hover {
-  box-shadow: 0 12px 40px rgba(60, 80, 50, 0.12), 0 4px 12px rgba(60, 80, 50, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  box-shadow: 0 12px 40px rgba(80, 70, 50, 0.08), 0 4px 12px rgba(80, 70, 50, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 /* STEP 3: Glass Section - Light mode */
@@ -534,12 +534,12 @@ html:not(.dark) .glass-section {
 
 /* STEP 4: Glass Match Card - Light mode */
 html:not(.dark) .glass-match-card {
-  background: rgba(255, 255, 255, 0.60);
+  background: rgba(255, 255, 255, 0.50);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.70);
-  box-shadow: 0 6px 24px rgba(60, 80, 50, 0.10), 0 2px 6px rgba(60, 80, 50, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(200, 195, 180, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 6px 24px rgba(80, 70, 50, 0.06), 0 2px 6px rgba(80, 70, 50, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(190, 180, 155, 0.10), inset 0 0 20px rgba(255, 255, 255, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   contain: layout style paint;
   transform: translateZ(0);
@@ -552,10 +552,10 @@ html:not(.dark) .glass-match-card:active {
 
 /* STEP 5: Glass Header - Light mode */
 html:not(.dark) .glass-header {
-  background: rgba(245, 242, 232, 0.75);
+  background: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border-bottom: 1px solid rgba(200, 195, 180, 0.35);
+  border-bottom: 1px solid rgba(190, 180, 155, 0.20);
   box-shadow: 0 4px 24px rgba(60, 80, 50, 0.06), inset 0 -1px 0 rgba(255, 255, 255, 0.5);
   transform: translateZ(0);
   contain: layout style paint;
@@ -563,10 +563,10 @@ html:not(.dark) .glass-header {
 
 /* STEP 6: Glass Tab Bar - Light mode */
 html:not(.dark) .glass-tab-bar {
-  background: rgba(245, 242, 232, 0.72);
+  background: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border-top: 1px solid rgba(200, 195, 180, 0.35);
+  border-top: 1px solid rgba(190, 180, 155, 0.20);
   box-shadow: 0 -4px 24px rgba(60, 80, 50, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   transform: translateZ(0);
   contain: layout style paint;
@@ -577,17 +577,17 @@ html:not(.dark) .glass-pill {
   background: rgba(255, 255, 255, 0.50);
   backdrop-filter: blur(12px) saturate(160%);
   -webkit-backdrop-filter: blur(12px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.60);
+  border: 1px solid rgba(190, 180, 155, 0.40);
   border-radius: 50px;
   box-shadow: 0 2px 8px rgba(60, 80, 50, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   transition: all 0.2s ease;
 }
 
 html:not(.dark) .glass-pill-active {
-  background: rgba(74, 93, 58, 0.12);
+  background: rgba(74, 93, 58, 0.15);
   backdrop-filter: blur(12px) saturate(170%);
   -webkit-backdrop-filter: blur(12px) saturate(170%);
-  border: 1px solid rgba(74, 93, 58, 0.25);
+  border: 1px solid rgba(74, 93, 58, 0.30);
   border-radius: 50px;
   box-shadow: 0 2px 12px rgba(74, 93, 58, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
@@ -595,21 +595,22 @@ html:not(.dark) .glass-pill-active {
 /* STEP 8: Glass Badges - Light mode */
 html:not(.dark) .glass-badge {
   background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(200, 195, 180, 0.30);
+  border: 1px solid rgba(190, 180, 155, 0.25);
   box-shadow: 0 2px 8px rgba(60, 80, 50, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 html:not(.dark) .glass-badge-live {
-  background: rgba(220, 50, 50, 0.15);
-  border: 1px solid rgba(220, 50, 50, 0.30);
-  box-shadow: 0 2px 12px rgba(220, 50, 50, 0.15), inset 0 1px 0 rgba(255, 200, 200, 0.25);
+  background: rgba(200, 40, 40, 0.85);
+  border: 1px solid rgba(180, 30, 30, 0.90);
+  box-shadow: 0 2px 12px rgba(200, 40, 40, 0.50), inset 0 1px 0 rgba(255, 180, 180, 0.20);
+  color: white;
 }
 
 /* STEP 9: Glass Score - Light mode */
 html:not(.dark) .glass-score {
-  background: rgba(235, 231, 219, 0.75);
-  border: 1px solid rgba(200, 195, 180, 0.30);
-  box-shadow: inset 0 2px 6px rgba(60, 80, 50, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(60, 80, 50, 0.03), 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: rgba(245, 242, 235, 0.70);
+  border: 1px solid rgba(190, 180, 155, 0.25);
+  box-shadow: inset 0 2px 6px rgba(80, 70, 50, 0.05), inset 0 -1px 0 rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(80, 70, 50, 0.02), 0 1px 0 rgba(255, 255, 255, 0.5);
   border-radius: 10px;
 }
 
@@ -618,22 +619,22 @@ html:not(.dark) .glass-dropdown {
   background: rgba(250, 248, 243, 0.92);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(200, 195, 180, 0.35);
+  border: 1px solid rgba(190, 180, 155, 0.25);
   box-shadow: 0 16px 48px rgba(60, 80, 50, 0.12), 0 4px 16px rgba(60, 80, 50, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 /* STEP 11: Glass Divider - Light mode */
 html:not(.dark) .glass-divider {
-  border-color: rgba(200, 195, 180, 0.30);
+  border-color: rgba(190, 180, 155, 0.20);
 }
 
 /* STEP 12: Live Glow - Light mode */
 @keyframes liveGlowLight {
   0%, 100% {
-    box-shadow: 0 0 8px rgba(200, 50, 50, 0.20), 0 0 16px rgba(200, 50, 50, 0.08);
+    box-shadow: 0 0 8px rgba(200, 40, 40, 0.34), 0 0 18px rgba(200, 40, 40, 0.18);
   }
   50% {
-    box-shadow: 0 0 16px rgba(200, 50, 50, 0.35), 0 0 32px rgba(200, 50, 50, 0.15);
+    box-shadow: 0 0 14px rgba(200, 40, 40, 0.47), 0 0 29px rgba(200, 40, 40, 0.25);
   }
 }
 

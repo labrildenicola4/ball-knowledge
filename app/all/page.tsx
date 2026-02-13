@@ -21,16 +21,15 @@ export default function AllPage() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
+    <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: 'transparent' }}>
       {/* Header */}
-      <header className={`flex items-center justify-between px-4 py-3 ${darkMode ? 'glass-header' : ''}`} style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <header className="flex items-center justify-between px-4 py-3 glass-header">
         <div>
           <h1 className="text-xl font-semibold" style={{ color: theme.text }}>Browse</h1>
         </div>
         <button
           onClick={toggleDarkMode}
           className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
         </button>
@@ -51,8 +50,7 @@ export default function AllPage() {
               <Link
                 key={hub.name}
                 href={hub.href}
-                className={`card-press flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80 ${darkMode ? 'glass-card' : ''}`}
-                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className="card-press flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80 glass-card"
               >
                 <img src={hub.logo} alt={hub.name} className="h-8 w-8 object-contain logo-glow" />
                 <div className="flex-1">
@@ -79,8 +77,7 @@ export default function AllPage() {
               <Link
                 key={tournament.slug}
                 href={`/tournament/${tournament.slug}`}
-                className={`card-press flex flex-col gap-1 rounded-xl p-4 transition-colors hover:opacity-80 ${darkMode ? 'glass-card' : ''}`}
-                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+                className="card-press flex flex-col gap-1 rounded-xl p-4 transition-colors hover:opacity-80 glass-card"
               >
                 <span className="text-sm font-medium" style={{ color: theme.text }}>
                   {tournament.shortName}
