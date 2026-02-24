@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { initNative } from '@/lib/capacitor';
 
 interface ThemeContextType {
   darkMode: boolean;
@@ -63,6 +64,10 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [darkMode, setDarkMode] = useState(true);
+
+  useEffect(() => {
+    initNative();
+  }, []);
 
   useEffect(() => {
     // Check localStorage on mount

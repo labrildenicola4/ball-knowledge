@@ -40,3 +40,8 @@ next-env.d.ts
 
 # Testing
 coverage/
+
+# Capacitor / iOS
+ios/App/Pods/
+ios/App/App/public/
+ios/capacitor-cordova-ios-plugins/
