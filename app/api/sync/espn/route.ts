@@ -67,8 +67,6 @@ export async function GET(request: NextRequest) {
           dates = getSyncDateRange(3, 3);
         }
 
-        console.log(`[ESPN-Sync] Syncing ${sportKey} for ${dates.length} dates (mode: ${mode})`);
-
         // Fetch all games
         const games = await fetchAndTransformGames(sportKey, dates);
 
@@ -82,16 +80,13 @@ export async function GET(request: NextRequest) {
             });
 
           if (error) {
-            console.error(`[ESPN-Sync] Supabase error for ${sportKey}:`, error);
             sportResults.errors.push(`Database error: ${error.message}`);
           } else {
             sportResults.synced = games.length;
-            console.log(`[ESPN-Sync] Synced ${games.length} ${sportKey} games`);
           }
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        console.error(`[ESPN-Sync] Error syncing ${sportKey}:`, message);
         sportResults.errors.push(message);
       }
 
@@ -126,8 +121,6 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[ESPN-Sync] Fatal error:', error);
-
     try {
       await supabase.from('sync_log').insert({
         sync_type: 'espn_games',
@@ -200,7 +193,6 @@ export async function POST(request: NextRequest) {
       });
 
     if (error) {
-      console.error(`[ESPN-Sync] Live update error for ${sport}:`, error);
       await supabase.from('sync_log').insert({
         sync_type: 'espn_live',
         sport_type: sport,
@@ -229,7 +221,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`[ESPN-Sync] Live update error:`, message);
 
     try {
       await supabase.from('sync_log').insert({

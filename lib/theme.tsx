@@ -65,15 +65,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
-    // Check localStorage on mount
+    // Check localStorage on mount — default to dark if no preference saved
     const saved = localStorage.getItem('darkMode');
     if (saved !== null) {
       setDarkMode(JSON.parse(saved));
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setDarkMode(prefersDark);
     }
+    // If no saved preference, stay dark (the useState default)
   }, []);
 
   useEffect(() => {

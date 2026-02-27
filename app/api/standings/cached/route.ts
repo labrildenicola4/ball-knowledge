@@ -31,7 +31,6 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (!cacheError && cached?.standings) {
-      console.log(`[Standings/Cached] Returning cached standings for ${leagueCode}`);
       return NextResponse.json({
         standings: cached.standings,
         cached: true,
@@ -39,7 +38,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Fall back to live API
-    console.log(`[Standings/Cached] Cache miss for ${leagueCode}, fetching from API-Football`);
     const standings = await getStandings(leagueId);
 
     // Transform API response to our format
@@ -59,12 +57,22 @@ export async function GET(request: NextRequest) {
       form: team.form ? team.form.split('').filter(r => r) : [],
     }));
 
+    // Fire-and-forget cache write
+    supabase.from('standings_cache').upsert({
+      league_code: leagueCode,
+      sport_type: 'soccer',
+      league_name: leagueCode,
+      season: new Date().getFullYear(),
+      standings: table,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'league_code,season,sport_type' })
+      .then(({ error }) => { if (error) console.error('[Standings/cached] write error:', error.message); });
+
     return NextResponse.json({
       standings: table,
       cached: false,
     });
-  } catch (error) {
-    console.error('[Standings/Cached] Error:', error);
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch standings' }, { status: 500 });
   }
 }

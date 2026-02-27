@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { CollegeFootballGame } from '@/lib/types/college-football';
+import { SafeImage } from '@/components/SafeImage';
 
 interface FootballGameCardProps {
   game: CollegeFootballGame;
@@ -21,7 +22,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
   return (
     <Link href={`/football/game/${game.id}`}>
       <div
-        className={`card-press cursor-pointer p-4 transition-theme ${darkMode ? 'glass-match-card' : 'card-hover rounded-xl'}`}
+        className={`card-press cursor-pointer p-4 md:p-5 transition-theme ${darkMode ? 'glass-match-card' : 'card-hover rounded-xl'}`}
         style={darkMode ? undefined : {
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
@@ -31,7 +32,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span
-              className="rounded px-1.5 py-0.5 text-[9px] font-medium uppercase"
+              className="rounded px-2 py-0.5 text-[10px] font-medium uppercase"
               style={{ backgroundColor: theme.accent, color: '#fff' }}
             >
               CFB
@@ -46,7 +47,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
             )}
             {game.broadcast && (
               <span
-                className="text-[10px] font-medium"
+                className="text-[11px] font-medium"
                 style={{ color: theme.textSecondary }}
               >
                 {game.broadcast}
@@ -54,7 +55,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
             )}
           </div>
           <span
-            className="font-mono rounded-lg px-3 py-1 text-sm"
+            className="font-mono rounded-lg px-3 py-1 text-[15px]"
             style={{
               backgroundColor: isLive ? theme.red : (darkMode ? 'rgba(255, 255, 255, 0.06)' : theme.bgTertiary),
               color: isLive ? '#fff' : theme.textSecondary,
@@ -70,7 +71,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
           {/* Away Team */}
           <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
             {game.awayTeam.logo ? (
-              <img
+              <SafeImage
                 src={game.awayTeam.logo}
                 alt={game.awayTeam.name}
                 className="h-8 w-8 flex-shrink-0 object-contain logo-glow"
@@ -90,7 +91,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
                 Away {game.awayTeam.record && `(${game.awayTeam.record})`}
               </span>
               <span
-                className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px]"
+                className="text-[15px] font-medium truncate"
                 style={{
                   color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: awayWon ? 600 : 500,
@@ -103,7 +104,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
 
           {/* Score */}
           <div
-            className="font-mono rounded-lg px-4 py-2 text-lg font-semibold flex-shrink-0"
+            className="font-mono rounded-lg px-4 py-2.5 text-[17px] font-semibold flex-shrink-0"
             style={{ backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.06)' : theme.bgTertiary, color: theme.text }}
           >
             {(isLive || isFinal)
@@ -121,7 +122,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
                 Home {game.homeTeam.record && `(${game.homeTeam.record})`}
               </span>
               <span
-                className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px] text-right"
+                className="text-[15px] font-medium truncate text-right"
                 style={{
                   color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: homeWon ? 600 : 500,
@@ -131,7 +132,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
               </span>
             </div>
             {game.homeTeam.logo ? (
-              <img
+              <SafeImage
                 src={game.homeTeam.logo}
                 alt={game.homeTeam.name}
                 className="h-8 w-8 flex-shrink-0 object-contain logo-glow"
@@ -146,10 +147,11 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
           </div>
         </div>
 
+
         {/* Venue (optional) */}
         {game.venue && (
           <p
-            className="mt-2 text-[10px] truncate"
+            className="mt-2.5 text-[11px] truncate"
             style={{ color: theme.textSecondary }}
           >
             {game.venue}

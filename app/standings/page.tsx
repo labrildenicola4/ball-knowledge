@@ -21,9 +21,15 @@ interface Standing {
   form: string[];
 }
 
+interface StandingsGroup {
+  name: string;
+  standings: Standing[];
+}
+
 export default function StandingsPage() {
   const [activeLeague, setActiveLeague] = useState('laliga');
   const [standings, setStandings] = useState<Standing[]>([]);
+  const [groups, setGroups] = useState<StandingsGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const { theme, darkMode } = useTheme();
 
@@ -35,9 +41,11 @@ export default function StandingsPage() {
         if (!res.ok) throw new Error('Failed to fetch standings');
         const data = await res.json();
         setStandings(data.standings || []);
+        setGroups(data.groups || []);
       } catch (err) {
         console.error('Error fetching standings:', err);
         setStandings([]);
+        setGroups([]);
       } finally {
         setLoading(false);
       }
@@ -46,6 +54,7 @@ export default function StandingsPage() {
   }, [activeLeague]);
 
   const currentLeague = leagues.find((l) => l.id === activeLeague);
+  const hasGroups = groups.length > 1;
 
   return (
     <div
@@ -65,6 +74,16 @@ export default function StandingsPage() {
             <p className="mt-2 text-[12px]" style={{ color: theme.textSecondary }}>
               Loading standings...
             </p>
+          </div>
+        ) : hasGroups ? (
+          <div className="flex flex-col gap-6">
+            {groups.map((group) => (
+              <StandingsTable
+                key={group.name}
+                standings={group.standings}
+                leagueName={group.name}
+              />
+            ))}
           </div>
         ) : standings.length > 0 ? (
           <StandingsTable

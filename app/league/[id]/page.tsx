@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { ChevronLeft, ChevronDown, ChevronUp, RefreshCw, Calendar, Trophy, BarChart3, GitBranch } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
+import { useSafeBack } from '@/lib/use-safe-back';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { shouldUseWhiteFilterByCode } from '@/lib/constants/dark-mode-logos';
 import { getLeagueBySlug } from '@/lib/constants/leagues';
 import { TournamentBracket } from '@/components/TournamentBracket';
+import { SafeImage } from '@/components/SafeImage';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'League not found' : 'Failed to fetch');
@@ -174,7 +176,7 @@ interface BracketData {
 
 export default function LeaguePage() {
   const params = useParams();
-  const router = useRouter();
+  const goBack = useSafeBack('/soccer');
   const { theme, darkMode } = useTheme();
   const leagueSlug = params.id as string;
 
@@ -243,7 +245,7 @@ export default function LeaguePage() {
       <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-sm" style={{ color: theme.red }}>{error?.message || 'League not found'}</p>
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className={`tap-highlight mt-4 rounded-lg px-4 py-2.5 text-sm ${darkMode ? 'glass-pill' : ''}`}
           style={darkMode ? { color: theme.text } : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}`, color: theme.text }}
         >
@@ -336,7 +338,7 @@ export default function LeaguePage() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <img src={fixture.homeTeam.logo} alt="" className="h-5 w-5 object-contain logo-glow" />
+                <SafeImage src={fixture.homeTeam.logo} alt="" className="h-5 w-5 object-contain logo-glow" />
                 <span
                   className="text-xs truncate"
                   style={{
@@ -356,7 +358,7 @@ export default function LeaguePage() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <img src={fixture.awayTeam.logo} alt="" className="h-5 w-5 object-contain logo-glow" />
+                <SafeImage src={fixture.awayTeam.logo} alt="" className="h-5 w-5 object-contain logo-glow" />
                 <span
                   className="text-xs truncate"
                   style={{
@@ -413,8 +415,8 @@ export default function LeaguePage() {
         </div>
         <div>
           {players.slice(0, 5).map((p, index) => (
+            <Link key={p.player.id} href={`/player/soccer/${p.player.id}`} className="contents">
             <div
-              key={p.player.id}
               className="flex items-center gap-3 px-4 py-2.5"
               style={{ borderBottom: index < 4 ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none' }}
             >
@@ -424,7 +426,7 @@ export default function LeaguePage() {
               >
                 {index + 1}
               </span>
-              <img
+              <SafeImage
                 src={p.player.photo}
                 alt=""
                 className="h-8 w-8 rounded-full object-cover"
@@ -434,7 +436,7 @@ export default function LeaguePage() {
                   {p.player.name}
                 </p>
                 <div className="flex items-center gap-1">
-                  {p.team && <img src={p.team.logo} alt="" className="h-3 w-3 object-contain logo-glow" />}
+                  {p.team && <SafeImage src={p.team.logo} alt="" className="h-3 w-3 object-contain logo-glow" />}
                   <span className="text-[10px]" style={{ color: theme.textSecondary }}>
                     {p.team?.name || 'Unknown'}
                   </span>
@@ -444,6 +446,7 @@ export default function LeaguePage() {
                 {formatter(getValue(p))}
               </span>
             </div>
+            </Link>
           ))}
           {players.length === 0 && (
             <div className="px-4 py-6 text-center">
@@ -497,7 +500,7 @@ export default function LeaguePage() {
               >
                 {index + 1}
               </span>
-              <img src={team.team.logo} alt="" className="h-6 w-6 object-contain logo-glow" />
+              <SafeImage src={team.team.logo} alt="" className="h-6 w-6 object-contain logo-glow" />
               <span className="flex-1 text-sm font-medium truncate" style={{ color: theme.text }}>
                 {team.team.name}
               </span>
@@ -526,13 +529,13 @@ export default function LeaguePage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => router.back()}
+              onClick={goBack}
               className={`tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity ${darkMode ? 'glass-pill' : ''}`}
               style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}
             >
               <ChevronLeft size={20} style={{ color: theme.text }} />
             </button>
-            <img
+            <SafeImage
               src={data.league.logo}
               alt={data.league.name}
               className="h-8 w-8 object-contain logo-glow"
@@ -1020,7 +1023,7 @@ export default function LeaguePage() {
                   {row.rank}
                 </span>
                 <div className="flex items-center gap-2 min-w-0">
-                  <img
+                  <SafeImage
                     src={row.team.logo}
                     alt={row.team.name}
                     className="h-5 w-5 flex-shrink-0 object-contain logo-glow"

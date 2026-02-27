@@ -4,6 +4,7 @@ import { memo } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { NFLGame } from '@/lib/types/nfl';
+import { SafeImage } from '@/components/SafeImage';
 
 // Playoff week to round name mapping
 const PLAYOFF_ROUND_NAMES: Record<number, string> = {
@@ -39,14 +40,14 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
   return (
     <Link href={`/nfl/game/${game.id}`}>
       <div
-        className="card-press cursor-pointer p-3 md:p-4 transition-theme glass-match-card"
+        className="card-press cursor-pointer p-4 md:p-5 transition-theme glass-match-card"
       >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {game.broadcast && (
               <span
-                className="text-[10px] font-medium"
+                className="text-[11px] font-medium"
                 style={{ color: theme.textSecondary }}
               >
                 {game.broadcast}
@@ -72,7 +73,7 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
             )}
           </div>
           <span
-            className={`font-mono rounded-lg px-3 py-1 text-sm ${isLive ? 'glass-badge-live' : 'glass-badge'}`}
+            className={`font-mono rounded-lg px-3 py-1 text-[15px] ${isLive ? 'glass-badge-live' : 'glass-badge'}`}
             style={{ color: isLive ? '#fff' : theme.textSecondary }}
           >
             {isLive && '● '}
@@ -85,15 +86,15 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
           {/* Away Team */}
           <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pr-1 md:pr-2">
             {game.awayTeam.logo ? (
-              <img
+              <SafeImage
                 src={game.awayTeam.logo}
                 alt={game.awayTeam.name}
-                className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain logo-glow"
+                className="h-8 w-8 md:h-9 md:w-9 flex-shrink-0 object-contain logo-glow"
                 loading="lazy"
               />
             ) : (
               <div
-                className="h-7 w-7 md:h-8 md:w-8 rounded-full flex-shrink-0"
+                className="h-8 w-8 md:h-9 md:w-9 rounded-full flex-shrink-0"
                 style={{ backgroundColor: game.awayTeam.color || theme.bgTertiary }}
               />
             )}
@@ -103,7 +104,7 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
               </span>
               <div className="flex items-center gap-1">
                 <span
-                  className="text-sm md:text-base font-medium truncate"
+                  className="text-[15px] md:text-base font-medium truncate"
                   style={{
                     color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                     fontWeight: awayWon ? 600 : 500,
@@ -129,7 +130,7 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
 
           {/* Score */}
           <div
-            className="font-mono rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-base md:text-lg font-semibold flex-shrink-0 glass-score score-text"
+            className="font-mono rounded-lg px-3 md:px-4 py-2 md:py-2.5 text-[17px] md:text-lg font-semibold flex-shrink-0 glass-score score-text"
             style={{ color: theme.text }}
           >
             {(isLive || isFinal)
@@ -152,7 +153,7 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
                   />
                 )}
                 <span
-                  className="text-sm md:text-base font-medium truncate text-right"
+                  className="text-[15px] md:text-base font-medium truncate text-right"
                   style={{
                     color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                     fontWeight: homeWon ? 600 : 500,
@@ -168,25 +169,26 @@ export const NFLGameCard = memo(function NFLGameCard({ game }: NFLGameCardProps)
               )}
             </div>
             {game.homeTeam.logo ? (
-              <img
+              <SafeImage
                 src={game.homeTeam.logo}
                 alt={game.homeTeam.name}
-                className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain logo-glow"
+                className="h-8 w-8 md:h-9 md:w-9 flex-shrink-0 object-contain logo-glow"
                 loading="lazy"
               />
             ) : (
               <div
-                className="h-7 w-7 md:h-8 md:w-8 rounded-full flex-shrink-0"
+                className="h-8 w-8 md:h-9 md:w-9 rounded-full flex-shrink-0"
                 style={{ backgroundColor: game.homeTeam.color || theme.bgTertiary }}
               />
             )}
           </div>
         </div>
 
+
         {/* Venue (optional) */}
         {game.venue && (
           <p
-            className="mt-2 text-[10px] truncate"
+            className="mt-2.5 text-[11px] truncate"
             style={{ color: theme.textSecondary }}
           >
             {game.venue}

@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
+import { tapLight } from '@/lib/haptics';
 import { MLBBoxScore as BoxScoreType, MLBPlayerBattingStats, MLBPlayerPitchingStats, MLBTeam } from '@/lib/types/mlb';
+import { SafeImage } from '@/components/SafeImage';
 
 interface MLBBoxScoreProps {
   boxScore: BoxScoreType | null;
@@ -16,11 +19,11 @@ interface BatterRowProps {
 function BatterRow({ player }: BatterRowProps) {
   const { theme, darkMode } = useTheme();
 
-  return (
+  const row = (
     <div
       className="grid items-center px-3 py-2 text-[11px]"
       style={{
-        gridTemplateColumns: '1fr 30px 30px 30px 30px 30px 30px 30px 45px',
+        gridTemplateColumns: '1fr 30px 30px 30px 30px 30px 30px 30px 45px 45px 45px',
         borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
       }}
     >
@@ -56,8 +59,19 @@ function BatterRow({ player }: BatterRowProps) {
       <span className="text-center font-mono" style={{ color: theme.textSecondary }}>
         {player.avg}
       </span>
+      <span className="text-center font-mono" style={{ color: theme.textSecondary }}>
+        {player.obp || '-'}
+      </span>
+      <span className="text-center font-mono" style={{ color: theme.textSecondary }}>
+        {player.slg || '-'}
+      </span>
     </div>
   );
+
+  if (player.id) {
+    return <Link href={`/player/mlb/${player.id}`} className="contents">{row}</Link>;
+  }
+  return row;
 }
 
 interface PitcherRowProps {
@@ -67,7 +81,7 @@ interface PitcherRowProps {
 function PitcherRow({ player }: PitcherRowProps) {
   const { theme, darkMode } = useTheme();
 
-  return (
+  const row = (
     <div
       className="grid items-center px-3 py-2 text-[11px]"
       style={{
@@ -112,6 +126,11 @@ function PitcherRow({ player }: PitcherRowProps) {
       </span>
     </div>
   );
+
+  if (player.id) {
+    return <Link href={`/player/mlb/${player.id}`} className="contents">{row}</Link>;
+  }
+  return row;
 }
 
 interface TeamBoxScoreProps {
@@ -135,7 +154,7 @@ function TeamBoxScore({ team, batting, pitching, showPitching }: TeamBoxScorePro
         style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
       >
         {team.logo && (
-          <img src={team.logo} alt={team.name} className="h-6 w-6 object-contain logo-glow" />
+          <SafeImage src={team.logo} alt={team.name} className="h-6 w-6 object-contain logo-glow" />
         )}
         <span className="text-sm font-medium" style={{ color: theme.text }}>
           {team.displayName}
@@ -174,7 +193,7 @@ function TeamBoxScore({ team, batting, pitching, showPitching }: TeamBoxScorePro
           <div
             className="grid items-center px-3 py-2 text-[9px] font-semibold uppercase tracking-wider"
             style={{
-              gridTemplateColumns: '1fr 30px 30px 30px 30px 30px 30px 30px 45px',
+              gridTemplateColumns: '1fr 30px 30px 30px 30px 30px 30px 30px 45px 45px 45px',
               backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary,
               color: theme.textSecondary,
             }}
@@ -188,6 +207,8 @@ function TeamBoxScore({ team, batting, pitching, showPitching }: TeamBoxScorePro
             <span className="text-center">K</span>
             <span className="text-center">HR</span>
             <span className="text-center">AVG</span>
+            <span className="text-center">OBP</span>
+            <span className="text-center">SLG</span>
           </div>
 
           {/* Batters */}
@@ -242,7 +263,7 @@ export function MLBBoxScore({ boxScore, isLoading }: MLBBoxScoreProps) {
       {/* Team Toggle */}
       <div className="flex gap-2 mb-4">
         <button
-          onClick={() => setActiveTeam('home')}
+          onClick={() => { tapLight(); setActiveTeam('home'); }}
           className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${darkMode ? (activeTeam === 'home' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: activeTeam === 'home' ? theme.bgSecondary : 'transparent', border: `1px solid ${activeTeam === 'home' ? theme.border : 'transparent'}` }),
@@ -250,7 +271,7 @@ export function MLBBoxScore({ boxScore, isLoading }: MLBBoxScoreProps) {
           }}
         >
           {boxScore.homeTeam.team.logo && (
-            <img
+            <SafeImage
               src={boxScore.homeTeam.team.logo}
               alt=""
               className="h-5 w-5 object-contain logo-glow"
@@ -259,7 +280,7 @@ export function MLBBoxScore({ boxScore, isLoading }: MLBBoxScoreProps) {
           {boxScore.homeTeam.team.shortDisplayName}
         </button>
         <button
-          onClick={() => setActiveTeam('away')}
+          onClick={() => { tapLight(); setActiveTeam('away'); }}
           className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${darkMode ? (activeTeam === 'away' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: activeTeam === 'away' ? theme.bgSecondary : 'transparent', border: `1px solid ${activeTeam === 'away' ? theme.border : 'transparent'}` }),
@@ -267,7 +288,7 @@ export function MLBBoxScore({ boxScore, isLoading }: MLBBoxScoreProps) {
           }}
         >
           {boxScore.awayTeam.team.logo && (
-            <img
+            <SafeImage
               src={boxScore.awayTeam.team.logo}
               alt=""
               className="h-5 w-5 object-contain logo-glow"
@@ -280,7 +301,7 @@ export function MLBBoxScore({ boxScore, isLoading }: MLBBoxScoreProps) {
       {/* Batting/Pitching Toggle */}
       <div className="flex justify-center gap-2 mb-4">
         <button
-          onClick={() => setShowPitching(false)}
+          onClick={() => { tapLight(); setShowPitching(false); }}
           className={`px-4 py-2 text-[11px] font-medium rounded-lg transition-all ${darkMode ? (!showPitching ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: !showPitching ? theme.accent : theme.bgTertiary }),
@@ -290,7 +311,7 @@ export function MLBBoxScore({ boxScore, isLoading }: MLBBoxScoreProps) {
           Batting
         </button>
         <button
-          onClick={() => setShowPitching(true)}
+          onClick={() => { tapLight(); setShowPitching(true); }}
           className={`px-4 py-2 text-[11px] font-medium rounded-lg transition-all ${darkMode ? (showPitching ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: showPitching ? theme.accent : theme.bgTertiary }),

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getNBAGames } from '@/lib/api-espn-nba';
 import { getCachedGames, cacheToNBAGame } from '@/lib/espn-cache-helpers';
+import { createServiceClient } from '@/lib/supabase-server';
+import { fetchESPNScoreboard, transformESPNEvent } from '@/lib/espn-unified-fetcher';
+import { ESPN_SPORTS, ESPN_GAMES_TABLE, getEasternDateString } from '@/lib/espn-sync-config';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +29,25 @@ export async function GET(request: NextRequest) {
 
     // Fall back to direct ESPN API
     const games = await getNBAGames(date);
+
+    // Fire-and-forget: backfill cache for next request
+    if (games.length > 0) {
+      const syncDate = date || getEasternDateString();
+      fetchESPNScoreboard('nba', syncDate)
+        .then(events => {
+          if (events.length === 0) return;
+          createServiceClient()
+            .from(ESPN_GAMES_TABLE)
+            .upsert(
+              events.map(e => transformESPNEvent(e, ESPN_SPORTS.nba.sportType)),
+              { onConflict: 'id', ignoreDuplicates: false }
+            )
+            .then(({ error }) => {
+              if (error) console.error('[nba] cache write error:', error.message);
+            });
+        })
+        .catch(() => {});
+    }
 
     return NextResponse.json({
       games,

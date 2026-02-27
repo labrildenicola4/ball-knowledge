@@ -46,7 +46,6 @@ export async function GET(request: NextRequest) {
   }
 
   const startTime = Date.now();
-  console.log('[Sync Match Details] Starting...');
 
   try {
     const supabase = createServiceClient();
@@ -65,7 +64,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (!matchesToSync || matchesToSync.length === 0) {
-      console.log('[Sync Match Details] No matches to sync');
       return NextResponse.json({
         success: true,
         synced: 0,
@@ -73,20 +71,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log(`[Sync Match Details] Found ${matchesToSync.length} matches to sync`);
-
     let syncedCount = 0;
     let errorCount = 0;
 
     for (const cachedMatch of matchesToSync) {
       try {
-        console.log(`[Sync Match Details] Syncing match ${cachedMatch.api_id}: ${cachedMatch.home_team_name} vs ${cachedMatch.away_team_name}`);
-
         // Fetch full match details from api-football
         const fixture = await getFixture(cachedMatch.api_id);
 
         if (!fixture) {
-          console.error(`[Sync Match Details] Match ${cachedMatch.api_id} not found`);
           errorCount++;
           continue;
         }
@@ -222,18 +215,15 @@ export async function GET(request: NextRequest) {
           .eq('api_id', cachedMatch.api_id);
 
         if (updateError) {
-          console.error(`[Sync Match Details] Failed to cache match ${cachedMatch.api_id}:`, updateError);
           errorCount++;
         } else {
           syncedCount++;
-          console.log(`[Sync Match Details] Cached match ${cachedMatch.api_id}`);
         }
 
         // Rate limit delay
         await delay(DELAY_BETWEEN_MATCHES);
 
-      } catch (error) {
-        console.error(`[Sync Match Details] Error syncing match ${cachedMatch.api_id}:`, error);
+      } catch {
         errorCount++;
       }
     }
@@ -250,8 +240,6 @@ export async function GET(request: NextRequest) {
       completed_at: new Date().toISOString(),
     });
 
-    console.log(`[Sync Match Details] Completed in ${duration}ms. Synced: ${syncedCount}, Errors: ${errorCount}`);
-
     return NextResponse.json({
       success: true,
       synced: syncedCount,
@@ -261,8 +249,6 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[Sync Match Details] Fatal error:', error);
-
     try {
       const supabase = createServiceClient();
       await supabase.from('sync_log').insert({

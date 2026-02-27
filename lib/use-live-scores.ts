@@ -75,12 +75,10 @@ export function useLiveScores(options: UseLiveScoresOptions = {}) {
           },
           (payload) => {
             const match = payload.new as LiveMatch;
-            console.log('[LiveScores] Match updated:', match.api_id, match.status, `${match.home_score}-${match.away_score}`);
             updateMatch(match);
           }
         )
         .subscribe((status) => {
-          console.log('[LiveScores] Subscription status:', status);
           setIsConnected(status === 'SUBSCRIBED');
         });
     }
@@ -89,7 +87,6 @@ export function useLiveScores(options: UseLiveScoresOptions = {}) {
 
     return () => {
       if (channel) {
-        console.log('[LiveScores] Unsubscribing...');
         supabase.removeChannel(channel);
       }
     };
@@ -146,7 +143,6 @@ export function useLiveMatch(matchApiId: number | null) {
         },
         (payload) => {
           const updated = payload.new as LiveMatch;
-          console.log('[LiveMatch] Updated:', updated.status, `${updated.home_score}-${updated.away_score}`);
           setMatch(updated);
         }
       )

@@ -8,13 +8,23 @@ import { MatchCard } from '@/components/MatchCard';
 import { BasketballGameCard } from '@/components/basketball/BasketballGameCard';
 import { NBAGameCard } from '@/components/nba/NBAGameCard';
 import { MLBGameCard } from '@/components/mlb/MLBGameCard';
+import { NHLGameCard } from '@/components/nhl/NHLGameCard';
+import { UFCFightCard } from '@/components/ufc/UFCFightCard';
+import { F1EventCard } from '@/components/f1/F1EventCard';
+import { GolfEventCard } from '@/components/golf/GolfEventCard';
 import { useTheme } from '@/lib/theme';
 import { useLiveFixtures } from '@/lib/use-fixtures';
 import { useFavorites } from '@/lib/use-favorites';
 import { BasketballGame } from '@/lib/types/basketball';
 import { MLBGame } from '@/lib/types/mlb';
 import { NFLGame } from '@/lib/types/nfl';
+import { NHLGame } from '@/lib/types/nhl';
+import { UFCEvent, UFCFight } from '@/lib/types/ufc';
+import { F1Event } from '@/lib/types/f1';
+import { GolfTournament } from '@/lib/types/golf';
 import { SOCCER_ICON, BASKETBALL_ICON, FOOTBALL_ICON } from '@/lib/sport-icons';
+import { SectionSkeleton, StandingsSkeleton } from '@/components/Skeleton';
+import { SafeImage } from '@/components/SafeImage';
 
 interface Match {
   id: number;
@@ -62,7 +72,7 @@ function getTodayET(): string {
 
 // Combined game type for chronological display
 interface CombinedGame {
-  type: 'soccer' | 'basketball' | 'nba' | 'mlb' | 'nfl';
+  type: 'soccer' | 'basketball' | 'nba' | 'mlb' | 'nfl' | 'nhl' | 'ufc' | 'f1' | 'golf';
   id: string;
   time: string;
   timeValue: number; // For sorting
@@ -73,6 +83,11 @@ interface CombinedGame {
   nbaGame?: BasketballGame;
   mlbGame?: MLBGame;
   nflGame?: NFLGame;
+  nhlGame?: NHLGame;
+  ufcEvent?: UFCEvent;
+  ufcFight?: UFCFight;
+  f1Event?: F1Event;
+  golfTournament?: GolfTournament;
 }
 
 export default function HomePage() {
@@ -104,6 +119,26 @@ export default function HomePage() {
   const [nflGames, setNflGames] = useState<NFLGame[]>([]);
   const [nflLoading, setNflLoading] = useState(true);
   const [nflError, setNflError] = useState(false);
+
+  // NHL games state
+  const [nhlGames, setNhlGames] = useState<NHLGame[]>([]);
+  const [nhlLoading, setNhlLoading] = useState(true);
+  const [nhlError, setNhlError] = useState(false);
+
+  // UFC events state
+  const [ufcEvents, setUfcEvents] = useState<UFCEvent[]>([]);
+  const [ufcLoading, setUfcLoading] = useState(true);
+  const [ufcError, setUfcError] = useState(false);
+
+  // F1 events state
+  const [f1Events, setF1Events] = useState<F1Event[]>([]);
+  const [f1Loading, setF1Loading] = useState(true);
+  const [f1Error, setF1Error] = useState(false);
+
+  // Golf tournaments state
+  const [golfTournaments, setGolfTournaments] = useState<GolfTournament[]>([]);
+  const [golfLoading, setGolfLoading] = useState(true);
+  const [golfError, setGolfError] = useState(false);
 
   // Fetch basketball games for today (NCAA)
   useEffect(() => {
@@ -169,6 +204,70 @@ export default function HomePage() {
       });
   }, []);
 
+  // Fetch NHL games for today
+  useEffect(() => {
+    setNhlLoading(true);
+    const todayStr = getTodayET();
+    fetch(`/api/nhl/games?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setNhlGames(data.games || []);
+        setNhlLoading(false);
+      })
+      .catch(() => {
+        setNhlError(true);
+        setNhlLoading(false);
+      });
+  }, []);
+
+  // Fetch UFC events
+  useEffect(() => {
+    setUfcLoading(true);
+    const todayStr = getTodayET();
+    fetch(`/api/ufc/events?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setUfcEvents(data.events || []);
+        setUfcLoading(false);
+      })
+      .catch(() => {
+        setUfcError(true);
+        setUfcLoading(false);
+      });
+  }, []);
+
+  // Fetch F1 events
+  useEffect(() => {
+    setF1Loading(true);
+    const todayStr = getTodayET();
+    fetch(`/api/f1/events?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setF1Events(data.events || []);
+        setF1Loading(false);
+      })
+      .catch(() => {
+        setF1Error(true);
+        setF1Loading(false);
+      });
+  }, []);
+
+  // Fetch Golf tournaments
+  useEffect(() => {
+    setGolfLoading(true);
+    const todayStr = getTodayET();
+    fetch(`/api/golf/events?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setGolfTournaments(data.events || []);
+        setGolfLoading(false);
+      })
+      .catch(() => {
+        setGolfError(true);
+        setGolfLoading(false);
+      });
+  }, []);
+
   const refreshAll = () => {
     refresh();
     const todayStr = getTodayET();
@@ -216,10 +315,54 @@ export default function HomePage() {
         setNflError(true);
         setNflLoading(false);
       });
+    setNhlLoading(true);
+    fetch(`/api/nhl/games?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setNhlGames(data.games || []);
+        setNhlLoading(false);
+      })
+      .catch(() => {
+        setNhlError(true);
+        setNhlLoading(false);
+      });
+    setUfcLoading(true);
+    fetch(`/api/ufc/events?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setUfcEvents(data.events || []);
+        setUfcLoading(false);
+      })
+      .catch(() => {
+        setUfcError(true);
+        setUfcLoading(false);
+      });
+    setF1Loading(true);
+    fetch(`/api/f1/events?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setF1Events(data.events || []);
+        setF1Loading(false);
+      })
+      .catch(() => {
+        setF1Error(true);
+        setF1Loading(false);
+      });
+    setGolfLoading(true);
+    fetch(`/api/golf/events?date=${todayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        setGolfTournaments(data.events || []);
+        setGolfLoading(false);
+      })
+      .catch(() => {
+        setGolfError(true);
+        setGolfLoading(false);
+      });
   };
 
-  const isLoading = soccerLoading && basketballLoading && nbaLoading && mlbLoading && nflLoading;
-  const isError = soccerError && basketballError && nbaError && mlbError && nflError;
+  const isLoading = soccerLoading && basketballLoading && nbaLoading && mlbLoading && nflLoading && nhlLoading;
+  const isError = soccerError && basketballError && nbaError && mlbError && nflError && nhlError && ufcError && f1Error && golfError;
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', {
@@ -321,8 +464,70 @@ export default function HomePage() {
       });
     });
 
+    // Add NHL games
+    nhlGames.forEach(game => {
+      const isLive = game.status === 'in_progress';
+      const isFinished = game.status === 'final';
+      combined.push({
+        type: 'nhl',
+        id: `nhl-${game.id}`,
+        time: game.startTime,
+        timeValue: parseTimeToEST(game.startTime),
+        isLive,
+        isFinished,
+        nhlGame: game,
+      });
+    });
+
+    // Add UFC events (show main event fight as card, or event card if no fights yet)
+    ufcEvents.forEach(event => {
+      const isLive = event.status === 'in_progress';
+      const isFinished = event.status === 'final';
+      const mainFight = event.fights[0]; // Show the main event fight
+      combined.push({
+        type: 'ufc',
+        id: `ufc-${event.id}`,
+        time: event.startTime,
+        timeValue: parseTimeToEST(event.startTime),
+        isLive,
+        isFinished,
+        ufcEvent: event,
+        ufcFight: mainFight,
+      });
+    });
+
+    // Add F1 events (one card per race weekend)
+    f1Events.forEach(event => {
+      const isLive = event.status === 'in_progress';
+      const isFinished = event.status === 'final';
+      combined.push({
+        type: 'f1',
+        id: `f1-${event.id}`,
+        time: event.startTime,
+        timeValue: parseTimeToEST(event.startTime),
+        isLive,
+        isFinished,
+        f1Event: event,
+      });
+    });
+
+    // Add Golf tournaments (one card per tournament)
+    golfTournaments.forEach(tournament => {
+      const isLive = tournament.status === 'in_progress';
+      const isFinished = tournament.status === 'final';
+      combined.push({
+        type: 'golf',
+        id: `golf-${tournament.id}`,
+        time: tournament.startTime,
+        timeValue: parseTimeToEST(tournament.startTime),
+        isLive,
+        isFinished,
+        golfTournament: tournament,
+      });
+    });
+
     return combined;
-  }, [matches, basketballGames, nbaGames, mlbGames, nflGames]);
+  }, [matches, basketballGames, nbaGames, mlbGames, nflGames, nhlGames, ufcEvents, f1Events, golfTournaments]);
 
   // Filter games based on selected filter
   const filteredGames = useMemo(() => {
@@ -334,6 +539,7 @@ export default function HomePage() {
       const nbaFavs = getFavoritesByType('nba_team').map(String);
       const mlbFavs = getFavoritesByType('mlb_team').map(String);
       const nflFavs = getFavoritesByType('nfl_team').map(String);
+      const nhlFavs = getFavoritesByType('nhl_team').map(String);
 
       return allGames.filter(game => {
         if (game.type === 'soccer' && game.soccerMatch) {
@@ -357,6 +563,10 @@ export default function HomePage() {
           return nflFavs.includes(game.nflGame.homeTeam.id) ||
                  nflFavs.includes(game.nflGame.awayTeam.id);
         }
+        if (game.type === 'nhl' && game.nhlGame) {
+          return nhlFavs.includes(game.nhlGame.homeTeam.id) ||
+                 nhlFavs.includes(game.nhlGame.awayTeam.id);
+        }
         return false;
       });
     }
@@ -368,6 +578,10 @@ export default function HomePage() {
       'nba': ['nba'],
       'mlb': ['mlb'],
       'nfl': ['nfl'],
+      'nhl': ['nhl'],
+      'ufc': ['ufc'],
+      'f1': ['f1'],
+      'golf': ['golf'],
     };
 
     const types = sportMap[selectedFilter] || [];
@@ -407,7 +621,8 @@ export default function HomePage() {
     return groups;
   }, [upcomingGames]);
 
-  const totalGames = matches.length + basketballGames.length + nbaGames.length + mlbGames.length;
+  const totalGames = matches.length + basketballGames.length + nbaGames.length + mlbGames.length + nhlGames.length + ufcEvents.length + f1Events.length + golfTournaments.length;
+
 
   return (
     <div
@@ -433,85 +648,109 @@ export default function HomePage() {
             className="tap-highlight flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm glass-pill"
             style={{ color: theme.textSecondary }}
           >
-            <RefreshCw size={16} className={isRefreshing || basketballLoading || nbaLoading || mlbLoading || nflLoading ? 'animate-spin' : ''} />
+            <RefreshCw size={16} className={isRefreshing || basketballLoading || nbaLoading || mlbLoading || nflLoading || nhlLoading || ufcLoading || f1Loading || golfLoading ? 'animate-spin' : ''} />
             Refresh
           </button>
         </div>
-        {(isRefreshing || basketballLoading || nbaLoading || mlbLoading || nflLoading) && (
+        {(isRefreshing || basketballLoading || nbaLoading || mlbLoading || nflLoading || nhlLoading || ufcLoading || f1Loading || golfLoading) && (
           <p className="mt-1 text-sm" style={{ color: theme.textSecondary }}>
             Updating...
           </p>
         )}
         {/* Sport filter pills */}
-        <div className="flex gap-2 mt-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex gap-2.5 mt-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
           <button
             onClick={() => setSelectedFilter('all')}
-            className={`tap-highlight whitespace-nowrap rounded-full px-3 py-2.5 text-xs font-medium flex items-center gap-1.5 ${selectedFilter === 'all' ? 'glass-pill-active' : 'glass-pill'}`}
+            className={`tap-highlight whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-medium flex items-center gap-1.5 ${selectedFilter === 'all' ? 'glass-pill-active' : 'glass-pill'}`}
             style={{ color: selectedFilter === 'all' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
             All
           </button>
           <button
             onClick={() => setSelectedFilter('myteams')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center ${selectedFilter === 'myteams' ? 'glass-pill-active' : 'glass-pill'}`}
-            style={{ minWidth: '36px' }}
+            className={`tap-highlight rounded-full px-3 py-2 text-[13px] font-medium flex items-center justify-center ${selectedFilter === 'myteams' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ minWidth: '40px' }}
           >
-            <Star size={14} fill={selectedFilter === 'myteams' ? '#fff' : '#D4AF37'} color={selectedFilter === 'myteams' ? '#fff' : '#D4AF37'} />
+            <Star size={16} fill={selectedFilter === 'myteams' ? '#fff' : '#D4AF37'} color={selectedFilter === 'myteams' ? '#fff' : '#D4AF37'} />
           </button>
           <button
             onClick={() => setSelectedFilter('soccer')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${selectedFilter === 'soccer' ? 'glass-pill-active' : 'glass-pill'}`}
+            className={`tap-highlight rounded-full px-3 py-2 text-[13px] font-medium flex items-center justify-center gap-1.5 ${selectedFilter === 'soccer' ? 'glass-pill-active' : 'glass-pill'}`}
             style={{ color: selectedFilter === 'soccer' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
-            <img src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain" />
+            <SafeImage src={SOCCER_ICON} alt="" className="h-[18px] w-[18px] object-contain" />
             {matches.length}
           </button>
           <button
-            onClick={() => setSelectedFilter('ncaa')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${selectedFilter === 'ncaa' ? 'glass-pill-active' : 'glass-pill'}`}
-            style={{ color: selectedFilter === 'ncaa' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
-          >
-            <img src={BASKETBALL_ICON} alt="" className="h-4 w-4 object-contain" />
-            {basketballGames.length}
-          </button>
-          <button
             onClick={() => setSelectedFilter('nba')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${selectedFilter === 'nba' ? 'glass-pill-active' : 'glass-pill'}`}
+            className={`tap-highlight rounded-full px-3 py-2 text-[13px] font-medium flex items-center justify-center gap-1.5 ${selectedFilter === 'nba' ? 'glass-pill-active' : 'glass-pill'}`}
             style={{ color: selectedFilter === 'nba' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
-            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain" />
+            <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-[18px] w-[18px] object-contain" />
             {nbaGames.length}
           </button>
           <button
             onClick={() => setSelectedFilter('mlb')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${selectedFilter === 'mlb' ? 'glass-pill-active' : 'glass-pill'}`}
+            className={`tap-highlight rounded-full px-3 py-2 text-[13px] font-medium flex items-center justify-center gap-1.5 ${selectedFilter === 'mlb' ? 'glass-pill-active' : 'glass-pill'}`}
             style={{ color: selectedFilter === 'mlb' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
-            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain" />
+            <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-[18px] w-[18px] object-contain" />
             {mlbGames.length}
           </button>
           <button
+            onClick={() => setSelectedFilter('ncaa')}
+            className={`tap-highlight rounded-full px-3 py-2 text-[13px] font-medium flex items-center justify-center gap-1.5 ${selectedFilter === 'ncaa' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'ncaa' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
+          >
+            <SafeImage src={BASKETBALL_ICON} alt="" className="h-[18px] w-[18px] object-contain" />
+            {basketballGames.length}
+          </button>
+          <button
+            onClick={() => setSelectedFilter('nhl')}
+            className={`tap-highlight rounded-full px-3 py-2 text-[13px] font-medium flex items-center justify-center gap-1.5 ${selectedFilter === 'nhl' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'nhl' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
+          >
+            <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png" alt="" className="h-[18px] w-[18px] object-contain" />
+            {nhlGames.length}
+          </button>
+          <button
             onClick={() => setSelectedFilter('nfl')}
-            className={`tap-highlight rounded-full px-2.5 py-2.5 text-xs font-medium flex items-center justify-center gap-1 ${selectedFilter === 'nfl' ? 'glass-pill-active' : 'glass-pill'}`}
+            className={`tap-highlight rounded-full px-3 py-2 text-[13px] font-medium flex items-center justify-center gap-1.5 ${selectedFilter === 'nfl' ? 'glass-pill-active' : 'glass-pill'}`}
             style={{ color: selectedFilter === 'nfl' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
           >
-            <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain" />
+            <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-[18px] w-[18px] object-contain" />
             {nflGames.length}
+          </button>
+          <button
+            onClick={() => setSelectedFilter('f1')}
+            className={`tap-highlight rounded-full px-3 py-2 text-[13px] font-medium flex items-center justify-center gap-1.5 ${selectedFilter === 'f1' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'f1' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
+          >
+            <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/f1.png" alt="" className="h-[18px] w-[18px] object-contain" />
+            {f1Events.length}
+          </button>
+          <button
+            onClick={() => setSelectedFilter('golf')}
+            className={`tap-highlight rounded-full px-3 py-2 text-[13px] font-medium flex items-center justify-center gap-1.5 ${selectedFilter === 'golf' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'golf' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
+          >
+            <SafeImage src="https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-golf.png" alt="" className="h-[18px] w-[18px] object-contain" />
+            {golfTournaments.length}
+          </button>
+          <button
+            onClick={() => setSelectedFilter('ufc')}
+            className={`tap-highlight rounded-full px-3 py-2 text-[13px] font-medium flex items-center justify-center gap-1.5 ${selectedFilter === 'ufc' ? 'glass-pill-active' : 'glass-pill'}`}
+            style={{ color: selectedFilter === 'ufc' ? (darkMode ? '#fff' : theme.text) : theme.textSecondary }}
+          >
+            <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/ufc.png" alt="" className="h-[18px] w-[18px] object-contain" />
+            {ufcEvents.length}
           </button>
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto pb-24 px-2 md:px-4 py-4">
+      <main className="flex-1 overflow-y-auto pb-24 px-3 md:px-4 py-4">
         {isLoading && totalGames === 0 ? (
-          <div className="py-8 text-center">
-            <div
-              className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-              style={{ color: theme.accent }}
-            />
-            <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-              Loading today's games...
-            </p>
-          </div>
+          <SectionSkeleton cards={4} />
         ) : isError ? (
           <div
             className="rounded-lg py-8 text-center glass-card"
@@ -588,7 +827,7 @@ export default function HomePage() {
                       style={{ backgroundColor: theme.red }}
                     />
                     <h2
-                      className="text-sm font-semibold uppercase tracking-wider"
+                      className="text-[15px] font-semibold uppercase tracking-wider"
                       style={{ color: theme.red }}
                     >
                       Live Now
@@ -608,7 +847,7 @@ export default function HomePage() {
                 </button>
 
                 {!liveCollapsed && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 p-3.5">
                     {liveGames.map((game) => (
                       game.type === 'soccer' && game.soccerMatch ? (
                         <MatchCard key={game.id} match={game.soccerMatch} />
@@ -618,6 +857,14 @@ export default function HomePage() {
                         <NBAGameCard key={game.id} game={game.nbaGame} />
                       ) : game.type === 'mlb' && game.mlbGame ? (
                         <MLBGameCard key={game.id} game={game.mlbGame} />
+                      ) : game.type === 'nhl' && game.nhlGame ? (
+                        <NHLGameCard key={game.id} game={game.nhlGame} />
+                      ) : game.type === 'ufc' && game.ufcFight && game.ufcEvent ? (
+                        <UFCFightCard key={game.id} fight={game.ufcFight} eventId={game.ufcEvent.id} />
+                      ) : game.type === 'f1' && game.f1Event ? (
+                        <F1EventCard key={game.id} event={game.f1Event} />
+                      ) : game.type === 'golf' && game.golfTournament ? (
+                        <GolfEventCard key={game.id} tournament={game.golfTournament} />
                       ) : null
                     ))}
                   </div>
@@ -636,7 +883,7 @@ export default function HomePage() {
                   style={{ borderBottom: collapsedSections.has('completed') ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}` }}
                 >
                   <div className="flex items-center gap-3">
-                    <h2 className="text-base font-medium" style={{ color: theme.textSecondary }}>
+                    <h2 className="text-[17px] font-medium" style={{ color: theme.textSecondary }}>
                       Completed
                     </h2>
                     <span
@@ -654,7 +901,7 @@ export default function HomePage() {
                 </button>
 
                 {!collapsedSections.has('completed') && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 p-3.5">
                     {finishedGames.map((game) => (
                       game.type === 'soccer' && game.soccerMatch ? (
                         <MatchCard key={game.id} match={game.soccerMatch} />
@@ -664,6 +911,14 @@ export default function HomePage() {
                         <NBAGameCard key={game.id} game={game.nbaGame} />
                       ) : game.type === 'mlb' && game.mlbGame ? (
                         <MLBGameCard key={game.id} game={game.mlbGame} />
+                      ) : game.type === 'nhl' && game.nhlGame ? (
+                        <NHLGameCard key={game.id} game={game.nhlGame} />
+                      ) : game.type === 'ufc' && game.ufcFight && game.ufcEvent ? (
+                        <UFCFightCard key={game.id} fight={game.ufcFight} eventId={game.ufcEvent.id} />
+                      ) : game.type === 'f1' && game.f1Event ? (
+                        <F1EventCard key={game.id} event={game.f1Event} />
+                      ) : game.type === 'golf' && game.golfTournament ? (
+                        <GolfEventCard key={game.id} tournament={game.golfTournament} />
                       ) : null
                     ))}
                   </div>
@@ -685,7 +940,7 @@ export default function HomePage() {
                     style={{ borderBottom: isCollapsed ? 'none' : `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}` }}
                   >
                     <div className="flex items-center gap-3">
-                      <h2 className="text-base font-medium" style={{ color: theme.text }}>
+                      <h2 className="text-[17px] font-medium" style={{ color: theme.text }}>
                         {hour} ET
                       </h2>
                       <span
@@ -703,7 +958,7 @@ export default function HomePage() {
                   </button>
 
                   {!isCollapsed && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 p-3">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 p-3.5">
                       {games.map((game) => (
                         game.type === 'soccer' && game.soccerMatch ? (
                           <MatchCard key={game.id} match={game.soccerMatch} />
@@ -713,6 +968,14 @@ export default function HomePage() {
                           <BasketballGameCard key={game.id} game={game.nbaGame} />
                         ) : game.type === 'mlb' && game.mlbGame ? (
                           <MLBGameCard key={game.id} game={game.mlbGame} />
+                        ) : game.type === 'nhl' && game.nhlGame ? (
+                          <NHLGameCard key={game.id} game={game.nhlGame} />
+                        ) : game.type === 'ufc' && game.ufcFight && game.ufcEvent ? (
+                          <UFCFightCard key={game.id} fight={game.ufcFight} eventId={game.ufcEvent.id} />
+                        ) : game.type === 'f1' && game.f1Event ? (
+                          <F1EventCard key={game.id} event={game.f1Event} />
+                        ) : game.type === 'golf' && game.golfTournament ? (
+                          <GolfEventCard key={game.id} tournament={game.golfTournament} />
                         ) : null
                       ))}
                     </div>

@@ -1,0 +1,153 @@
+'use client';
+
+import { memo } from 'react';
+import Link from 'next/link';
+import { useTheme } from '@/lib/theme';
+import { NHLGame } from '@/lib/types/nhl';
+import { SafeImage } from '@/components/SafeImage';
+
+interface NHLGameCardProps {
+  game: NHLGame;
+}
+
+export const NHLGameCard = memo(function NHLGameCard({ game }: NHLGameCardProps) {
+  const { theme, darkMode } = useTheme();
+  const isLive = game.status === 'in_progress';
+  const isFinal = game.status === 'final';
+  const homeWon = isFinal && (game.homeTeam.score ?? 0) > (game.awayTeam.score ?? 0);
+  const awayWon = isFinal && (game.awayTeam.score ?? 0) > (game.homeTeam.score ?? 0);
+
+  const getPeriodDisplay = () => {
+    if (game.period === 5) return 'SO';
+    if (game.period >= 4) return 'OT';
+    return `P${game.period}`;
+  };
+
+  return (
+    <Link href={`/nhl/game/${game.id}`}>
+      <div
+        className="card-press cursor-pointer p-4 md:p-5 transition-theme glass-match-card"
+      >
+        {/* Header */}
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span
+              className="rounded px-2 py-0.5 text-[10px] font-medium uppercase"
+              style={{ backgroundColor: theme.accent, color: '#fff' }}
+            >
+              NHL
+            </span>
+            {game.broadcast && (
+              <span
+                className="text-[11px] font-medium"
+                style={{ color: theme.textSecondary }}
+              >
+                {game.broadcast}
+              </span>
+            )}
+            {game.date && (
+              <span
+                className="text-[9px]"
+                style={{ color: theme.textSecondary }}
+              >
+                · {game.date}
+              </span>
+            )}
+          </div>
+          <span
+            className={`font-mono rounded-lg px-3 py-1 text-[15px] ${isLive ? 'glass-badge-live' : 'glass-badge'}`}
+            style={{ color: isLive ? '#fff' : theme.textSecondary }}
+          >
+            {isLive && '● '}
+            {isLive ? `${getPeriodDisplay()} ${game.clock}` : isFinal ? (game.statusDetail || 'Final') : game.startTime}
+          </span>
+        </div>
+
+        {/* Teams & Score */}
+        <div className="flex items-center">
+          {/* Away Team */}
+          <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pr-1 md:pr-2">
+            {game.awayTeam.logo ? (
+              <SafeImage
+                src={game.awayTeam.logo}
+                alt={game.awayTeam.name}
+                className="h-8 w-8 md:h-9 md:w-9 flex-shrink-0 object-contain logo-glow"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                className="h-8 w-8 md:h-9 md:w-9 rounded-full flex-shrink-0"
+                style={{ backgroundColor: game.awayTeam.color || theme.bgTertiary }}
+              />
+            )}
+            <div className="flex flex-col min-w-0">
+              <span className="hidden md:block text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                Away {game.awayTeam.record && `(${game.awayTeam.record})`}
+              </span>
+              <span
+                className="text-[15px] md:text-base font-medium truncate"
+                style={{
+                  color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
+                  fontWeight: awayWon ? 600 : 500,
+                }}
+              >
+                {game.awayTeam.shortDisplayName}
+              </span>
+            </div>
+          </div>
+
+          {/* Score */}
+          <div
+            className="font-mono rounded-lg px-3 md:px-4 py-2 md:py-2.5 text-[17px] md:text-lg font-semibold flex-shrink-0 glass-score score-text"
+            style={{ color: theme.text }}
+          >
+            {(isLive || isFinal)
+              ? `${game.awayTeam.score ?? 0} - ${game.homeTeam.score ?? 0}`
+              : 'vs'}
+          </div>
+
+          {/* Home Team */}
+          <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pl-1 md:pl-2 justify-end">
+            <div className="flex flex-col items-end min-w-0">
+              <span className="hidden md:block text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                Home {game.homeTeam.record && `(${game.homeTeam.record})`}
+              </span>
+              <span
+                className="text-[15px] md:text-base font-medium truncate text-right"
+                style={{
+                  color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
+                  fontWeight: homeWon ? 600 : 500,
+                }}
+              >
+                {game.homeTeam.shortDisplayName}
+              </span>
+            </div>
+            {game.homeTeam.logo ? (
+              <SafeImage
+                src={game.homeTeam.logo}
+                alt={game.homeTeam.name}
+                className="h-8 w-8 md:h-9 md:w-9 flex-shrink-0 object-contain logo-glow"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                className="h-8 w-8 md:h-9 md:w-9 rounded-full flex-shrink-0"
+                style={{ backgroundColor: game.homeTeam.color || theme.bgTertiary }}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Venue */}
+        {game.venue && (
+          <p
+            className="mt-2.5 text-[11px] truncate"
+            style={{ color: theme.textSecondary }}
+          >
+            {game.venue}
+          </p>
+        )}
+      </div>
+    </Link>
+  );
+});

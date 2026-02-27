@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useSafeBack } from '@/lib/use-safe-back';
 import useSWR from 'swr';
 import { ChevronLeft, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
@@ -11,7 +11,7 @@ import { MLBStanding } from '@/lib/types/mlb';
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function MLBStandingsPage() {
-  const router = useRouter();
+  const goBack = useSafeBack('/mlb');
   const { theme, darkMode, toggleDarkMode } = useTheme();
 
   const { data, isLoading } = useSWR<{
@@ -36,10 +36,10 @@ export default function MLBStandingsPage() {
   return (
     <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <header className="safe-top flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
-          onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          onClick={goBack}
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
@@ -50,7 +50,7 @@ export default function MLBStandingsPage() {
         </div>
         <button
           onClick={toggleDarkMode}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}

@@ -10,6 +10,7 @@ import {
   TEAMS as SOCCER_TEAMS,
   SEARCHABLE_SOCCER_LEAGUES,
 } from '@/lib/search-data';
+import { SafeImage } from '@/components/SafeImage';
 
 type LogoEntry = { name: string; logo: string };
 
@@ -182,7 +183,7 @@ export default function DebugLogosPage() {
                         }}
                       />
                     )}
-                    <img
+                    <SafeImage
                       src={team.logo}
                       alt={team.name}
                       style={{
@@ -207,7 +208,7 @@ export default function DebugLogosPage() {
                       justifyContent: 'center',
                     }}
                   >
-                    <img
+                    <SafeImage
                       src={team.logo}
                       alt={team.name}
                       style={{ width: 48, height: 48, objectFit: 'contain' }}

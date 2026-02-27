@@ -4,6 +4,7 @@ import { memo } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { MLBGame } from '@/lib/types/mlb';
+import { SafeImage } from '@/components/SafeImage';
 
 interface MLBGameCardProps {
   game: MLBGame;
@@ -25,14 +26,14 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
   return (
     <Link href={`/mlb/game/${game.id}`}>
       <div
-        className="card-press cursor-pointer p-3 md:p-4 transition-theme glass-match-card"
+        className="card-press cursor-pointer p-4 md:p-5 transition-theme glass-match-card"
       >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {game.broadcast && (
               <span
-                className="text-[10px] font-medium"
+                className="text-[11px] font-medium"
                 style={{ color: theme.textSecondary }}
               >
                 {game.broadcast}
@@ -56,7 +57,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
             )}
           </div>
           <span
-            className={`font-mono rounded-lg px-3 py-1 text-sm ${isLive ? 'glass-badge-live' : 'glass-badge'}`}
+            className={`font-mono rounded-lg px-3 py-1 text-[15px] ${isLive ? 'glass-badge-live' : 'glass-badge'}`}
             style={{ color: isLive ? '#fff' : theme.textSecondary }}
           >
             {isLive && '● '}
@@ -69,7 +70,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
           {/* Away Team */}
           <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
             {game.awayTeam.logo ? (
-              <img
+              <SafeImage
                 src={game.awayTeam.logo}
                 alt={game.awayTeam.name}
                 className="h-8 w-8 flex-shrink-0 object-contain logo-glow"
@@ -86,7 +87,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
                 Away
               </span>
               <span
-                className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px]"
+                className="text-[15px] font-medium truncate"
                 style={{
                   color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: awayWon ? 600 : 500,
@@ -99,7 +100,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
 
           {/* Score */}
           <div
-            className="font-mono rounded-lg px-4 py-2 text-lg font-semibold flex-shrink-0 glass-score score-text"
+            className="font-mono rounded-lg px-4 py-2.5 text-[17px] font-semibold flex-shrink-0 glass-score score-text"
             style={{ color: theme.text }}
           >
             {(isLive || isFinal)
@@ -114,7 +115,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
                 Home
               </span>
               <span
-                className="text-base font-medium truncate max-w-[80px] sm:max-w-[120px] text-right"
+                className="text-[15px] font-medium truncate text-right"
                 style={{
                   color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: homeWon ? 600 : 500,
@@ -124,7 +125,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
               </span>
             </div>
             {game.homeTeam.logo ? (
-              <img
+              <SafeImage
                 src={game.homeTeam.logo}
                 alt={game.homeTeam.name}
                 className="h-8 w-8 flex-shrink-0 object-contain logo-glow"
@@ -183,10 +184,11 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
           </div>
         )}
 
+
         {/* Venue (optional) */}
         {game.venue && (
           <p
-            className="mt-2 text-[10px] truncate"
+            className="mt-2.5 text-[11px] truncate"
             style={{ color: theme.textSecondary }}
           >
             {game.venue}

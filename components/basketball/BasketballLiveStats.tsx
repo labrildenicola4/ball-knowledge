@@ -2,6 +2,7 @@
 
 import { useTheme } from '@/lib/theme';
 import { BasketballTeamStats, BasketballTeam } from '@/lib/types/basketball';
+import { SafeImage } from '@/components/SafeImage';
 
 interface BasketballLiveStatsProps {
   homeTeam: BasketballTeam;
@@ -48,16 +49,16 @@ function StatRow({ label, home, away, isPercentage }: StatRowProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[15px] font-medium w-12" style={{ color: theme.text }}>
+        <span className="text-[16px] font-medium w-14" style={{ color: theme.text }}>
           {formatValue(home)}
         </span>
         <span
-          className="text-[11px] font-medium uppercase tracking-wide text-center flex-1"
+          className="text-[12px] font-semibold uppercase tracking-wide text-center flex-1"
           style={{ color: theme.textSecondary }}
         >
           {label}
         </span>
-        <span className="text-[15px] font-medium w-12 text-right" style={{ color: theme.text }}>
+        <span className="text-[16px] font-medium w-14 text-right" style={{ color: theme.text }}>
           {formatValue(away)}
         </span>
       </div>
@@ -148,6 +149,11 @@ export function BasketballLiveStats({
     { label: 'Blocks', home: homeStats.blocks, away: awayStats.blocks },
     { label: 'Turnovers', home: homeStats.turnovers, away: awayStats.turnovers },
     { label: 'Fouls', home: homeStats.fouls, away: awayStats.fouls },
+    ...(homeStats.fastBreakPoints != null ? [{ label: 'Fast Break', home: homeStats.fastBreakPoints, away: awayStats.fastBreakPoints || 0 }] : []),
+    ...(homeStats.pointsInPaint != null ? [{ label: 'Paint Points', home: homeStats.pointsInPaint, away: awayStats.pointsInPaint || 0 }] : []),
+    ...(homeStats.pointsOffTurnovers != null ? [{ label: 'Pts Off TO', home: homeStats.pointsOffTurnovers, away: awayStats.pointsOffTurnovers || 0 }] : []),
+    ...(homeStats.secondChancePoints != null ? [{ label: '2nd Chance', home: homeStats.secondChancePoints, away: awayStats.secondChancePoints || 0 }] : []),
+    ...(homeStats.largestLead != null ? [{ label: 'Largest Lead', home: homeStats.largestLead, away: awayStats.largestLead || 0 }] : []),
   ];
 
   return (
@@ -156,24 +162,24 @@ export function BasketballLiveStats({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           {homeTeam.logo && (
-            <img src={homeTeam.logo} alt={homeTeam.name} className="h-6 w-6 object-contain logo-glow" />
+            <SafeImage src={homeTeam.logo} alt={homeTeam.name} className="h-7 w-7 object-contain logo-glow" />
           )}
-          <span className="text-[12px] font-medium" style={{ color: theme.text }}>
+          <span className="text-[14px] font-medium" style={{ color: theme.text }}>
             {homeTeam.shortDisplayName}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[12px] font-medium" style={{ color: theme.text }}>
+          <span className="text-[14px] font-medium" style={{ color: theme.text }}>
             {awayTeam.shortDisplayName}
           </span>
           {awayTeam.logo && (
-            <img src={awayTeam.logo} alt={awayTeam.name} className="h-6 w-6 object-contain logo-glow" />
+            <SafeImage src={awayTeam.logo} alt={awayTeam.name} className="h-7 w-7 object-contain logo-glow" />
           )}
         </div>
       </div>
 
       {/* Stats */}
-      <div className="space-y-5">
+      <div className="space-y-6">
         {stats.map((stat) => (
           <StatRow
             key={stat.label}

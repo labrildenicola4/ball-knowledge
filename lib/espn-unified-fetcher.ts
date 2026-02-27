@@ -84,15 +84,12 @@ export async function fetchESPNScoreboard(
     url += `&dates=${formattedDate}`;
   }
 
-  console.log(`[ESPN-Sync] Fetching ${sport} scoreboard: ${url}`);
-
   const response = await fetch(url, {
     cache: 'no-store',
     next: { revalidate: 0 },
   });
 
   if (!response.ok) {
-    console.error(`[ESPN-Sync] HTTP Error: ${response.status}`);
     throw new Error(`ESPN API Error: ${response.status}`);
   }
 
@@ -218,9 +215,8 @@ export async function fetchAndTransformGames(
         transformESPNEvent(event, config.sportType)
       );
       allGames.push(...transformed);
-      console.log(`[ESPN-Sync] ${sport} ${date}: ${transformed.length} games`);
-    } catch (error) {
-      console.error(`[ESPN-Sync] Error fetching ${sport} for ${date}:`, error);
+    } catch {
+      // silently ignore
     }
   }
 

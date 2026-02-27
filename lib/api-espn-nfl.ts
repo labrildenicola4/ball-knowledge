@@ -2,6 +2,7 @@
 // No authentication required - public endpoints
 
 import { NFLGame, NFLTeam, NFLBoxScore, NFLStandings, NFLTeamInfo, NFLStanding, NFLTeamScheduleGame } from './types/nfl';
+import { getCurrentNFLSeason, getSuperBowlDateRange } from './espn-season-utils';
 
 const API_BASE = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl';
 const API_V2_BASE = 'https://site.api.espn.com/apis/v2/sports/football/nfl';
@@ -32,8 +33,6 @@ async function fetchESPN<T>(url: string, isLive = false): Promise<T> {
   if (cached && Date.now() - cached.timestamp < cacheTTL) {
     return cached.data as T;
   }
-
-  console.log(`[ESPN-NFL] Fetching: ${url}`);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
@@ -105,6 +104,7 @@ function transformGame(event: any): NFLGame {
       month: 'short',
       day: 'numeric',
     }),
+    rawDate: event.date,
     startTime: new Date(event.date).toLocaleTimeString('en-US', {
       timeZone: 'America/New_York',
       hour: 'numeric',
@@ -143,8 +143,8 @@ export async function getNFLPlayoffGames(): Promise<NFLGame[]> {
     // Get current postseason games
     const currentUrl = `${API_BASE}/scoreboard?seasontype=3&limit=100`;
 
-    // Get Super Bowl date (Feb 8, 2026)
-    const superBowlUrl = `${API_BASE}/scoreboard?dates=20260208`;
+    // Get Super Bowl date range (2nd Sunday of Feb, ±1 day)
+    const superBowlUrl = `${API_BASE}/scoreboard?dates=${getSuperBowlDateRange(getCurrentNFLSeason())}`;
 
     const [currentData, superBowlData] = await Promise.all([
       fetchESPN<any>(currentUrl),
@@ -161,8 +161,7 @@ export async function getNFLPlayoffGames(): Promise<NFLGame[]> {
     });
 
     return Array.from(gameMap.values());
-  } catch (error) {
-    console.error('[ESPN-NFL] Failed to fetch playoff games:', error);
+  } catch {
     return [];
   }
 }
@@ -205,6 +204,7 @@ export async function getNFLGameSummary(gameId: string): Promise<{
       month: 'short',
       day: 'numeric',
     }),
+    rawDate: data.header.competitions[0].date,
     startTime: new Date(data.header.competitions[0].date).toLocaleTimeString('en-US', {
       timeZone: 'America/New_York',
       hour: 'numeric',
@@ -388,8 +388,7 @@ export async function getNFLTeam(teamId: string): Promise<NFLTeamInfo | null> {
         capacity: team.franchise.venue.capacity,
       } : undefined,
     };
-  } catch (error) {
-    console.error(`[ESPN-NFL] Failed to fetch team ${teamId}:`, error);
+  } catch {
     return null;
   }
 }
@@ -397,8 +396,9 @@ export async function getNFLTeam(teamId: string): Promise<NFLTeamInfo | null> {
 // Get team schedule
 export async function getNFLTeamSchedule(teamId: string): Promise<NFLTeamScheduleGame[]> {
   // Get both regular season and postseason games
-  const regularSeasonUrl = `${API_BASE}/teams/${teamId}/schedule?seasontype=2&season=2025`;
-  const postseasonUrl = `${API_BASE}/teams/${teamId}/schedule?seasontype=3&season=2025`;
+  const season = getCurrentNFLSeason();
+  const regularSeasonUrl = `${API_BASE}/teams/${teamId}/schedule?seasontype=2&season=${season}`;
+  const postseasonUrl = `${API_BASE}/teams/${teamId}/schedule?seasontype=3&season=${season}`;
 
   try {
     const [regularData, postData] = await Promise.all([
@@ -464,8 +464,7 @@ export async function getNFLTeamSchedule(teamId: string): Promise<NFLTeamSchedul
         week: weekDisplay,
       };
     });
-  } catch (error) {
-    console.error(`[ESPN-NFL] Failed to fetch schedule for team ${teamId}:`, error);
+  } catch {
     return [];
   }
 }
@@ -507,8 +506,7 @@ export async function getNFLTeamStats(teamId: string): Promise<{
       receiving: extractLeaders('receivingYards'),
       defense: extractLeaders('totalTackles'),
     };
-  } catch (error) {
-    console.error(`[ESPN-NFL] Failed to fetch team stats for ${teamId}:`, error);
+  } catch {
     return {
       passing: [],
       rushing: [],
@@ -531,7 +529,7 @@ export async function getNFLLeaders(): Promise<{
   tackles: any[];
 }> {
   // Use core API to get regular season stats (types/2 = regular season)
-  const coreUrl = 'https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/types/2/leaders?limit=5';
+  const coreUrl = `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/${getCurrentNFLSeason()}/types/2/leaders?limit=5`;
 
   try {
     const data = await fetchESPN<any>(coreUrl);
@@ -620,7 +618,7 @@ export async function getNFLLeaders(): Promise<{
       const athletePromises = leaders.map(async (leader) => {
         if (!leader.player.id) return leader;
         try {
-          const athleteUrl = `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/athletes/${leader.player.id}`;
+          const athleteUrl = `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/${getCurrentNFLSeason()}/athletes/${leader.player.id}`;
           const athleteData = await fetch(athleteUrl).then(r => r.json());
           leader.player.name = athleteData.displayName || '';
           leader.player.position = athleteData.position?.abbreviation || '';
@@ -669,8 +667,7 @@ export async function getNFLLeaders(): Promise<{
       interceptions,
       tackles,
     };
-  } catch (error) {
-    console.error('[ESPN-NFL] Failed to fetch leaders:', error);
+  } catch {
     return {
       passingYards: [],
       rushingYards: [],
@@ -708,8 +705,7 @@ export async function getNFLRoster(teamId: string): Promise<import('./types/nfl'
         college: athlete.college?.name,
       }))
     );
-  } catch (error) {
-    console.error(`[ESPN-NFL] Failed to fetch roster for team ${teamId}:`, error);
+  } catch {
     return [];
   }
 }

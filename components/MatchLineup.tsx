@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
+import { tapLight } from '@/lib/haptics';
 
 export interface LineupPlayer {
   id: number;
@@ -126,8 +128,8 @@ function SideBench({
       {/* Bench players */}
       <div className="flex-1 overflow-y-auto">
         {team.bench.map((player) => (
+          <Link key={player.id} href={`/player/soccer/${player.id}`} className="contents">
           <div
-            key={player.id}
             className="flex items-center gap-2 px-2 py-1.5"
             style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
           >
@@ -144,6 +146,7 @@ function SideBench({
               {player.name}
             </span>
           </div>
+          </Link>
         ))}
       </div>
     </div>
@@ -396,7 +399,7 @@ export function MatchLineup({ home, away, homeShortName, awayShortName, matchSta
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => { tapLight(); setActiveTab(tab.key); }}
               className={`flex-1 py-2 px-4 rounded-full text-[11px] font-semibold transition-all ${darkMode ? (activeTab === tab.key ? 'glass-pill-active' : '') : ''}`}
               style={{
                 ...(darkMode ? {} : { backgroundColor: activeTab === tab.key ? theme.bgSecondary : 'transparent', border: activeTab === tab.key ? `1px solid ${theme.border}` : '1px solid transparent' }),
@@ -501,8 +504,8 @@ export function MatchLineup({ home, away, homeShortName, awayShortName, matchSta
             </div>
             <div className="grid grid-cols-2 gap-px" style={{ backgroundColor: darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border }}>
               {currentTeam.bench.map((player) => (
+                <Link key={player.id} href={`/player/soccer/${player.id}`} className="contents">
                 <div
-                  key={player.id}
                   className="flex items-center px-3 py-2"
                   style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.2)' : theme.bgSecondary }}
                 >
@@ -525,6 +528,7 @@ export function MatchLineup({ home, away, homeShortName, awayShortName, matchSta
                     </p>
                   </div>
                 </div>
+                </Link>
               ))}
             </div>
           </div>

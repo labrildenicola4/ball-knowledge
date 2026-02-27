@@ -1,12 +1,17 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useSafeBack } from '@/lib/use-safe-back';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { ChevronLeft, MapPin, Calendar, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
+import { GameOdds } from '@/components/GameOdds';
 import { CollegeFootballGame } from '@/lib/types/college-football';
+
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { SafeImage } from '@/components/SafeImage';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'Game not found' : 'Failed to fetch');
@@ -15,13 +20,13 @@ const fetcher = (url: string) => fetch(url).then(res => {
 
 export default function FootballGamePage() {
   const params = useParams();
-  const router = useRouter();
+  const goBack = useSafeBack('/football');
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const gameId = params.id as string;
 
   // For now, fetch from games list and find the specific game
   // TODO: Add dedicated game detail endpoint
-  const { data, error, isLoading, isValidating } = useSWR<{
+  const { data, error, isLoading, isValidating, mutate } = useSWR<{
     games: CollegeFootballGame[];
   }>(
     '/api/football/games',
@@ -54,7 +59,7 @@ export default function FootballGamePage() {
       <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Game not found'}</p>
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
           style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
@@ -70,10 +75,10 @@ export default function FootballGamePage() {
   return (
     <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <header className="safe-top flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
-          onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          onClick={goBack}
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
@@ -103,7 +108,7 @@ export default function FootballGamePage() {
         )}
         <button
           onClick={toggleDarkMode}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
@@ -114,7 +119,7 @@ export default function FootballGamePage() {
       <section className={`px-4 py-8 ${darkMode ? 'glass-section' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}>
         <div className="flex items-start justify-between">
           {/* Away Team */}
-          <Link href={`/football/team/${game.awayTeam.id}`} className="flex-1 text-center">
+          <Link href={`/football/team/${game.awayTeam.id}`} className="flex-1 text-center logo-press">
             <span className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Away
             </span>
@@ -125,7 +130,7 @@ export default function FootballGamePage() {
             )}
             <div className="mx-auto mb-3 h-16 w-16">
               {game.awayTeam.logo ? (
-                <img src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-full w-full object-contain logo-glow" />
+                <SafeImage src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-full w-full object-contain logo-glow" />
               ) : (
                 <div className="h-full w-full rounded-full" style={{ backgroundColor: game.awayTeam.color || theme.bgTertiary }} />
               )}
@@ -193,7 +198,7 @@ export default function FootballGamePage() {
           </div>
 
           {/* Home Team */}
-          <Link href={`/football/team/${game.homeTeam.id}`} className="flex-1 text-center">
+          <Link href={`/football/team/${game.homeTeam.id}`} className="flex-1 text-center logo-press">
             <span className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Home
             </span>
@@ -204,7 +209,7 @@ export default function FootballGamePage() {
             )}
             <div className="mx-auto mb-3 h-16 w-16">
               {game.homeTeam.logo ? (
-                <img src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-full w-full object-contain logo-glow" />
+                <SafeImage src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-full w-full object-contain logo-glow" />
               ) : (
                 <div className="h-full w-full rounded-full" style={{ backgroundColor: game.homeTeam.color || theme.bgTertiary }} />
               )}
@@ -222,6 +227,17 @@ export default function FootballGamePage() {
             )}
           </Link>
         </div>
+
+        <GameOdds
+          sport="cfb"
+          homeAbbrev={game.homeTeam.abbreviation}
+          awayAbbrev={game.awayTeam.abbreviation}
+          homeTeamName={game.homeTeam.shortDisplayName}
+          awayTeamName={game.awayTeam.shortDisplayName}
+          gameDate={game.rawDate || ''}
+          isLive={isLive}
+          isUpcoming={game.status === 'scheduled'}
+        />
       </section>
 
       {/* Game Info */}
@@ -247,6 +263,8 @@ export default function FootballGamePage() {
         </div>
       </section>
 
+      <div className="flex-1 overflow-y-auto pb-24">
+        <PullToRefresh onRefresh={async () => { await mutate(); }}>
       {/* Team Links */}
       <section className="px-4 py-4">
         <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
@@ -259,7 +277,7 @@ export default function FootballGamePage() {
             style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             {game.awayTeam.logo && (
-              <img src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-8 w-8 object-contain logo-glow" />
+              <SafeImage src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-8 w-8 object-contain logo-glow" />
             )}
             <span className="text-sm font-medium" style={{ color: theme.text }}>
               {game.awayTeam.shortDisplayName}
@@ -271,7 +289,7 @@ export default function FootballGamePage() {
             style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
           >
             {game.homeTeam.logo && (
-              <img src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-8 w-8 object-contain logo-glow" />
+              <SafeImage src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-8 w-8 object-contain logo-glow" />
             )}
             <span className="text-sm font-medium" style={{ color: theme.text }}>
               {game.homeTeam.shortDisplayName}
@@ -279,6 +297,8 @@ export default function FootballGamePage() {
           </Link>
         </div>
       </section>
+        </PullToRefresh>
+      </div>
 
       <BottomNav />
     </div>

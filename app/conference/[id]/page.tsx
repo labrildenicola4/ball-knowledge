@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { ChevronLeft, Sun, Moon, Trophy, Users } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
+import { useSafeBack } from '@/lib/use-safe-back';
 import { BottomNav } from '@/components/BottomNav';
+import { SafeImage } from '@/components/SafeImage';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'Conference not found' : 'Failed to fetch');
@@ -49,7 +51,7 @@ type Sport = 'basketball' | 'football';
 
 export default function ConferencePage() {
   const params = useParams();
-  const router = useRouter();
+  const goBack = useSafeBack('/all');
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const conferenceId = params.id as string;
 
@@ -95,7 +97,7 @@ export default function ConferencePage() {
       <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Conference not found'}</p>
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
           style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
@@ -108,10 +110,10 @@ export default function ConferencePage() {
   return (
     <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <header className="safe-top flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
-          onClick={() => router.back()}
-          className={`flex h-9 w-9 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+          onClick={goBack}
+          className={`tap-highlight flex h-9 w-9 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
           style={darkMode ? undefined : { border: `1px solid ${theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
@@ -126,7 +128,7 @@ export default function ConferencePage() {
         </div>
         <button
           onClick={toggleDarkMode}
-          className={`flex h-9 w-9 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+          className={`tap-highlight flex h-9 w-9 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
           style={darkMode ? undefined : { border: `1px solid ${theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
@@ -234,7 +236,7 @@ export default function ConferencePage() {
                   {index + 1}
                 </span>
                 {team.logo ? (
-                  <img
+                  <SafeImage
                     src={team.logo}
                     alt={team.name}
                     className="h-7 w-7 flex-shrink-0 object-contain logo-glow"

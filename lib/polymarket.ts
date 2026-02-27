@@ -28,7 +28,28 @@ export interface PolymarketOdds {
   awayWin: number;
   source: 'polymarket';
   lastUpdated: string;
+  hasDraw: boolean;
 }
+
+// Sport types for US sports slug-based lookup
+export type SportType = 'nba' | 'ncaab' | 'nfl' | 'mlb' | 'cfb';
+
+const SPORT_SLUG_PREFIX: Record<SportType, string> = {
+  nba: 'nba',
+  ncaab: 'cbb',
+  nfl: 'nfl',
+  mlb: 'mlb',
+  cfb: 'cfb',
+};
+
+// Series IDs for US sports (used as fallback when slug lookup fails)
+const SPORT_SERIES_IDS: Record<SportType, number[]> = {
+  nba: [10345, 2],          // NBA 2026, NBA
+  ncaab: [10470],           // NCAA CBB
+  nfl: [10187, 1],          // NFL 2025, NFL
+  mlb: [10062],             // MLB Games
+  cfb: [10210, 10002],      // CFB 2025, CFB
+};
 
 interface PolymarketMarket {
   id: string;
@@ -125,7 +146,6 @@ export async function getMatchOdds(
   try {
     const seriesId = LEAGUE_TO_SERIES_ID[leagueCode];
     if (!seriesId) {
-      console.log(`[Polymarket] No series ID for league: ${leagueCode}`);
       return null;
     }
 
@@ -139,7 +159,6 @@ export async function getMatchOdds(
     );
 
     if (!response.ok) {
-      console.error(`[Polymarket] API error: ${response.status}`);
       return null;
     }
 
@@ -201,6 +220,7 @@ export async function getMatchOdds(
               awayWin: awayWin / total,
               source: 'polymarket',
               lastUpdated: new Date().toISOString(),
+              hasDraw: true,
             };
           }
         }
@@ -245,16 +265,172 @@ export async function getMatchOdds(
               awayWin: awayWin / total,
               source: 'polymarket',
               lastUpdated: new Date().toISOString(),
+              hasDraw: true,
             };
           }
         }
       }
     }
 
-    console.log(`[Polymarket] No match found for ${homeTeam} vs ${awayTeam}`);
     return null;
-  } catch (error) {
-    console.error('[Polymarket] Error fetching odds:', error);
+  } catch {
     return null;
   }
+}
+
+// Extract odds from a US sports event (single market with 2 outcomes)
+function extractUSEventOdds(
+  event: PolymarketEvent,
+  homeTeamName: string,
+  awayTeamName: string,
+): PolymarketOdds | null {
+  const markets = event.markets || [];
+  if (!markets.length) return null;
+
+  let homeWin = 0;
+  let awayWin = 0;
+
+  if (markets.length === 1) {
+    const market = markets[0];
+    const outcomes: string[] = JSON.parse(market.outcomes || '[]');
+    const prices: string[] = JSON.parse(market.outcomePrices || '[]');
+
+    for (let i = 0; i < outcomes.length; i++) {
+      const outcome = outcomes[i].toLowerCase();
+      const price = parseFloat(prices[i]) || 0;
+      if (teamsMatch(outcome, homeTeamName)) {
+        homeWin = price;
+      } else if (teamsMatch(outcome, awayTeamName)) {
+        awayWin = price;
+      }
+    }
+
+    // If name matching failed, assign by position (away first, home second in slug)
+    if (homeWin === 0 && awayWin === 0 && prices.length === 2) {
+      awayWin = parseFloat(prices[0]) || 0;
+      homeWin = parseFloat(prices[1]) || 0;
+    }
+  } else {
+    for (const market of markets) {
+      const question = market.question.toLowerCase();
+      const outcomes: string[] = JSON.parse(market.outcomes || '[]');
+      const prices: string[] = JSON.parse(market.outcomePrices || '[]');
+      const yesIndex = outcomes.findIndex((o: string) => o.toLowerCase() === 'yes');
+      const yesPrice = yesIndex >= 0 ? parseFloat(prices[yesIndex]) : 0;
+
+      if (teamsMatch(question, homeTeamName)) {
+        homeWin = yesPrice;
+      } else if (teamsMatch(question, awayTeamName)) {
+        awayWin = yesPrice;
+      }
+    }
+  }
+
+  const total = homeWin + awayWin;
+  if (total > 0) {
+    return {
+      homeWin: homeWin / total,
+      draw: 0,
+      awayWin: awayWin / total,
+      source: 'polymarket',
+      lastUpdated: new Date().toISOString(),
+      hasDraw: false,
+    };
+  }
+  return null;
+}
+
+// Series-based fallback: search events by team name within a series
+async function getGameOddsBySeries(
+  sport: SportType,
+  homeTeamName: string,
+  awayTeamName: string,
+  gameDate: string
+): Promise<PolymarketOdds | null> {
+  const seriesIds = SPORT_SERIES_IDS[sport];
+  if (!seriesIds?.length) return null;
+
+  const dateStr = new Date(gameDate).toISOString().split('T')[0];
+
+  for (const seriesId of seriesIds) {
+    try {
+      const response = await fetch(
+        `${GAMMA_API_BASE}/events?series_id=${seriesId}&active=true&closed=false&limit=200&order=endDate&ascending=false`,
+        {
+          next: { revalidate: 300 },
+          headers: { 'Accept': 'application/json' }
+        }
+      );
+
+      if (!response.ok) continue;
+
+      const events: PolymarketEvent[] = await response.json();
+
+      for (const event of events) {
+        // Check date (within 1 day tolerance)
+        const eventDate = new Date(event.endDate).toISOString().split('T')[0];
+        const dateDiff = Math.abs(new Date(eventDate).getTime() - new Date(dateStr).getTime());
+        if (dateDiff / (1000 * 60 * 60 * 24) > 1) continue;
+
+        // Check if teams match in the event title
+        const title = event.title;
+        if (teamsMatch(title, homeTeamName) && teamsMatch(title, awayTeamName)) {
+          const odds = extractUSEventOdds(event, homeTeamName, awayTeamName);
+          if (odds) return odds;
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
+}
+
+// US sports: slug-based lookup with series-based fallback
+export async function getGameOddsBySlug(
+  sport: SportType,
+  awayAbbrev: string,
+  homeAbbrev: string,
+  gameDate: string,
+  homeTeamName?: string,
+  awayTeamName?: string,
+): Promise<PolymarketOdds | null> {
+  const prefix = SPORT_SLUG_PREFIX[sport];
+  if (!prefix) return null;
+
+  try {
+    // Build slug: nba-hou-cha-2026-02-19
+    const dateStr = new Date(gameDate).toISOString().split('T')[0];
+    const slug = `${prefix}-${awayAbbrev.toLowerCase()}-${homeAbbrev.toLowerCase()}-${dateStr}`;
+
+    const response = await fetch(
+      `${GAMMA_API_BASE}/events?slug=${slug}`,
+      {
+        next: { revalidate: 300 },
+        headers: { 'Accept': 'application/json' }
+      }
+    );
+
+    if (response.ok) {
+      const events: PolymarketEvent[] = await response.json();
+      if (events.length) {
+        const odds = extractUSEventOdds(
+          events[0],
+          homeTeamName || homeAbbrev,
+          awayTeamName || awayAbbrev,
+        );
+        if (odds) return odds;
+      }
+    }
+  } catch {
+    // Fall through to series-based lookup
+  }
+
+  // Fallback: series-based team name matching
+  if (homeTeamName && awayTeamName) {
+    return getGameOddsBySeries(sport, homeTeamName, awayTeamName, gameDate);
+  }
+
+  return null;
 }

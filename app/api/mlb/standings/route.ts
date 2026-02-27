@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
 import { getMLBStandings } from '@/lib/api-espn-mlb';
 import { supabase } from '@/lib/supabase';
+import { createServiceClient } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
 // 5 minute freshness threshold for standings
 const STANDINGS_FRESHNESS_MS = 5 * 60 * 1000;
+
+function getCurrentSeason(): number {
+  const now = new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+  return month >= 7 ? year : year - 1;
+}
 
 export async function GET() {
   try {
@@ -31,13 +39,47 @@ export async function GET() {
       }
     }
 
-    // Fall back to direct ESPN API
-    const standings = await getMLBStandings();
+    // Cache is stale or missing — try ESPN
+    try {
+      const standings = await getMLBStandings();
 
-    return NextResponse.json({
-      standings,
-      count: standings.reduce((acc, div) => acc + div.standings.length, 0),
-    });
+      // Fire-and-forget: backfill cache
+      createServiceClient()
+        .from('standings_cache')
+        .upsert({
+          sport_type: 'baseball',
+          league_code: 'MLB',
+          league_name: 'MLB',
+          season: getCurrentSeason(),
+          standings,
+        }, {
+          onConflict: 'league_code,season,sport_type',
+          ignoreDuplicates: false,
+        })
+        .then(({ error }) => {
+          if (error) console.error('[mlb] standings cache write error:', error.message);
+        });
+
+      return NextResponse.json({
+        standings,
+        count: standings.reduce((acc, div) => acc + div.standings.length, 0),
+      });
+    } catch (espnError) {
+      console.error('[API/MLB/Standings] ESPN fetch failed:', espnError);
+
+      // Fall back to stale cache
+      if (!cacheError && cached?.standings) {
+        const standings = cached.standings;
+        return NextResponse.json({
+          standings,
+          count: Array.isArray(standings) ? standings.reduce((acc: number, div: { standings?: unknown[] }) => acc + (div.standings?.length || 0), 0) : 0,
+          cached: true,
+          stale: true,
+        });
+      }
+
+      throw espnError;
+    }
   } catch (error) {
     console.error('[API/MLB/Standings] Error:', error);
     return NextResponse.json(

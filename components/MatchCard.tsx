@@ -4,6 +4,7 @@ import { memo } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { shouldUseWhiteFilterByCode } from '@/lib/constants/dark-mode-logos';
+import { SafeImage } from '@/components/SafeImage';
 
 interface MatchCardProps {
   match: {
@@ -31,13 +32,13 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
   return (
     <Link href={`/match/${match.id}`}>
       <div
-        className="card-press cursor-pointer p-3 md:p-4 transition-theme glass-match-card"
+        className="card-press cursor-pointer p-4 md:p-5 transition-theme glass-match-card"
       >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {match.leagueLogo && (
-              <img
+              <SafeImage
                 src={match.leagueLogo}
                 alt={match.league}
                 className="h-5 w-5 object-contain logo-glow"
@@ -46,14 +47,14 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
               />
             )}
             <span
-              className="text-sm uppercase tracking-wider font-medium"
+              className="text-[15px] uppercase tracking-wider font-medium"
               style={{ color: theme.textSecondary }}
             >
               {match.league}
             </span>
           </div>
           <span
-            className={`font-mono rounded-lg px-3 py-1 text-sm ${isLive ? 'glass-badge-live' : 'glass-badge'}`}
+            className={`font-mono rounded-lg px-3 py-1 text-[15px] ${isLive ? 'glass-badge-live' : 'glass-badge'}`}
             style={{ color: isLive ? '#fff' : theme.textSecondary }}
           >
             {isLive && '● '}{isLive ? `${match.status}${match.time ? ` ${match.time}` : ''}` : match.time}
@@ -65,19 +66,19 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
           {/* Home Team */}
           <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pr-1 md:pr-2">
             {match.homeLogo.startsWith('http') ? (
-              <img src={match.homeLogo} alt={match.home} className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain logo-glow" loading="lazy" />
+              <SafeImage src={match.homeLogo} alt={match.home} className="h-8 w-8 md:h-9 md:w-9 flex-shrink-0 object-contain logo-glow" loading="lazy" />
             ) : (
               <span className="text-xl md:text-2xl flex-shrink-0">{match.homeLogo}</span>
             )}
             <div className="flex flex-col min-w-0">
               <span className="hidden md:block text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Home</span>
-              <span className="text-sm md:text-base font-medium truncate" style={{ color: theme.text }}>{match.home}</span>
+              <span className="text-[15px] md:text-base font-medium line-clamp-2 break-words" style={{ color: theme.text }}>{match.home}</span>
             </div>
           </div>
 
           {/* Score */}
           <div
-            className="font-mono rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-base md:text-lg font-semibold flex-shrink-0 glass-score score-text"
+            className="font-mono rounded-lg px-3 md:px-4 py-2 md:py-2.5 text-[17px] md:text-lg font-semibold flex-shrink-0 glass-score score-text"
             style={{ color: theme.text }}
           >
             {match.homeScore !== null
@@ -89,15 +90,16 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
           <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pl-1 md:pl-2 justify-end">
             <div className="flex flex-col items-end min-w-0">
               <span className="hidden md:block text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Away</span>
-              <span className="text-sm md:text-base font-medium truncate text-right" style={{ color: theme.text }}>{match.away}</span>
+              <span className="text-[15px] md:text-base font-medium line-clamp-2 break-words text-right" style={{ color: theme.text }}>{match.away}</span>
             </div>
             {match.awayLogo.startsWith('http') ? (
-              <img src={match.awayLogo} alt={match.away} className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0 object-contain logo-glow" loading="lazy" />
+              <SafeImage src={match.awayLogo} alt={match.away} className="h-8 w-8 md:h-9 md:w-9 flex-shrink-0 object-contain logo-glow" loading="lazy" />
             ) : (
               <span className="text-xl md:text-2xl flex-shrink-0">{match.awayLogo}</span>
             )}
           </div>
         </div>
+
       </div>
     </Link>
   );

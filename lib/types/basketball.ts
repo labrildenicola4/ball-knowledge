@@ -26,6 +26,7 @@ export interface BasketballGame {
   venue?: string;
   broadcast?: string;
   date: string;
+  rawDate?: string;
   startTime: string;
   conferenceGame: boolean;
   neutralSite: boolean;

@@ -30,11 +30,8 @@ async function fetchESPN<T>(url: string, isLive = false): Promise<T> {
   // Check cache
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < cacheTTL) {
-    console.log(`[ESPN-NBA] Cache hit: ${url.substring(0, 80)}...`);
     return cached.data as T;
   }
-
-  console.log(`[ESPN-NBA] Fetching: ${url}`);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
@@ -46,7 +43,6 @@ async function fetchESPN<T>(url: string, isLive = false): Promise<T> {
   clearTimeout(timeout);
 
   if (!response.ok) {
-    console.error(`[ESPN-NBA] HTTP Error: ${response.status}`);
     throw new Error(`ESPN API Error: ${response.status}`);
   }
 
@@ -99,6 +95,7 @@ function transformGame(event: ESPNEvent): BasketballGame {
       month: 'short',
       day: 'numeric',
     }),
+    rawDate: event.date,
     startTime: new Date(event.date).toLocaleTimeString('en-US', {
       timeZone: 'America/New_York',
       hour: 'numeric',
@@ -134,6 +131,7 @@ export async function getNBAGameSummary(gameId: string): Promise<{
   game: BasketballGame;
   boxScore: BasketballBoxScore | null;
   lastPlay?: string;
+  enrichment?: NBAGameEnrichment;
 }> {
   const url = `${API_BASE}/summary?event=${gameId}`;
   const data = await fetchESPN<ESPNGameSummary>(url, true);
@@ -161,6 +159,7 @@ export async function getNBAGameSummary(gameId: string): Promise<{
       month: 'short',
       day: 'numeric',
     }),
+    rawDate: data.header.competitions[0].date,
     startTime: new Date(data.header.competitions[0].date).toLocaleTimeString('en-US', {
       timeZone: 'America/New_York',
       hour: 'numeric',
@@ -211,6 +210,7 @@ export async function getNBAGameSummary(gameId: string): Promise<{
         freeThrowsMade: parseInt(getStatValue('FT')?.split('-')[0]) || 0,
         freeThrowsAttempted: parseInt(getStatValue('FT')?.split('-')[1]) || 0,
         freeThrowPct: getStatValue('FT%') || '0.0',
+        plusMinus: getStatValue('+/-') || undefined,
       };
     };
 
@@ -246,6 +246,11 @@ export async function getNBAGameSummary(gameId: string): Promise<{
         turnovers: parseInt(getStat('turnovers') || getStat('Turnovers')) || 0,
         fouls: parseInt(getStat('fouls') || getStat('Fouls')) || 0,
         points: parseInt(getStat('points')) || game.homeTeam.score || 0,
+        fastBreakPoints: parseInt(getStat('fastBreakPoints') || getStat('Fast Break Points')) || undefined,
+        pointsInPaint: parseInt(getStat('pointsInPaint') || getStat('Points in the Paint') || getStat('Points In The Paint')) || undefined,
+        pointsOffTurnovers: parseInt(getStat('pointsOffTurnovers') || getStat('Points Off Turnovers')) || undefined,
+        secondChancePoints: parseInt(getStat('secondChancePoints') || getStat('Second Chance Points')) || undefined,
+        largestLead: parseInt(getStat('largestLead') || getStat('Largest Lead')) || undefined,
       };
     };
 
@@ -270,10 +275,114 @@ export async function getNBAGameSummary(gameId: string): Promise<{
     };
   }
 
+  // --- Enrichment extraction for RAG/AI use ---
+  const enrichment: NBAGameEnrichment = {};
+
+  // Venue metadata
+  const venueData = data.gameInfo?.venue;
+  if (venueData) {
+    enrichment.venue = {
+      name: venueData.fullName,
+      city: venueData.address?.city || venueData.city || '',
+      state: venueData.address?.state || venueData.state,
+      capacity: venueData.capacity,
+    };
+  }
+
+  // Attendance
+  if (data.gameInfo?.attendance != null) {
+    enrichment.attendance = data.gameInfo.attendance;
+  }
+
+  // Officials / referees
+  if (data.gameInfo?.officials?.length) {
+    enrichment.officials = data.gameInfo.officials
+      .map(o => o.fullName || o.displayName || '')
+      .filter(Boolean);
+  }
+
+  // Headlines from competition notes and news articles
+  const headlines: string[] = [];
+  const competitionNotes = data.header.competitions[0]?.notes;
+  if (competitionNotes?.length) {
+    competitionNotes.forEach(n => {
+      if (n.headline) headlines.push(n.headline);
+      else if (n.text) headlines.push(n.text);
+    });
+  }
+  const competitionHeadlines = data.header.competitions[0]?.headlines;
+  if (competitionHeadlines?.length) {
+    competitionHeadlines.forEach(h => {
+      if (h.shortLinkText) headlines.push(h.shortLinkText);
+      else if (h.description) headlines.push(h.description);
+    });
+  }
+  if (data.news?.articles?.length) {
+    data.news.articles.forEach(a => {
+      if (a.headline) headlines.push(a.headline);
+    });
+  }
+  if (headlines.length > 0) {
+    enrichment.headlines = headlines;
+  }
+
+  // Game note (recap description from news)
+  const recapArticle = data.news?.articles?.[0];
+  if (recapArticle?.description) {
+    enrichment.gameNote = recapArticle.description;
+  }
+
+  // Scoring plays
+  if (data.plays?.length) {
+    const scoringPlays = data.plays
+      .filter(p => p.scoringPlay && p.scoreValue && p.scoreValue > 0)
+      .map(p => ({
+        period: p.period?.number || 0,
+        clock: p.clock?.displayValue || '',
+        text: p.text,
+        awayScore: p.awayScore || 0,
+        homeScore: p.homeScore || 0,
+      }));
+    if (scoringPlays.length > 0) {
+      enrichment.scoringPlays = scoringPlays;
+    }
+  }
+
+  // Lead changes - count from plays where the lead switches
+  if (data.plays?.length) {
+    let leadChanges = 0;
+    let previousLeader: 'home' | 'away' | 'tie' | null = null;
+    for (const play of data.plays) {
+      if (play.homeScore != null && play.awayScore != null) {
+        const currentLeader: 'home' | 'away' | 'tie' =
+          play.homeScore > play.awayScore ? 'home' :
+          play.awayScore > play.homeScore ? 'away' : 'tie';
+        if (previousLeader && previousLeader !== 'tie' && currentLeader !== 'tie' && currentLeader !== previousLeader) {
+          leadChanges++;
+        }
+        previousLeader = currentLeader;
+      }
+    }
+    enrichment.leadChanges = leadChanges;
+  }
+
+  // Predictor / win probability
+  if (data.predictor) {
+    const homeWinPct = data.predictor.homeTeam?.gameProjection;
+    const awayWinPct = data.predictor.awayTeam?.gameProjection;
+    if (homeWinPct != null || awayWinPct != null) {
+      enrichment.predictor = {
+        homeWinPct: homeWinPct ?? (awayWinPct != null ? 100 - awayWinPct : 0),
+        awayWinPct: awayWinPct ?? (homeWinPct != null ? 100 - homeWinPct : 0),
+      };
+    }
+  }
+
   return {
     game,
     boxScore,
     lastPlay: data.plays?.[data.plays.length - 1]?.text,
+    enrichment: Object.keys(enrichment).length > 0 ? enrichment : undefined,
   };
 }
 
@@ -376,13 +485,12 @@ export async function getNBATeam(teamId: string): Promise<BasketballTeamInfo | n
           };
         });
       }
-    } catch (e) {
-      console.error('[ESPN-NBA] Failed to fetch schedule:', e);
+    } catch {
+      // silently ignore
     }
 
     return teamInfo;
-  } catch (error) {
-    console.error(`[ESPN-NBA] Failed to fetch team ${teamId}:`, error);
+  } catch {
     return null;
   }
 }
@@ -508,8 +616,7 @@ export async function getNBARoster(teamId: string): Promise<NBAPlayer[]> {
     players.sort((a, b) => (b.stats?.pointsPerGame || 0) - (a.stats?.pointsPerGame || 0));
 
     return players;
-  } catch (error) {
-    console.error(`[ESPN-NBA] Failed to fetch roster for team ${teamId}:`, error);
+  } catch {
     return [];
   }
 }
@@ -571,8 +678,6 @@ async function getAllTeamsStats(): Promise<Map<string, RawTeamStats>> {
   if (allTeamsStatsCache && Date.now() - allTeamsStatsCache.timestamp < STATS_CACHE_TTL) {
     return allTeamsStatsCache.data;
   }
-
-  console.log('[ESPN-NBA] Fetching all teams stats for rankings...');
 
   const statsMap = new Map<string, RawTeamStats>();
 
@@ -663,8 +768,7 @@ export async function getNBATeamStats(teamId: string): Promise<NBATeamSeasonStat
         rank: calculateRank(teamId, 'avgTurnovers', allStats, true), // Lower is better
       },
     };
-  } catch (error) {
-    console.error(`[ESPN-NBA] Failed to fetch stats for team ${teamId}:`, error);
+  } catch {
     return null;
   }
 }
@@ -704,8 +808,7 @@ export async function getNBARecentForm(teamId: string): Promise<NBAGameResult[]>
         score: `${teamScore}-${oppScore}`,
       };
     });
-  } catch (error) {
-    console.error(`[ESPN-NBA] Failed to fetch recent form for team ${teamId}:`, error);
+  } catch {
     return [];
   }
 }
@@ -783,6 +886,32 @@ export interface NBAGameResult {
   isHome: boolean;
   win: boolean;
   score: string;
+}
+
+// Enrichment data for RAG/AI use
+export interface NBAGameEnrichment {
+  venue?: {
+    name: string;
+    city: string;
+    state?: string;
+    capacity?: number;
+  };
+  attendance?: number;
+  officials?: string[];
+  headlines?: string[];
+  scoringPlays?: Array<{
+    period: number;
+    clock: string;
+    text: string;
+    awayScore: number;
+    homeScore: number;
+  }>;
+  leadChanges?: number;
+  gameNote?: string;
+  predictor?: {
+    homeWinPct: number;
+    awayWinPct: number;
+  };
 }
 
 // ESPN Standings Response Types
@@ -999,16 +1128,61 @@ interface ESPNGameSummary {
       };
       date: string;
       neutralSite?: boolean;
+      notes?: Array<{ headline?: string; text?: string }>;
+      headlines?: Array<{ description?: string; shortLinkText?: string }>;
     }>;
   };
   gameInfo?: {
-    venue?: { fullName: string };
+    venue?: {
+      fullName: string;
+      city?: string;
+      state?: string;
+      capacity?: number;
+      address?: { city?: string; state?: string };
+    };
+    attendance?: number;
+    officials?: Array<{
+      fullName?: string;
+      displayName?: string;
+    }>;
   };
   boxscore?: {
     players?: ESPNBoxscoreTeam[];
     teams?: ESPNBoxscoreTeamStats[];
   };
-  plays?: Array<{ text: string }>;
+  plays?: Array<{
+    text: string;
+    period?: { number: number };
+    clock?: { displayValue?: string };
+    scoreValue?: number;
+    scoringPlay?: boolean;
+    awayScore?: number;
+    homeScore?: number;
+    type?: { id?: string; text?: string };
+  }>;
+  leaders?: Array<{
+    name?: string;
+    displayName?: string;
+    leaders?: Array<{
+      displayValue?: string;
+      athlete?: { displayName?: string; headshot?: { href?: string } };
+    }>;
+  }>;
+  predictor?: {
+    homeTeam?: { gameProjection?: number; teamChanceLoss?: number };
+    awayTeam?: { gameProjection?: number; teamChanceLoss?: number };
+  };
+  news?: {
+    articles?: Array<{
+      headline?: string;
+      description?: string;
+    }>;
+  };
+  seasonseries?: Array<{
+    type?: string;
+    title?: string;
+    summary?: string;
+  }>;
 }
 
 // Stat leaders types
@@ -1076,8 +1250,7 @@ export async function getNBALeaders(): Promise<NBALeaders> {
       steals: extractLeaders('stealsPerGame'),
       blocks: extractLeaders('blocksPerGame'),
     };
-  } catch (error) {
-    console.error('[ESPN-NBA] Failed to fetch leaders:', error);
+  } catch {
     return { points: [], rebounds: [], assists: [], steals: [], blocks: [] };
   }
 }
@@ -1200,8 +1373,7 @@ export async function getNBATeamRankings(): Promise<NBATeamRankings> {
       fieldGoalPct: getRankings('fieldGoalPct'),
       threePointPct: getRankings('threePointPct'),
     };
-  } catch (error) {
-    console.error('[ESPN-NBA] Failed to fetch team rankings:', error);
+  } catch {
     return { points: [], rebounds: [], assists: [], fieldGoalPct: [], threePointPct: [] };
   }
 }

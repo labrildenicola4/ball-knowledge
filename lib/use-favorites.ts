@@ -4,7 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabaseBrowser } from './supabase';
 import { User } from '@supabase/supabase-js';
 
-type FavoriteType = 'team' | 'league' | 'tournament' | 'mlb_team' | 'nba_team' | 'ncaab_team' | 'ncaaf_team' | 'nfl_team' | 'conference';
+type FavoriteType = 'team' | 'league' | 'tournament' | 'mlb_team' | 'nba_team' | 'nhl_team' | 'ncaab_team' | 'ncaaf_team' | 'nfl_team' | 'conference' | 'f1_driver' | 'f1_constructor' | 'golfer' | 'ufc_fighter';
+
+export type { FavoriteType };
 
 interface Favorite {
   favorite_type: FavoriteType;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useTheme } from '@/lib/theme';
+import { tapLight } from '@/lib/haptics';
 
 const leagues = [
   // Top 5 European Leagues
@@ -16,6 +17,7 @@ const leagues = [
   { id: 'dfbpokal', name: 'DFB Pokal', icon: '🇩🇪' },
   { id: 'coupdefrance', name: 'Coupe de France', icon: '🇫🇷' },
   // Other Leagues
+  { id: 'mls', name: 'MLS', icon: '🇺🇸' },
   { id: 'championship', name: 'Championship', icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
   { id: 'eredivisie', name: 'Eredivisie', icon: '🇳🇱' },
   { id: 'primeiraliga', name: 'Primeira Liga', icon: '🇵🇹' },
@@ -43,7 +45,7 @@ export function LeagueTabs({ activeLeague, onLeagueChange }: LeagueTabsProps) {
       {leagues.map((league) => (
         <button
           key={league.id}
-          onClick={() => onLeagueChange(league.id)}
+          onClick={() => { tapLight(); onLeagueChange(league.id); }}
           className="whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium transition-colors"
           style={{
             backgroundColor: activeLeague === league.id ? theme.accent : 'transparent',

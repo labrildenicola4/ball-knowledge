@@ -1,29 +1,34 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
+import { tapLight } from '@/lib/haptics';
 import { BasketballBoxScore as BoxScoreType, BasketballPlayerStats, BasketballTeam } from '@/lib/types/basketball';
+import { SafeImage } from '@/components/SafeImage';
 
 interface BasketballBoxScoreProps {
   boxScore: BoxScoreType | null;
   isLoading?: boolean;
+  sport?: string;
 }
 
 interface PlayerRowProps {
   player: BasketballPlayerStats;
   showExtended?: boolean;
+  sport?: string;
 }
 
-function PlayerRow({ player, showExtended }: PlayerRowProps) {
+function PlayerRow({ player, showExtended, sport }: PlayerRowProps) {
   const { theme, darkMode } = useTheme();
 
-  return (
+  const row = (
     <div
-      className={`grid items-center px-3 py-2 text-[11px] ${player.starter ? '' : 'opacity-70'}`}
+      className={`grid items-center px-3 py-2.5 text-[12px] ${player.starter ? '' : 'opacity-70'}`}
       style={{
         gridTemplateColumns: showExtended
-          ? '1fr 35px 35px 35px 35px 35px 35px 35px 50px 50px 50px'
-          : '1fr 35px 35px 35px 35px 35px',
+          ? '1fr 35px 35px 35px 35px 35px 38px 35px 35px 50px 50px 50px'
+          : '1fr 35px 35px 35px 35px 35px 38px',
         borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
       }}
     >
@@ -31,7 +36,7 @@ function PlayerRow({ player, showExtended }: PlayerRowProps) {
         <span className="font-medium truncate" style={{ color: theme.text }}>
           {player.name}
         </span>
-        <span className="text-[9px]" style={{ color: theme.textSecondary }}>
+        <span className="text-[10px]" style={{ color: theme.textSecondary }}>
           {player.position}
         </span>
       </div>
@@ -49,6 +54,9 @@ function PlayerRow({ player, showExtended }: PlayerRowProps) {
       </span>
       <span className="text-center font-mono" style={{ color: theme.textSecondary }}>
         {player.blocks}
+      </span>
+      <span className="text-center font-mono text-[11px]" style={{ color: player.plusMinus && parseInt(player.plusMinus) > 0 ? theme.green : player.plusMinus && parseInt(player.plusMinus) < 0 ? theme.red : theme.textSecondary }}>
+        {player.plusMinus ? (parseInt(player.plusMinus) > 0 ? `+${player.plusMinus}` : player.plusMinus) : '-'}
       </span>
       {showExtended && (
         <>
@@ -71,15 +79,21 @@ function PlayerRow({ player, showExtended }: PlayerRowProps) {
       )}
     </div>
   );
+
+  if (sport && player.id) {
+    return <Link href={`/player/${sport}/${player.id}`} className="contents">{row}</Link>;
+  }
+  return row;
 }
 
 interface TeamBoxScoreProps {
   team: BasketballTeam;
   players: BasketballPlayerStats[];
   showExtended: boolean;
+  sport?: string;
 }
 
-function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
+function TeamBoxScore({ team, players, showExtended, sport }: TeamBoxScoreProps) {
   const { theme, darkMode } = useTheme();
 
   const starters = players.filter(p => p.starter);
@@ -96,13 +110,13 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
         style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
       >
         {team.logo && (
-          <img src={team.logo} alt={team.name} className="h-6 w-6 object-contain logo-glow" />
+          <SafeImage src={team.logo} alt={team.name} className="h-7 w-7 object-contain logo-glow" />
         )}
-        <span className="text-sm font-medium" style={{ color: theme.text }}>
+        <span className="text-[15px] font-medium" style={{ color: theme.text }}>
           {team.displayName}
         </span>
         {team.rank && (
-          <span className="text-[10px] font-bold" style={{ color: theme.accent }}>
+          <span className="text-[11px] font-bold" style={{ color: theme.accent }}>
             #{team.rank}
           </span>
         )}
@@ -110,11 +124,11 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
 
       {/* Column Headers */}
       <div
-        className="grid items-center px-3 py-2 text-[9px] font-semibold uppercase tracking-wider"
+        className="grid items-center px-3 py-2 text-[10px] font-semibold uppercase tracking-wider"
         style={{
           gridTemplateColumns: showExtended
-            ? '1fr 35px 35px 35px 35px 35px 35px 35px 50px 50px 50px'
-            : '1fr 35px 35px 35px 35px 35px',
+            ? '1fr 35px 35px 35px 35px 35px 38px 35px 35px 50px 50px 50px'
+            : '1fr 35px 35px 35px 35px 35px 38px',
           backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary,
           color: theme.textSecondary,
         }}
@@ -125,6 +139,7 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
         <span className="text-center">AST</span>
         <span className="text-center">STL</span>
         <span className="text-center">BLK</span>
+        <span className="text-center">+/-</span>
         {showExtended && (
           <>
             <span className="text-center">TO</span>
@@ -140,13 +155,13 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
       {starters.length > 0 && (
         <>
           <div
-            className="px-3 py-1 text-[9px] font-medium uppercase"
+            className="px-3 py-1.5 text-[10px] font-medium uppercase"
             style={{ backgroundColor: darkMode ? 'transparent' : theme.bg, color: theme.textSecondary }}
           >
             Starters
           </div>
           {starters.map(player => (
-            <PlayerRow key={player.id} player={player} showExtended={showExtended} />
+            <PlayerRow key={player.id} player={player} showExtended={showExtended} sport={sport} />
           ))}
         </>
       )}
@@ -155,13 +170,13 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
       {bench.length > 0 && (
         <>
           <div
-            className="px-3 py-1 text-[9px] font-medium uppercase"
+            className="px-3 py-1.5 text-[10px] font-medium uppercase"
             style={{ backgroundColor: darkMode ? 'transparent' : theme.bg, color: theme.textSecondary }}
           >
             Bench
           </div>
           {bench.map(player => (
-            <PlayerRow key={player.id} player={player} showExtended={showExtended} />
+            <PlayerRow key={player.id} player={player} showExtended={showExtended} sport={sport} />
           ))}
         </>
       )}
@@ -169,7 +184,7 @@ function TeamBoxScore({ team, players, showExtended }: TeamBoxScoreProps) {
   );
 }
 
-export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScoreProps) {
+export function BasketballBoxScore({ boxScore, isLoading, sport }: BasketballBoxScoreProps) {
   const { theme, darkMode } = useTheme();
   const [activeTeam, setActiveTeam] = useState<'home' | 'away'>('home');
   const [showExtended, setShowExtended] = useState(false);
@@ -211,7 +226,7 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
       {/* Team Toggle */}
       <div className="flex gap-2 mb-4">
         <button
-          onClick={() => setActiveTeam('home')}
+          onClick={() => { tapLight(); setActiveTeam('home'); }}
           className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${darkMode ? (activeTeam === 'home' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: activeTeam === 'home' ? theme.bgSecondary : 'transparent', border: `1px solid ${activeTeam === 'home' ? theme.border : 'transparent'}` }),
@@ -219,7 +234,7 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
           }}
         >
           {boxScore.homeTeam.team.logo && (
-            <img
+            <SafeImage
               src={boxScore.homeTeam.team.logo}
               alt=""
               className="h-5 w-5 object-contain logo-glow"
@@ -228,7 +243,7 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
           {boxScore.homeTeam.team.shortDisplayName}
         </button>
         <button
-          onClick={() => setActiveTeam('away')}
+          onClick={() => { tapLight(); setActiveTeam('away'); }}
           className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${darkMode ? (activeTeam === 'away' ? 'glass-pill-active' : 'glass-pill') : ''}`}
           style={{
             ...(darkMode ? {} : { backgroundColor: activeTeam === 'away' ? theme.bgSecondary : 'transparent', border: `1px solid ${activeTeam === 'away' ? theme.border : 'transparent'}` }),
@@ -236,7 +251,7 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
           }}
         >
           {boxScore.awayTeam.team.logo && (
-            <img
+            <SafeImage
               src={boxScore.awayTeam.team.logo}
               alt=""
               className="h-5 w-5 object-contain logo-glow"
@@ -249,8 +264,8 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
       {/* Expand/Collapse Toggle */}
       <div className="flex justify-end mb-3">
         <button
-          onClick={() => setShowExtended(!showExtended)}
-          className="text-[10px] px-2 py-1 rounded"
+          onClick={() => { tapLight(); setShowExtended(!showExtended); }}
+          className="text-[11px] px-3 py-1.5 rounded"
           style={{
             backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.4)' : theme.bgTertiary,
             color: theme.textSecondary,
@@ -265,6 +280,7 @@ export function BasketballBoxScore({ boxScore, isLoading }: BasketballBoxScorePr
         team={currentData.team}
         players={currentData.players}
         showExtended={showExtended}
+        sport={sport}
       />
     </div>
   );

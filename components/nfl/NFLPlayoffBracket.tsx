@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { BracketGame, BracketTeam } from '@/lib/api-espn-nfl-bracket';
+import { SafeImage } from '@/components/SafeImage';
 
 interface NFLPlayoffBracketProps {
   afc: {
@@ -46,7 +47,7 @@ function TeamRow({
           </span>
         )}
         {team.logo && (
-          <img src={team.logo} alt={team.name} className="h-4 w-4 object-contain logo-glow flex-shrink-0" />
+          <SafeImage src={team.logo} alt={team.name} className="h-4 w-4 object-contain logo-glow flex-shrink-0" />
         )}
         <span
           className="text-xs font-medium truncate"

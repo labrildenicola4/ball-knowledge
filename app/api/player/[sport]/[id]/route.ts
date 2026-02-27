@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getCachedPlayer, writeCachedPlayer } from '@/lib/player-cache-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,19 @@ const SPORT_MAP: Record<string, { sport: string; league: string }> = {
   f1: { sport: 'racing', league: 'f1' },
   golf: { sport: 'golf', league: 'pga' },
   ufc: { sport: 'mma', league: 'ufc' },
+};
+
+const F1_CONSTRUCTOR_COLORS: Record<string, string> = {
+  'Red Bull Racing': '3671C6',
+  'Ferrari': 'E8002D',
+  'Mercedes': '27F4D2',
+  'McLaren': 'FF8000',
+  'Aston Martin': '229971',
+  'Alpine': 'FF87BC',
+  'Williams': '64C4FF',
+  'RB': '6692FF',
+  'Kick Sauber': '52E252',
+  'Haas F1 Team': 'B6BABD',
 };
 
 interface PlayerData {
@@ -57,6 +71,177 @@ export async function GET(
       return NextResponse.json({ error: `Unknown sport: ${sport}` }, { status: 400 });
     }
 
+    // Cache-first: return immediately if fresh
+    const { player: cached, isFresh } = await getCachedPlayer(sport, id);
+    if (cached && isFresh) {
+      const response = NextResponse.json(cached);
+      response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=7200');
+      return response;
+    }
+
+    // Soccer: use API-Football instead of ESPN
+    if (sport.toLowerCase() === 'soccer') {
+      const apiFootballKey = process.env.API_FOOTBALL_KEY;
+      if (!apiFootballKey) {
+        return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
+      }
+
+      // Fetch 5 seasons in parallel (European seasons labeled by start year)
+      const currentYear = new Date().getFullYear();
+      const seasonYears = [currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4, currentYear - 5];
+
+      const seasonResults = await Promise.allSettled(
+        seasonYears.map(year =>
+          fetch(`https://v3.football.api-sports.io/players?id=${id}&season=${year}`, {
+            headers: { 'x-apisports-key': apiFootballKey },
+            next: { revalidate: 3600 },
+          }).then(res => res.ok ? res.json() : null)
+        )
+      );
+
+      // Collect seasons that returned data
+      const seasonData: Array<{ seasonYear: number; player: any; statistics: any[] }> = [];
+      for (let i = 0; i < seasonYears.length; i++) {
+        const result = seasonResults[i];
+        if (result.status === 'fulfilled' && result.value) {
+          const entries = result.value?.response;
+          if (entries?.length > 0 && entries[0].statistics?.length > 0) {
+            seasonData.push({
+              seasonYear: seasonYears[i],
+              player: entries[0].player,
+              statistics: entries[0].statistics,
+            });
+          }
+        }
+      }
+
+      if (seasonData.length === 0) {
+        return NextResponse.json({ error: 'Player not found' }, { status: 404 });
+      }
+
+      // Most recent season first (already sorted by seasonYears order)
+      const mostRecent = seasonData[0];
+      const p = mostRecent.player;
+      const mostRecentStats = mostRecent.statistics;
+      const primaryStats = mostRecentStats[0] || {};
+      const teamInfo = primaryStats.team;
+
+      // Helper: aggregate an array of competition stats into one row
+      const aggregateSeason = (stats: any[]) => {
+        const sumField = (getter: (s: any) => number | null | undefined): number | null => {
+          let total: number | null = null;
+          for (const s of stats) {
+            const v = getter(s);
+            if (v != null) total = (total ?? 0) + v;
+          }
+          return total;
+        };
+
+        const zeroIfNull = (v: number | null): number => v ?? 0;
+        const dashIfNull = (v: number | null): string | number => v != null ? v : '-';
+
+        // Weighted pass accuracy
+        const totalPasses = sumField(s => s.passes?.total);
+        let passAccuracy: string | number = '-';
+        if (totalPasses != null && totalPasses > 0) {
+          let accurateTotal = 0;
+          let hasAny = false;
+          for (const s of stats) {
+            const acc = s.passes?.accuracy != null ? Number(s.passes.accuracy) : null;
+            const tot = s.passes?.total;
+            if (acc != null && !isNaN(acc) && tot != null) {
+              hasAny = true;
+              accurateTotal += Math.round((acc / 100) * tot);
+            }
+          }
+          if (hasAny) {
+            passAccuracy = `${Math.round((accurateTotal / totalPasses) * 100)}%`;
+          }
+        }
+
+        // Dribble success rate
+        const drbAttempts = sumField(s => s.dribbles?.attempts);
+        const drbSuccess = sumField(s => s.dribbles?.success);
+        const drbPct: string | number = (drbAttempts != null && drbAttempts > 0 && drbSuccess != null)
+          ? `${Math.round((drbSuccess / drbAttempts) * 100)}%`
+          : '-';
+
+        return {
+          APP: dashIfNull(sumField(s => s.games?.appearences)),
+          GS: dashIfNull(sumField(s => s.games?.lineups)),
+          MIN: dashIfNull(sumField(s => s.games?.minutes)),
+          G: zeroIfNull(sumField(s => s.goals?.total)),
+          A: zeroIfNull(sumField(s => s.goals?.assists)),
+          SH: dashIfNull(sumField(s => s.shots?.total)),
+          SOT: dashIfNull(sumField(s => s.shots?.on)),
+          PAS: dashIfNull(totalPasses),
+          KP: dashIfNull(sumField(s => s.passes?.key)),
+          'PAS%': passAccuracy,
+          TKL: dashIfNull(sumField(s => s.tackles?.total)),
+          INT: dashIfNull(sumField(s => s.tackles?.interceptions)),
+          DRB: dashIfNull(drbAttempts),
+          'DRB%': drbPct,
+          FC: dashIfNull(sumField(s => s.fouls?.committed)),
+          YC: zeroIfNull(sumField(s => s.cards?.yellow)),
+          RC: zeroIfNull(sumField(s => s.cards?.red)),
+        };
+      };
+
+      // Build career stats: one aggregated row per season, newest first
+      const careerStats = seasonData.map(sd => {
+        const teamName = sd.statistics[0]?.team?.name || '';
+        const aggregated = aggregateSeason(sd.statistics);
+        return {
+          season: `${sd.seasonYear}-${String(sd.seasonYear + 1).slice(-2)}${teamName ? ` (${teamName})` : ''}`,
+          stats: aggregated as Record<string, string | number>,
+        };
+      });
+
+      // currentStats = aggregated most recent season
+      const currentStats = aggregateSeason(mostRecentStats) as Record<string, string | number>;
+
+      const statLabels = ['APP', 'GS', 'MIN', 'G', 'A', 'SH', 'SOT', 'PAS', 'KP', 'PAS%', 'TKL', 'INT', 'DRB', 'DRB%', 'FC', 'YC', 'RC'];
+
+      const soccerPlayer: PlayerData = {
+        id: String(p.id),
+        name: `${p.firstname} ${p.lastname}`,
+        firstName: p.firstname || '',
+        lastName: p.lastname || '',
+        jersey: null,
+        position: primaryStats.games?.position || '',
+        team: teamInfo ? {
+          id: String(teamInfo.id),
+          name: teamInfo.name || '',
+          abbreviation: teamInfo.name || '',
+          logo: teamInfo.logo || '',
+          color: '',
+        } : null,
+        headshot: p.photo || '',
+        height: p.height || '',
+        weight: p.weight || '',
+        age: p.age || null,
+        birthDate: p.birth?.date || null,
+        birthPlace: [p.birth?.place, p.birth?.country].filter(Boolean).join(', '),
+        nationality: p.nationality || '',
+        experience: null,
+        college: null,
+        draft: null,
+        sport: 'soccer',
+        currentStats,
+        careerStats,
+        statLabels,
+        extras: {
+          flagUrl: p.nationality ? `https://a.espncdn.com/i/teamlogos/countries/500/${p.nationality.toLowerCase().replace(/\s+/g, '-')}.png` : undefined,
+        },
+      };
+
+      writeCachedPlayer(sport, id, soccerPlayer);
+
+      const response = NextResponse.json(soccerPlayer);
+      response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=7200');
+      return response;
+    }
+
     const bioUrl = `https://site.web.api.espn.com/apis/common/v3/sports/${mapping.sport}/${mapping.league}/athletes/${id}`;
     const statsUrl = `https://site.web.api.espn.com/apis/common/v3/sports/${mapping.sport}/${mapping.league}/athletes/${id}/stats`;
 
@@ -83,7 +268,34 @@ export async function GET(
       }
     }
 
-    const player = normalizePlayer(bio, statsData, sport);
+    // For F1: fetch standings to get constructor/team info
+    let f1Team: { name: string } | undefined;
+    if (sport === 'f1') {
+      try {
+        const standingsRes = await fetchWithTimeout(
+          'https://site.web.api.espn.com/apis/v2/sports/racing/f1/standings'
+        );
+        if (standingsRes.ok) {
+          const standingsData = await standingsRes.json();
+          const entries = standingsData?.children?.[0]?.standings?.entries || [];
+          for (const entry of entries) {
+            if (String(entry.athlete?.id) === String(id)) {
+              const constructorName = entry.athlete?.team?.displayName || entry.athlete?.team?.name || '';
+              if (constructorName) {
+                f1Team = { name: constructorName };
+              }
+              break;
+            }
+          }
+        }
+      } catch {
+        // standings fetch failed, continue without team
+      }
+    }
+
+    const player = normalizePlayer(bio, statsData, sport, f1Team);
+
+    writeCachedPlayer(sport, id, player);
 
     const response = NextResponse.json(player);
     response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=7200');
@@ -108,7 +320,7 @@ async function fetchWithTimeout(url: string, timeoutMs = 10000): Promise<Respons
   }
 }
 
-function normalizePlayer(bio: any, statsData: any, sport: string): PlayerData {
+function normalizePlayer(bio: any, statsData: any, sport: string, f1Team?: { name: string }): PlayerData {
   const athlete = bio.athlete || bio;
 
   // Team extraction — varies by sport
@@ -129,7 +341,7 @@ function normalizePlayer(bio: any, statsData: any, sport: string): PlayerData {
   const birthPlaceStr = birthPlace
     ? [birthPlace.city, birthPlace.state, birthPlace.country].filter(Boolean).join(', ')
     : athlete.displayBirthPlace || '';
-  const nationality = birthPlace?.country || athlete.citizenship || '';
+  const nationality = birthPlace?.country || athlete.citizenship || athlete.flag?.alt || '';
 
   // College / draft
   const college = athlete.college?.name || athlete.college?.shortName || null;
@@ -141,9 +353,20 @@ function normalizePlayer(bio: any, statsData: any, sport: string): PlayerData {
   // Extras — sport-specific fields
   const extras: Record<string, any> = {};
 
-  // F1: constructor
+  // F1: constructor from standings or bio
   if (sport === 'f1') {
-    if (athlete.team?.name) extras.constructorName = athlete.team.name;
+    if (!team && f1Team) {
+      team = {
+        id: '',
+        name: f1Team.name,
+        abbreviation: f1Team.name,
+        logo: '',
+        color: F1_CONSTRUCTOR_COLORS[f1Team.name] || '',
+      };
+      extras.constructorName = f1Team.name;
+    } else if (athlete.team?.name) {
+      extras.constructorName = athlete.team.name;
+    }
     if (athlete.flag?.href) extras.flagUrl = athlete.flag.href;
   }
 
@@ -179,11 +402,11 @@ function normalizePlayer(bio: any, statsData: any, sport: string): PlayerData {
     headshot: athlete.headshot?.href || '',
     height: athlete.displayHeight || '',
     weight: athlete.displayWeight || '',
-    age: athlete.age || null,
+    age: athlete.age || calculateAgeFromDOB(athlete.displayDOB),
     birthDate: athlete.dateOfBirth || null,
     birthPlace: birthPlaceStr,
     nationality,
-    experience: athlete.experience?.years ?? null,
+    experience: athlete.experience?.years ?? (athlete.debutYear ? new Date().getFullYear() - athlete.debutYear : null),
     college,
     draft,
     sport,
@@ -192,6 +415,22 @@ function normalizePlayer(bio: any, statsData: any, sport: string): PlayerData {
     statLabels,
     extras,
   };
+}
+
+function calculateAgeFromDOB(displayDOB: string | undefined): number | null {
+  if (!displayDOB) return null;
+  const parts = displayDOB.split('/');
+  if (parts.length !== 3) return null;
+  const [month, day, year] = parts.map(Number);
+  if (!month || !day || !year) return null;
+  const dob = new Date(year, month - 1, day);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+  return age > 0 ? age : null;
 }
 
 function parseStats(

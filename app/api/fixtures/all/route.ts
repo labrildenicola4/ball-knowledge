@@ -47,16 +47,12 @@ export async function GET(request: NextRequest) {
   // Default to today in Eastern Time if no date provided
   const targetDate = date || getEasternDate(new Date());
 
-  console.log(`[Fixtures/All] Fetching fixtures for ${targetDate} (API-Football)`);
-
   try {
     // Fetch all fixtures for the date from API-Football
     const fixtures = await getFixturesByDate(targetDate);
 
     // Filter to only supported leagues
     const relevantFixtures = fixtures.filter(f => SUPPORTED_LEAGUE_IDS.has(f.league.id));
-
-    console.log(`[Fixtures/All] Found ${relevantFixtures.length} fixtures in supported leagues`);
 
     // Transform to our format
     const allMatches: TransformedMatch[] = [];
@@ -181,12 +177,8 @@ export async function GET(request: NextRequest) {
           onConflict: 'api_id,sport_type',
           ignoreDuplicates: false,
         })
-        .then(({ error }) => {
-          if (error) {
-            console.error('[Fixtures/All] Error writing to cache:', error);
-          } else {
-            console.log(`[Fixtures/All] Cached ${fixturesForDb.length} fixtures to Supabase`);
-          }
+        .then(() => {
+          // silently ignore
         });
     }
 
@@ -197,8 +189,7 @@ export async function GET(request: NextRequest) {
       source: 'api-football',
     });
 
-  } catch (error) {
-    console.error('[Fixtures/All] Error:', error);
+  } catch {
     return NextResponse.json({
       error: 'Failed to fetch fixtures',
       matches: [],

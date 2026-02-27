@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { ThemeProvider } from '@/lib/theme';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { CapacitorInit } from '@/components/CapacitorInit';
+import { OfflineOverlay } from '@/components/OfflineOverlay';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -13,8 +15,8 @@ export const metadata: Metadata = {
     title: 'Ball Knowledge',
   },
   icons: {
-    icon: '/icons/icon-192.png',
-    apple: '/icons/icon-192.png',
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
 };
 
@@ -54,35 +56,8 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#4a5d3a" />
 
-        {/* Apple Touch Icons */}
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-
-        {/* Splash Screens for iOS */}
-        <link
-          rel="apple-touch-startup-image"
-          href="/splash/splash-640x1136.png"
-          media="(device-width: 320px) and (device-height: 568px)"
-        />
-        <link
-          rel="apple-touch-startup-image"
-          href="/splash/splash-750x1334.png"
-          media="(device-width: 375px) and (device-height: 667px)"
-        />
-        <link
-          rel="apple-touch-startup-image"
-          href="/splash/splash-1242x2208.png"
-          media="(device-width: 414px) and (device-height: 736px)"
-        />
-        <link
-          rel="apple-touch-startup-image"
-          href="/splash/splash-1125x2436.png"
-          media="(device-width: 375px) and (device-height: 812px)"
-        />
-        <link
-          rel="apple-touch-startup-image"
-          href="/splash/splash-1284x2778.png"
-          media="(device-width: 428px) and (device-height: 926px)"
-        />
+        {/* Apple Touch Icon */}
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="">
         {/* Aurora orbs - colored blobs that drift behind glass for depth */}
@@ -92,6 +67,8 @@ export default function RootLayout({
           <div className="aurora-orb aurora-orb-3" />
         </div>
         <ThemeProvider>
+          <CapacitorInit />
+          <OfflineOverlay />
           <ErrorBoundary>
             <main className="page-enter" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>{children}</main>
           </ErrorBoundary>

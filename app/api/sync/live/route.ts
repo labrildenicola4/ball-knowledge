@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
   }
 
   const startTime = Date.now();
-  console.log('[Sync/Live] Starting live match sync...');
 
   try {
     const supabase = createServiceClient();
@@ -48,7 +47,6 @@ export async function GET(request: NextRequest) {
       .in('status', [...LIVE_STATUSES, 'NS']);
 
     if (fetchError) {
-      console.error('[Sync/Live] Error fetching potential live matches:', fetchError);
       return NextResponse.json({
         error: 'Failed to fetch matches',
         details: fetchError.message,
@@ -57,7 +55,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (!potentialLiveMatches || potentialLiveMatches.length === 0) {
-      console.log('[Sync/Live] No matches found for today');
       return NextResponse.json({
         success: true,
         updated: 0,
@@ -81,7 +78,6 @@ export async function GET(request: NextRequest) {
     });
 
     if (matchesToCheck.length === 0) {
-      console.log('[Sync/Live] No matches in the active time window');
       return NextResponse.json({
         success: true,
         updated: 0,
@@ -89,8 +85,6 @@ export async function GET(request: NextRequest) {
         duration: `${Date.now() - startTime}ms`,
       });
     }
-
-    console.log(`[Sync/Live] Found ${matchesToCheck.length} matches to check (${potentialLiveMatches.length} total today)`);
 
     let updated = 0;
     const errors: string[] = [];
@@ -142,17 +136,14 @@ export async function GET(request: NextRequest) {
           errors.push(`Match ${match.api_id}: ${updateError.message}`);
         } else {
           updated++;
-          console.log(`[Sync/Live] Updated match ${match.api_id}: ${status} ${fixture.goals.home ?? 0}-${fixture.goals.away ?? 0}`);
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Unknown error';
         errors.push(`Match ${match.api_id}: ${msg}`);
-        console.error(`[Sync/Live] Error updating match ${match.api_id}:`, err);
       }
     }
 
     const duration = Date.now() - startTime;
-    console.log(`[Sync/Live] Completed in ${duration}ms. Updated ${updated}/${matchesToCheck.length} matches.`);
 
     return NextResponse.json({
       success: true,
@@ -163,7 +154,6 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[Sync/Live] Fatal error:', error);
     return NextResponse.json(
       { error: 'Sync failed', message: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

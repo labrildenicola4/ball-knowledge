@@ -25,6 +25,7 @@ export interface NFLGame {
   venue?: string;
   broadcast?: string;
   date: string;
+  rawDate?: string;
   startTime: string;
   week?: number;
   seasonType?: string;

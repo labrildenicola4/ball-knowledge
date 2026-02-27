@@ -25,6 +25,7 @@ export const LEAGUES: LeagueConfig[] = [
   { key: 'eredivisie', slug: 'eredivisie', id: 88, code: 'DED', name: 'Eredivisie', shortName: 'Eredivisie', country: 'Netherlands', type: 'league' },
   { key: 'championship', slug: 'championship', id: 40, code: 'ELC', name: 'EFL Championship', shortName: 'Championship', country: 'England', type: 'league' },
   { key: 'brasileirao', slug: 'brasileirao', id: 71, code: 'BSA', name: 'Brasileirao Serie A', shortName: 'Brasileirao', country: 'Brazil', type: 'league' },
+  { key: 'mls', slug: 'mls', id: 253, code: 'MLS', name: 'Major League Soccer', shortName: 'MLS', country: 'USA', type: 'league' },
   // Domestic cups
   { key: 'facup', slug: 'fa-cup', id: 45, code: 'FAC', name: 'FA Cup', shortName: 'FA Cup', country: 'England', type: 'cup' },
   { key: 'copadelrey', slug: 'copa-del-rey', id: 143, code: 'CDR', name: 'Copa del Rey', shortName: 'Copa del Rey', country: 'Spain', type: 'cup' },
@@ -66,6 +67,7 @@ export const LEAGUE_ID_TO_CODE: Record<number, string> = {
   66: 'CDF',   // Coupe de France
   137: 'CIT',  // Coppa Italia
   81: 'DFB',   // DFB Pokal
+  253: 'MLS',  // Major League Soccer
 };
 
 // Reverse mapping: short code -> API-Football ID
@@ -92,6 +94,7 @@ export const CODE_TO_LEAGUE_KEY: Record<string, string> = {
   'CDF': 'coupdefrance',
   'CIT': 'coppadeitalia',
   'DFB': 'dfbpokal',
+  'MLS': 'mls',
 };
 
 // Set of supported league IDs for filtering

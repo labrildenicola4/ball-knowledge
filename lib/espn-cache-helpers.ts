@@ -12,9 +12,10 @@ import type { BasketballGame, BasketballTeam } from '@/lib/types/basketball';
 import type { NFLGame, NFLTeam } from '@/lib/types/nfl';
 import type { MLBGame, MLBTeam } from '@/lib/types/mlb';
 import type { CollegeFootballGame, CollegeFootballTeam } from '@/lib/types/college-football';
+import type { NHLGame, NHLTeam } from '@/lib/types/nhl';
 
-// Freshness threshold: 60 seconds
-const FRESHNESS_TTL_MS = 60 * 1000;
+// Freshness threshold: 90 seconds (survives 2 SWR cycles at 30s intervals)
+const FRESHNESS_TTL_MS = 90 * 1000;
 
 /**
  * Query espn_games_cache for a sport + date.
@@ -202,6 +203,38 @@ export function cacheToBasketballGame(r: ESPNGameRecord): BasketballGame {
     conferenceGame: r.conference_game,
     neutralSite: r.neutral_site,
     conference: ((r.extra_data as Record<string, unknown>)?.conference as string) ?? undefined,
+  };
+}
+
+// ---------- NHL ----------
+
+function buildNHLTeam(r: ESPNGameRecord, side: 'home' | 'away'): NHLTeam {
+  return {
+    id: r[`${side}_team_id`],
+    name: r[`${side}_team_name`],
+    abbreviation: r[`${side}_team_abbrev`],
+    displayName: r[`${side}_team_name`],
+    shortDisplayName: r[`${side}_team_abbrev`],
+    logo: r[`${side}_team_logo`] || '',
+    color: r[`${side}_team_color`] ?? undefined,
+    record: r[`${side}_team_record`] ?? undefined,
+    score: r[`${side}_score`] ?? undefined,
+  };
+}
+
+export function cacheToNHLGame(r: ESPNGameRecord): NHLGame {
+  return {
+    id: r.espn_game_id,
+    status: r.status as NHLGame['status'],
+    statusDetail: r.status_detail,
+    period: r.period || 0,
+    clock: r.clock || '',
+    homeTeam: buildNHLTeam(r, 'home'),
+    awayTeam: buildNHLTeam(r, 'away'),
+    venue: r.venue ?? undefined,
+    broadcast: r.broadcast ?? undefined,
+    date: formatDate(r.kickoff),
+    startTime: formatTime(r.kickoff),
   };
 }
 

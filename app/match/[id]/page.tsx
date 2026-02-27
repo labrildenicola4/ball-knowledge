@@ -1,18 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { ChevronLeft, MapPin, Calendar, Trophy, TableIcon, Sun, Moon, BarChart3, Heart, Users } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
+import { useSafeBack } from '@/lib/use-safe-back';
 import { BottomNav } from '@/components/BottomNav';
+import { GameOdds } from '@/components/GameOdds';
 import { MatchStandings } from '@/components/MatchStandings';
 import { LiveStats, LiveStatsData } from '@/components/LiveStats';
 import { MatchLineup, LineupPlayer } from '@/components/MatchLineup';
 import { useLiveMatch } from '@/lib/use-live-scores';
 import { supabaseBrowser } from '@/lib/supabase';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { SafeImage } from '@/components/SafeImage';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'Match not found' : 'Failed to fetch');
@@ -62,16 +67,9 @@ interface MatchDetails {
   stats: LiveStatsData | null;
 }
 
-interface PolymarketOdds {
-  homeWin: number;
-  draw: number;
-  awayWin: number;
-  source: string;
-}
-
 export default function MatchPage() {
   const params = useParams();
-  const router = useRouter();
+  const goBack = useSafeBack('/');
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const matchId = params.id;
   const numericMatchId = matchId ? parseInt(String(matchId)) : null;
@@ -88,7 +86,7 @@ export default function MatchPage() {
 
   // STEP 2: Load full match data in background (H2H, stats, form)
   // For live matches, poll every 30 seconds for updated stats/lineups
-  const { data: fullMatch, error: swrError, isValidating: isRefreshing } = useSWR<MatchDetails>(
+  const { data: fullMatch, error: swrError, isValidating: isRefreshing, mutate } = useSWR<MatchDetails>(
     matchId ? `/api/match/${matchId}` : null,
     fetcher,
     {
@@ -149,44 +147,9 @@ export default function MatchPage() {
 
   const standings = standingsData?.standings || [];
 
-  // Fetch Polymarket odds for upcoming matches
-  // Track matchId to reset URL when navigating to different match
-  const [oddsMatchId, setOddsMatchId] = useState<string | null>(null);
-  const [stableOddsUrl, setStableOddsUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Reset if matchId changed
-    if (matchId && matchId !== oddsMatchId) {
-      setOddsMatchId(String(matchId));
-      setStableOddsUrl(null);
-    }
-  }, [matchId, oddsMatchId]);
-
   // Check if match is upcoming or live (not finished)
   const isLive = ['LIVE', '1H', '2H', 'HT', 'ET', 'PEN', 'IN_PLAY', 'PAUSED'].includes(match?.status || '');
   const isUpcoming = match?.status === 'NS' || match?.status === 'SCHEDULED' || match?.status === 'TIMED';
-  const showOdds = isUpcoming || isLive;
-
-  useEffect(() => {
-    // Set odds URL when we have match data for upcoming or live match
-    if (showOdds && matchId && match?.home?.name && match?.away?.name && !stableOddsUrl) {
-      setStableOddsUrl(
-        `/api/odds/${matchId}?home=${encodeURIComponent(match.home.name)}&away=${encodeURIComponent(match.away.name)}&league=${encodeURIComponent(match.leagueCode || '')}`
-      );
-    }
-  }, [match, matchId, stableOddsUrl, showOdds]);
-
-  const { data: oddsData } = useSWR<{ odds: PolymarketOdds | null }>(
-    stableOddsUrl,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: isLive ? 30000 : 300000, // 30s for live, 5min for upcoming
-      refreshInterval: isLive ? 30000 : 0, // Auto-refresh every 30s when live
-      revalidateOnReconnect: false,
-    }
-  );
-  const odds = oddsData?.odds || null;
 
   // Tab state - must be at top level with other hooks (before any early returns)
   const [activeTab, setActiveTab] = useState<'stats' | 'lineups' | 'h2h' | 'table'>('stats');
@@ -277,7 +240,7 @@ export default function MatchPage() {
       <div className="flex min-h-screen flex-col items-center justify-center transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error || 'Match not found'}</p>
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className={`tap-highlight mt-4 rounded-lg px-4 py-2.5 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
           style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
@@ -316,9 +279,9 @@ export default function MatchPage() {
   return (
     <div className="flex min-h-screen flex-col transition-theme overflow-x-hidden" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <header className="safe-top flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full"
           style={{ border: `1px solid ${theme.border}` }}
         >
@@ -356,10 +319,10 @@ export default function MatchPage() {
 
       {/* Main Score Section */}
       <section className={`px-4 py-8 overflow-hidden ${darkMode ? 'glass-section' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}>
-        <div className="flex items-center justify-between overflow-hidden">
+        <div className="flex items-start justify-between overflow-hidden">
           {/* Home Team */}
-          <div className="flex-1 text-center">
-            <Link href={`/team/${match.home.id}`} className="transition-opacity hover:opacity-80">
+          <div className="flex-1 min-w-0 text-center">
+            <Link href={`/team/${match.home.id}`} className="transition-opacity hover:opacity-80 logo-press">
               <span
                 className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider"
                 style={{ color: theme.textSecondary }}
@@ -367,17 +330,13 @@ export default function MatchPage() {
                 Home
               </span>
               <div className="mx-auto mb-3 h-20 w-20">
-                <img src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain logo-glow" />
+                <SafeImage src={match.home.logo} alt={match.home.name} className="h-full w-full object-contain logo-glow" />
               </div>
             </Link>
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1">
-                <p className="text-sm font-medium" style={{ color: theme.text }}>{match.home.name}</p>
-                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="tap-highlight p-2.5">
-                  <Heart size={12} fill={homeFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
-                </button>
-              </div>
-            </div>
+            <p className="text-sm font-medium leading-tight px-1" style={{ color: theme.text }}>{match.home.name}</p>
+            <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.home.id, true); }} className="tap-highlight p-1.5 mt-0.5">
+              <Heart size={12} fill={homeFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
+            </button>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.home.shortName}</p>
             {homeForm.length > 0 && renderForm(homeForm)}
           </div>
@@ -446,8 +405,8 @@ export default function MatchPage() {
           </div>
 
           {/* Away Team */}
-          <div className="flex-1 text-center">
-            <Link href={`/team/${match.away.id}`} className="transition-opacity hover:opacity-80">
+          <div className="flex-1 min-w-0 text-center">
+            <Link href={`/team/${match.away.id}`} className="transition-opacity hover:opacity-80 logo-press">
               <span
                 className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider"
                 style={{ color: theme.textSecondary }}
@@ -455,73 +414,30 @@ export default function MatchPage() {
                 Away
               </span>
               <div className="mx-auto mb-3 h-20 w-20">
-                <img src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain logo-glow" />
+                <SafeImage src={match.away.logo} alt={match.away.name} className="h-full w-full object-contain logo-glow" />
               </div>
             </Link>
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1">
-                <p className="text-sm font-medium" style={{ color: theme.text }}>{match.away.name}</p>
-                <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="tap-highlight p-2.5">
-                  <Heart size={12} fill={awayFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
-                </button>
-              </div>
-            </div>
+            <p className="text-sm font-medium leading-tight px-1" style={{ color: theme.text }}>{match.away.name}</p>
+            <button onClick={(e) => { e.preventDefault(); toggleFavorite(match.away.id, false); }} className="tap-highlight p-1.5 mt-0.5">
+              <Heart size={12} fill={awayFavorite ? '#d68b94' : 'none'} style={{ color: '#d68b94' }} />
+            </button>
             <p className="text-[10px]" style={{ color: theme.textSecondary }}>{match.away.shortName}</p>
             {awayForm.length > 0 && renderForm(awayForm)}
           </div>
         </div>
 
-        {/* Polymarket Odds - Only for upcoming matches */}
-        {showOdds && odds && (
-          <div className="mt-6 flex justify-center">
-            <div
-              className={`rounded-xl px-5 py-3 w-full max-w-[280px] ${darkMode ? 'glass-card' : ''}`}
-              style={darkMode ? undefined : { backgroundColor: theme.bgTertiary, border: `1px solid ${theme.border}` }}
-            >
-              <div className="flex justify-between items-center">
-                <div className="text-center flex-1">
-                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
-                    Home
-                  </p>
-                  <p className="text-[18px] font-bold" style={{ color: theme.green }}>
-                    {Math.round(odds.homeWin * 100)}%
-                  </p>
-                </div>
-                <div className="text-center flex-1">
-                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
-                    Draw
-                  </p>
-                  <p className="text-[18px] font-semibold" style={{ color: theme.gold }}>
-                    {Math.round(odds.draw * 100)}%
-                  </p>
-                </div>
-                <div className="text-center flex-1">
-                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: theme.textSecondary }}>
-                    Away
-                  </p>
-                  <p className="text-[18px] font-bold" style={{ color: theme.red }}>
-                    {Math.round(odds.awayWin * 100)}%
-                  </p>
-                </div>
-              </div>
-              <a
-                href="https://polymarket.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 flex items-center justify-center gap-1.5 opacity-70 hover:opacity-100 transition-opacity"
-              >
-                <span className="text-[9px]" style={{ color: theme.textSecondary }}>
-                  Powered by
-                </span>
-                <img
-                  src={darkMode ? '/logo-white.svg' : '/logo-black.svg'}
-                  alt="Polymarket"
-                  className="h-3"
-                />
-              </a>
-            </div>
-          </div>
-        )}
+        <GameOdds
+          sport="soccer"
+          homeAbbrev=""
+          awayAbbrev=""
+          gameDate=""
+          isLive={isLive}
+          isUpcoming={isUpcoming}
+          matchId={numericMatchId || undefined}
+          homeTeamName={match.home.name}
+          awayTeamName={match.away.name}
+          leagueCode={match.leagueCode || ''}
+        />
       </section>
 
       {/* Match Info */}
@@ -566,6 +482,7 @@ export default function MatchPage() {
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto pb-24">
+        <PullToRefresh onRefresh={async () => { await mutate(); }}>
         {/* Stats Tab */}
         {activeTab === 'stats' && (
           <section className="px-4 py-6">
@@ -717,7 +634,7 @@ export default function MatchPage() {
                               {pastMatch.home}
                             </span>
                             {pastMatch.homeLogo && (
-                              <img src={pastMatch.homeLogo} alt="" className="w-5 h-5 object-contain logo-glow" />
+                              <SafeImage src={pastMatch.homeLogo} alt="" className="w-5 h-5 object-contain logo-glow" />
                             )}
                           </div>
 
@@ -732,7 +649,7 @@ export default function MatchPage() {
                           {/* Away Team */}
                           <div className="flex-1 flex items-center gap-2">
                             {pastMatch.awayLogo && (
-                              <img src={pastMatch.awayLogo} alt="" className="w-5 h-5 object-contain logo-glow" />
+                              <SafeImage src={pastMatch.awayLogo} alt="" className="w-5 h-5 object-contain logo-glow" />
                             )}
                             <span
                               className="text-[12px] font-medium truncate"
@@ -790,6 +707,7 @@ export default function MatchPage() {
             )}
           </section>
         )}
+        </PullToRefresh>
       </div>
 
       <BottomNav />

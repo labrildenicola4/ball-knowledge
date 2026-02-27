@@ -93,7 +93,6 @@ export async function GET(request: Request) {
   }
 
   const startTime = Date.now();
-  console.log('[Sync/LiveAll] Starting bulk live sync...');
 
   try {
     const supabase = createServiceClient();
@@ -107,21 +106,16 @@ export async function GET(request: Request) {
     });
 
     if (!response.ok) {
-      console.error(`[Sync/LiveAll] API error: ${response.status}`);
       return NextResponse.json({ error: 'API request failed' }, { status: 500 });
     }
 
     const data = await response.json();
     const allLiveFixtures: LiveFixture[] = data.response || [];
 
-    console.log(`[Sync/LiveAll] API returned ${allLiveFixtures.length} live matches globally`);
-
     // Filter to only leagues we support
     const relevantFixtures = allLiveFixtures.filter(f =>
       SUPPORTED_LEAGUES.has(f.league.id)
     );
-
-    console.log(`[Sync/LiveAll] ${relevantFixtures.length} matches in supported leagues`);
 
     if (relevantFixtures.length === 0) {
       return NextResponse.json({
@@ -239,7 +233,6 @@ export async function GET(request: Request) {
               return { success: false, error: `Update error: ${updateError.message}` };
             }
 
-            console.log(`[Sync/LiveAll] Updated: ${update.home_team_name} ${update.home_score}-${update.away_score} ${update.away_team_name} (${update.status} ${update.minute || ''})`);
             return { success: true };
           } catch (err) {
             return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
@@ -301,13 +294,11 @@ export async function GET(request: Request) {
             .update({ status: 'FT', updated_at: new Date().toISOString() })
             .eq('id', orphan.id);
           finalized++;
-          console.log(`[Sync/LiveAll] Finalized: ${orphan.home_team_name} vs ${orphan.away_team_name} (${isCup ? 'cup' : 'league'})`);
         }
       }
     }
 
     const duration = Date.now() - startTime;
-    console.log(`[Sync/LiveAll] Completed in ${duration}ms. Updated ${updated}/${relevantFixtures.length} matches. Finalized ${finalized} matches.`);
 
     return NextResponse.json({
       success: true,
@@ -320,7 +311,6 @@ export async function GET(request: Request) {
     });
 
   } catch (error) {
-    console.error('[Sync/LiveAll] Fatal error:', error);
     return NextResponse.json(
       { error: 'Sync failed', message: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

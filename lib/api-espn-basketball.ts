@@ -35,11 +35,8 @@ async function fetchESPN<T>(
   // Check cache
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < cacheTTL) {
-    console.log(`[ESPN-Basketball] Cache hit: ${url.substring(0, 80)}...`);
     return cached.data as T;
   }
-
-  console.log(`[ESPN-Basketball] Fetching: ${url}`);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
@@ -51,7 +48,6 @@ async function fetchESPN<T>(
   clearTimeout(timeout);
 
   if (!response.ok) {
-    console.error(`[ESPN-Basketball] HTTP Error: ${response.status}`);
     throw new Error(`ESPN API Error: ${response.status}`);
   }
 
@@ -109,6 +105,7 @@ function transformGame(event: ESPNEvent): BasketballGame {
       month: 'short',
       day: 'numeric',
     }),
+    rawDate: event.date,
     startTime: new Date(event.date).toLocaleTimeString('en-US', {
       timeZone: 'America/New_York',
       hour: 'numeric',
@@ -177,6 +174,7 @@ export async function getBasketballGameSummary(gameId: string): Promise<{
       month: 'short',
       day: 'numeric',
     }),
+    rawDate: data.header.competitions[0].date,
     startTime: new Date(data.header.competitions[0].date).toLocaleTimeString('en-US', {
       timeZone: 'America/New_York',
       hour: 'numeric',
@@ -421,8 +419,7 @@ export async function getBasketballTeam(teamId: string): Promise<BasketballTeamI
         capacity: team.franchise.venue.capacity,
       } : undefined,
     };
-  } catch (error) {
-    console.error(`[ESPN-Basketball] Error fetching team ${teamId}:`, error);
+  } catch {
     return null;
   }
 }
@@ -563,8 +560,7 @@ export async function getCollegeBasketballRoster(teamId: string): Promise<Colleg
     players.sort((a, b) => (b.stats?.pointsPerGame || 0) - (a.stats?.pointsPerGame || 0));
 
     return players;
-  } catch (error) {
-    console.error(`[ESPN-Basketball] Failed to fetch roster for team ${teamId}:`, error);
+  } catch {
     return [];
   }
 }
@@ -592,8 +588,7 @@ export async function getCollegeBasketballTeamStats(teamId: string): Promise<Col
       threePointPct: { value: formatValue(getStatValue('threePointFieldGoalPct')) },
       freeThrowPct: { value: formatValue(getStatValue('freeThrowPct')) },
     };
-  } catch (error) {
-    console.error(`[ESPN-Basketball] Failed to fetch stats for team ${teamId}:`, error);
+  } catch {
     return null;
   }
 }
@@ -633,8 +628,7 @@ export async function getCollegeBasketballRecentForm(teamId: string): Promise<Co
         score: `${teamScore}-${oppScore}`,
       };
     });
-  } catch (error) {
-    console.error(`[ESPN-Basketball] Failed to fetch recent form for team ${teamId}:`, error);
+  } catch {
     return [];
   }
 }
@@ -712,8 +706,7 @@ export async function getCollegeBasketballSchedule(teamId: string): Promise<Coll
         result,
       };
     });
-  } catch (error) {
-    console.error(`[ESPN-Basketball] Failed to fetch schedule for team ${teamId}:`, error);
+  } catch {
     return [];
   }
 }
@@ -729,7 +722,6 @@ export async function getCollegeBasketballConferenceStandings(conferenceGroupId:
     // When querying a specific conference, data is at top level (not in children)
     const entries = data.standings?.entries;
     if (!entries || entries.length === 0) {
-      console.log(`[ESPN-Basketball] No standings found for conference ${conferenceGroupId}`);
       return null;
     }
 
@@ -762,8 +754,7 @@ export async function getCollegeBasketballConferenceStandings(conferenceGroupId:
       name: data.name || 'Unknown',
       teams,
     };
-  } catch (error) {
-    console.error(`[ESPN-Basketball] Failed to fetch standings for conference ${conferenceGroupId}:`, error);
+  } catch {
     return null;
   }
 }
@@ -796,8 +787,7 @@ export async function getBasketballRankings(): Promise<BasketballRanking[]> {
         trend: rank.current < rank.previous ? 'up' : rank.current > rank.previous ? 'down' : 'same',
       };
     });
-  } catch (error) {
-    console.error('[ESPN-Basketball] Error fetching rankings:', error);
+  } catch {
     return [];
   }
 }

@@ -8,6 +8,8 @@ export async function tapLight() {
     if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform()) {
       const { Haptics, ImpactStyle } = await import(/* webpackIgnore: true */ HAPTICS_MODULE);
       await Haptics.impact({ style: ImpactStyle.Light });
+    } else if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(10);
     }
   } catch {}
 }
@@ -17,6 +19,8 @@ export async function tapMedium() {
     if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform()) {
       const { Haptics, ImpactStyle } = await import(/* webpackIgnore: true */ HAPTICS_MODULE);
       await Haptics.impact({ style: ImpactStyle.Medium });
+    } else if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(20);
     }
   } catch {}
 }

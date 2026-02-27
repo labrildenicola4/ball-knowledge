@@ -103,51 +103,24 @@ export async function GET(
 
     // Fetch basic data in parallel (fast endpoints)
     const [standings, topScorers, topAssists, recentFixtures, upcomingFixtures] = await Promise.all([
-      getStandings(league.id).catch((err) => {
-        console.error(`[API/League] Failed to fetch standings:`, err);
-        return [] as Standing[];
-      }),
-      getTopScorers(league.id).catch((err) => {
-        console.error(`[API/League] Failed to fetch top scorers:`, err);
-        return [] as TopScorer[];
-      }),
-      getTopAssists(league.id).catch((err) => {
-        console.error(`[API/League] Failed to fetch top assists:`, err);
-        return [] as TopScorer[];
-      }),
-      getLeagueFixtures(league.id, { last: 10 }).catch((err) => {
-        console.error(`[API/League] Failed to fetch recent fixtures:`, err);
-        return [] as Fixture[];
-      }),
-      getLeagueFixtures(league.id, { next: 10 }).catch((err) => {
-        console.error(`[API/League] Failed to fetch upcoming fixtures:`, err);
-        return [] as Fixture[];
-      }),
+      getStandings(league.id).catch(() => [] as Standing[]),
+      getTopScorers(league.id).catch(() => [] as TopScorer[]),
+      getTopAssists(league.id).catch(() => [] as TopScorer[]),
+      getLeagueFixtures(league.id, { last: 10 }).catch(() => [] as Fixture[]),
+      getLeagueFixtures(league.id, { next: 10 }).catch(() => [] as Fixture[]),
     ]);
 
     // Fetch additional player stats (yellow/red cards) and detailed player stats
     const [yellowCards, redCards, leaguePlayers] = await Promise.all([
-      getTopYellowCards(league.id).catch((err) => {
-        console.error(`[API/League] Failed to fetch yellow cards:`, err);
-        return [] as PlayerWithStats[];
-      }),
-      getTopRedCards(league.id).catch((err) => {
-        console.error(`[API/League] Failed to fetch red cards:`, err);
-        return [] as PlayerWithStats[];
-      }),
+      getTopYellowCards(league.id).catch(() => [] as PlayerWithStats[]),
+      getTopRedCards(league.id).catch(() => [] as PlayerWithStats[]),
       // Fetch league players with full stats (limit to 5 pages to avoid too many API calls)
-      getLeaguePlayers(league.id, undefined, 5).catch((err) => {
-        console.error(`[API/League] Failed to fetch league players:`, err);
-        return [] as PlayerWithStats[];
-      }),
+      getLeaguePlayers(league.id, undefined, 5).catch(() => [] as PlayerWithStats[]),
     ]);
 
     // Fetch team statistics for clean sheets
     const teamIds = standings.map(s => s.team.id);
-    const teamDetailedStats = await getLeagueTeamStatistics(league.id, teamIds).catch((err) => {
-      console.error(`[API/League] Failed to fetch team statistics:`, err);
-      return [] as TeamStatistics[];
-    });
+    const teamDetailedStats = await getLeagueTeamStatistics(league.id, teamIds).catch(() => [] as TeamStatistics[]);
 
     // Transform standings
     const transformedStandings = standings.map(s => ({
@@ -349,8 +322,7 @@ export async function GET(
       recentFixtures: recentFixtures.map(transformFixture).reverse(),
       upcomingFixtures: upcomingFixtures.map(transformFixture),
     });
-  } catch (error) {
-    console.error('[API/League] Error:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch league data' },
       { status: 500 }

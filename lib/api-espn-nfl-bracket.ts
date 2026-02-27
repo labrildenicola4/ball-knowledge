@@ -1,5 +1,6 @@
 // NFL Playoff Bracket API functions
 import { NFLGame } from './types/nfl';
+import { getCurrentNFLSeason, getNFLPlayoffDateRanges } from './espn-season-utils';
 
 const API_BASE = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl';
 const API_V2_BASE = 'https://site.api.espn.com/apis/v2/sports/football/nfl';
@@ -15,7 +16,6 @@ async function fetchESPN<T>(url: string): Promise<T> {
     return cached.data as T;
   }
 
-  console.log(`[ESPN-NFL-Bracket] Fetching: ${url}`);
   const response = await fetch(url, { next: { revalidate: 60 } });
 
   if (!response.ok) {
@@ -173,8 +173,8 @@ async function getPlayoffSeeds(): Promise<Map<string, number>> {
         }
       });
     });
-  } catch (error) {
-    console.error('[ESPN-NFL-Bracket] Failed to fetch standings for seeds:', error);
+  } catch {
+    // silently ignore
   }
 
   return seedLookup;
@@ -183,17 +183,14 @@ async function getPlayoffSeeds(): Promise<Map<string, number>> {
 export async function getNFLPlayoffBracket(): Promise<NFLPlayoffBracket> {
   try {
     // Fetch playoff games by date ranges and standings for seeds in parallel
-    // 2025-26 NFL Playoff dates:
-    // - Wild Card: Jan 11-13, 2026
-    // - Divisional: Jan 17-18, 2026
-    // - Conference Championships: Jan 25, 2026
-    // - Pro Bowl: Feb 2, 2026
-    // - Super Bowl: Feb 8, 2026
+    const season = getCurrentNFLSeason();
+    const playoffDates = getNFLPlayoffDateRanges(season);
+
     const [wildCardData, divisionalData, confChampData, superBowlData, seedLookup] = await Promise.all([
-      fetchESPN<any>(`${API_BASE}/scoreboard?dates=20260111-20260113`),
-      fetchESPN<any>(`${API_BASE}/scoreboard?dates=20260117-20260118`),
-      fetchESPN<any>(`${API_BASE}/scoreboard?dates=20260125`),
-      fetchESPN<any>(`${API_BASE}/scoreboard?dates=20260208`),
+      fetchESPN<any>(`${API_BASE}/scoreboard?dates=${playoffDates.wildCard}`),
+      fetchESPN<any>(`${API_BASE}/scoreboard?dates=${playoffDates.divisional}`),
+      fetchESPN<any>(`${API_BASE}/scoreboard?dates=${playoffDates.confChamp}`),
+      fetchESPN<any>(`${API_BASE}/scoreboard?dates=${playoffDates.superBowl}`),
       getPlayoffSeeds(),
     ]);
 
@@ -229,15 +226,14 @@ export async function getNFLPlayoffBracket(): Promise<NFLPlayoffBracket> {
     const superBowl = games.find(g => g.conference === 'SUPER_BOWL' || g.round === 5) || null;
 
     return {
-      season: '2025',
+      season: String(getCurrentNFLSeason()),
       afc,
       nfc,
       superBowl,
     };
-  } catch (error) {
-    console.error('[ESPN-NFL-Bracket] Failed to fetch playoff bracket:', error);
+  } catch {
     return {
-      season: '2025',
+      season: String(getCurrentNFLSeason()),
       afc: { wildCard: [], divisional: [], championship: null },
       nfc: { wildCard: [], divisional: [], championship: null },
       superBowl: null,

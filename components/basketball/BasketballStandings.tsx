@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { BasketballStanding, BasketballRanking } from '@/lib/types/basketball';
+import { SafeImage } from '@/components/SafeImage';
 
 interface BasketballStandingsProps {
   standings: BasketballStanding[];
@@ -73,7 +74,7 @@ export function BasketballStandings({ standings, conferenceName }: BasketballSta
               style={{ color: theme.text }}
             >
               {standing.team.logo && (
-                <img src={standing.team.logo} alt={standing.team.name} className="h-5 w-5 object-contain logo-glow" />
+                <SafeImage src={standing.team.logo} alt={standing.team.name} className="h-5 w-5 object-contain logo-glow" />
               )}
               <span className="truncate">{standing.team.shortDisplayName || standing.team.name}</span>
               {standing.team.rank && standing.team.rank <= 25 && (
@@ -134,7 +135,7 @@ export function BasketballStandings({ standings, conferenceName }: BasketballSta
               style={{ color: theme.text }}
             >
               {standing.team.logo && (
-                <img src={standing.team.logo} alt={standing.team.name} className="h-6 w-6 object-contain logo-glow" />
+                <SafeImage src={standing.team.logo} alt={standing.team.name} className="h-6 w-6 object-contain logo-glow" />
               )}
               <span className="truncate">{standing.team.displayName || standing.team.name}</span>
               {standing.team.rank && standing.team.rank <= 25 && (
@@ -219,7 +220,7 @@ export function BasketballRankings({ rankings }: BasketballRankingsProps) {
               style={{ color: theme.text }}
             >
               {ranking.team.logo && (
-                <img src={ranking.team.logo} alt={ranking.team.name} className="h-5 w-5 object-contain logo-glow" />
+                <SafeImage src={ranking.team.logo} alt={ranking.team.name} className="h-5 w-5 object-contain logo-glow" />
               )}
               <span className="truncate">{ranking.team.name}</span>
             </Link>

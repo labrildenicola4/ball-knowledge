@@ -27,6 +27,7 @@ export interface MLBGame {
   venue?: string;
   broadcast?: string;
   date: string;
+  rawDate?: string;
   startTime: string;
   weather?: string;
   seriesInfo?: string;
@@ -145,6 +146,40 @@ export interface MLBTeamScheduleGame {
   status: 'scheduled' | 'in_progress' | 'final';
 }
 
+export interface MLBPlayerSeasonBattingStats {
+  games: number;
+  atBats: number;
+  runs: number;
+  hits: number;
+  homeRuns: number;
+  rbi: number;
+  stolenBases: number;
+  battingAverage: string;
+  onBasePct: string;
+  sluggingPct: string;
+  ops: string;
+  strikeouts: number;
+  walks: number;
+}
+
+export interface MLBPlayerSeasonPitchingStats {
+  wins: number;
+  losses: number;
+  era: string;
+  inningsPitched: string;
+  strikeouts: number;
+  walks: number;
+  whip: string;
+  saves: number;
+  gamesStarted: number;
+  qualityStarts: number;
+}
+
+export interface MLBPlayerSeasonStats {
+  batting?: MLBPlayerSeasonBattingStats;
+  pitching?: MLBPlayerSeasonPitchingStats;
+}
+
 export interface MLBPlayer {
   id: string;
   name: string;
@@ -157,6 +192,34 @@ export interface MLBPlayer {
   birthDate?: string;
   batHand?: string;
   throwHand?: string;
+  stats?: MLBPlayerSeasonStats | null;
+}
+
+export interface MLBLeader {
+  player: {
+    id: string;
+    name: string;
+    headshot: string;
+  };
+  team: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    logo: string;
+  };
+  value: number;
+  displayValue: string;
+}
+
+export interface MLBLeadersResponse {
+  battingAverage: MLBLeader[];
+  homeRuns: MLBLeader[];
+  rbi: MLBLeader[];
+  stolenBases: MLBLeader[];
+  era: MLBLeader[];
+  strikeouts: MLBLeader[];
+  wins: MLBLeader[];
+  saves: MLBLeader[];
 }
 
 export interface MLBTeamSeasonStats {

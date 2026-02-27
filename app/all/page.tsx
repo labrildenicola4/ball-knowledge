@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { ChevronRight, Trophy, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
-import { TOURNAMENTS } from '@/lib/constants/tournaments';
 import { SOCCER_ICON, BASKETBALL_ICON, FOOTBALL_ICON } from '@/lib/sport-icons';
+import { SafeImage } from '@/components/SafeImage';
 
 export default function AllPage() {
   const { theme, darkMode, toggleDarkMode } = useTheme();
@@ -13,11 +13,15 @@ export default function AllPage() {
   // Sports Hubs
   const sportsHubs = [
     { name: 'Soccer', href: '/soccer', logo: SOCCER_ICON, description: 'Leagues, cups & fixtures' },
-    { name: 'NFL', href: '/nfl', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png', description: 'Pro football' },
     { name: 'NBA', href: '/nba', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png', description: 'Games, stats & standings' },
-    { name: 'NCAA Basketball', href: '/basketball', logo: BASKETBALL_ICON, description: 'College hoops' },
-    { name: 'College Football', href: '/football', logo: FOOTBALL_ICON, description: 'CFB games' },
     { name: 'MLB', href: '/mlb', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png', description: 'Baseball' },
+    { name: 'NCAA Basketball', href: '/basketball', logo: BASKETBALL_ICON, description: 'College hoops' },
+    { name: 'NHL', href: '/nhl', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png', description: 'Hockey' },
+    { name: 'NFL', href: '/nfl', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png', description: 'Pro football' },
+    { name: 'F1', href: '/f1', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/f1.png', description: 'Formula 1 racing' },
+    { name: 'Golf', href: '/golf', logo: 'https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-golf.png', description: 'PGA, DP World, LPGA & LIV' },
+    { name: 'UFC', href: '/ufc', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/ufc.png', description: 'Mixed martial arts' },
+    { name: 'College Football', href: '/football', logo: FOOTBALL_ICON, description: 'CFB games' },
   ];
 
   return (
@@ -52,7 +56,7 @@ export default function AllPage() {
                 href={hub.href}
                 className="card-press flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80 glass-card"
               >
-                <img src={hub.logo} alt={hub.name} className="h-8 w-8 object-contain logo-glow" />
+                <SafeImage src={hub.logo} alt={hub.name} className="h-8 w-8 object-contain logo-glow" />
                 <div className="flex-1">
                   <span className="text-sm font-medium" style={{ color: theme.text }}>{hub.name}</span>
                   <p className="text-[11px]" style={{ color: theme.textSecondary }}>{hub.description}</p>
@@ -63,40 +67,6 @@ export default function AllPage() {
           </div>
         </section>
 
-        {/* Tournaments */}
-        <section className="mb-6">
-          <h2
-            className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider mb-3"
-            style={darkMode ? undefined : { color: theme.textSecondary }}
-          >
-            <Trophy size={14} style={{ color: theme.gold }} />
-            Tournaments
-          </h2>
-          <div className="grid grid-cols-2 gap-2">
-            {TOURNAMENTS.filter(t => ['march-madness', 'champions-league'].includes(t.id)).map(tournament => (
-              <Link
-                key={tournament.slug}
-                href={`/tournament/${tournament.slug}`}
-                className="card-press flex flex-col gap-1 rounded-xl p-4 transition-colors hover:opacity-80 glass-card"
-              >
-                <span className="text-sm font-medium" style={{ color: theme.text }}>
-                  {tournament.shortName}
-                </span>
-                <span className="text-[10px] capitalize" style={{ color: theme.textSecondary }}>
-                  {tournament.sport}
-                </span>
-                {tournament.active && (
-                  <span
-                    className="inline-flex self-start mt-1 items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-medium"
-                    style={{ backgroundColor: theme.green, color: '#fff' }}
-                  >
-                    Active
-                  </span>
-                )}
-              </Link>
-            ))}
-          </div>
-        </section>
       </main>
 
       <BottomNav />

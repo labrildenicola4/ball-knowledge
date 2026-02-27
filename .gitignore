@@ -40,3 +40,9 @@ next-env.d.ts
 
 # Testing
 coverage/
+
+# iOS / Capacitor
+ios/App/Pods/
+ios/DerivedData/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/

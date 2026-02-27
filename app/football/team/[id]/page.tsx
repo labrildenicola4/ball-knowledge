@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useSafeBack } from '@/lib/use-safe-back';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { ChevronLeft, MapPin, Trophy, Sun, Moon, Heart } from 'lucide-react';
+import { ChevronLeft, MapPin, Trophy, Sun, Moon, Heart, TrendingUp, Users } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
-import { CollegeFootballTeamInfo } from '@/lib/types/college-football';
+import { CollegeFootballTeamInfo, CollegeFootballPlayer } from '@/lib/types/college-football';
 import { createBrowserClient } from '@supabase/ssr';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { SafeImage } from '@/components/SafeImage';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'Team not found' : 'Failed to fetch');
@@ -18,9 +20,11 @@ const fetcher = (url: string) => fetch(url).then(res => {
 
 export default function CollegeFootballTeamPage() {
   const params = useParams();
-  const router = useRouter();
+  const goBack = useSafeBack('/football');
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const teamId = params.id as string;
+
+  const [activeTab, setActiveTab] = useState<'schedule' | 'roster'>('schedule');
 
   // Favorites state
   const [isFavorite, setIsFavorite] = useState(false);
@@ -118,7 +122,7 @@ export default function CollegeFootballTeamPage() {
       <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Team not found'}</p>
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
           style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
@@ -128,15 +132,15 @@ export default function CollegeFootballTeamPage() {
     );
   }
 
-  const { team, conference, record, conferenceRecord, rank, schedule, venue } = teamInfo;
+  const { team, conference, record, conferenceRecord, rank, schedule, venue, roster } = teamInfo;
 
   return (
     <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <header className="safe-top flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
-          onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          onClick={goBack}
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
@@ -147,7 +151,7 @@ export default function CollegeFootballTeamPage() {
         </div>
         <button
           onClick={toggleDarkMode}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
@@ -171,7 +175,7 @@ export default function CollegeFootballTeamPage() {
 
         <div className="mx-auto mb-4 h-24 w-24">
           {team.logo ? (
-            <img src={team.logo} alt={team.name} className="h-full w-full object-contain logo-glow" />
+            <SafeImage src={team.logo} alt={team.name} className="h-full w-full object-contain logo-glow" />
           ) : (
             <div
               className="h-full w-full rounded-full"
@@ -232,74 +236,156 @@ export default function CollegeFootballTeamPage() {
         )}
       </section>
 
-      {/* Upcoming Games */}
-      <section className="px-4 py-6">
-        <h2
-          className="text-[10px] font-semibold uppercase tracking-wider mb-4"
-          style={{ color: theme.textSecondary }}
-        >
-          Upcoming Games
-        </h2>
+      {/* Tabs */}
+      <div className="flex gap-2 py-3 px-4">
+        {[
+          { key: 'schedule', label: 'Schedule', icon: TrendingUp },
+          { key: 'roster', label: 'Roster', icon: Users },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-[11px] font-medium transition-colors ${darkMode ? (activeTab === tab.key ? 'glass-pill-active' : 'glass-pill') : ''}`}
+              style={{
+                color: activeTab === tab.key ? theme.accent : theme.textSecondary,
+                borderBottom: darkMode ? 'none' : (activeTab === tab.key ? `2px solid ${theme.accent}` : '2px solid transparent'),
+              }}
+            >
+              <Icon size={14} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
 
-        {schedule && schedule.length > 0 ? (
-          <div
-            className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
-            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-          >
-            {schedule.slice(0, 5).map((game, index) => (
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto pb-24">
+        {/* Schedule Tab */}
+        {activeTab === 'schedule' && (
+          <section className="px-4 py-4">
+            {schedule && schedule.length > 0 ? (
               <div
-                key={game.id}
-                className="flex items-center justify-between px-4 py-3"
-                style={{
-                  borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
-                }}
+                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-[10px] font-medium w-16"
-                    style={{ color: theme.textSecondary }}
+                {schedule.slice(0, 10).map((game, index) => (
+                  <div
+                    key={game.id}
+                    className="flex items-center justify-between px-4 py-3"
+                    style={{
+                      borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
+                    }}
                   >
-                    {game.date}
-                  </span>
-                  <span
-                    className="text-[11px] w-4"
-                    style={{ color: theme.textSecondary }}
-                  >
-                    {game.isHome ? 'vs' : '@'}
-                  </span>
-                  {game.opponent.logo && (
-                    <img
-                      src={game.opponent.logo}
-                      alt={game.opponent.name}
-                      className="h-5 w-5 object-contain logo-glow"
-                    />
-                  )}
-                  <span className="text-sm font-medium" style={{ color: theme.text }}>
-                    {game.opponent.shortDisplayName || game.opponent.name}
-                  </span>
-                </div>
-                {game.result && (
-                  <span
-                    className="text-sm font-mono"
-                    style={{ color: game.result.win ? theme.green : theme.red }}
-                  >
-                    {game.result.win ? 'W' : 'L'} {game.result.score}
-                  </span>
-                )}
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="text-[10px] font-medium w-16"
+                        style={{ color: theme.textSecondary }}
+                      >
+                        {game.date}
+                      </span>
+                      <span
+                        className="text-[11px] w-4"
+                        style={{ color: theme.textSecondary }}
+                      >
+                        {game.isHome ? 'vs' : '@'}
+                      </span>
+                      {game.opponent.logo && (
+                        <SafeImage
+                          src={game.opponent.logo}
+                          alt={game.opponent.name}
+                          className="h-5 w-5 object-contain logo-glow"
+                        />
+                      )}
+                      <span className="text-sm font-medium" style={{ color: theme.text }}>
+                        {game.opponent.shortDisplayName || game.opponent.name}
+                      </span>
+                    </div>
+                    {game.result && (
+                      <span
+                        className="text-sm font-mono"
+                        style={{ color: game.result.win ? theme.green : theme.red }}
+                      >
+                        {game.result.win ? 'W' : 'L'} {game.result.score}
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div
-            className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
-            style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
-          >
-            <p className="text-[12px]" style={{ color: theme.textSecondary }}>
-              No upcoming games
-            </p>
-          </div>
+            ) : (
+              <div
+                className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <p className="text-[12px]" style={{ color: theme.textSecondary }}>
+                  No games scheduled
+                </p>
+              </div>
+            )}
+          </section>
         )}
-      </section>
+
+        {/* Roster Tab */}
+        {activeTab === 'roster' && (
+          <section className="px-4 py-4">
+            {roster && roster.length > 0 ? (
+              <div
+                className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                {roster.map((player, index) => (
+                  <Link key={player.id} href={`/player/cfb/${player.id}`} className="contents">
+                  <div
+                    className="flex items-center gap-3 px-4 py-2.5"
+                    style={{
+                      borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
+                    }}
+                  >
+                    <div className="h-7 w-7 rounded-full overflow-hidden flex-shrink-0" style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}>
+                      {player.headshot ? (
+                        <SafeImage
+                          src={player.headshot}
+                          alt={player.name}
+                          className="h-full w-full object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center text-[8px]" style={{ color: theme.textSecondary }}>
+                          #{player.jersey}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-medium truncate" style={{ color: theme.text }}>
+                        {player.name}
+                      </p>
+                      <p className="text-[10px]" style={{ color: theme.textSecondary }}>
+                        {[player.position, player.jersey ? `#${player.jersey}` : '', player.year].filter(Boolean).join(' · ')}
+                      </p>
+                    </div>
+                    {(player.height || player.weight) && (
+                      <span className="text-[10px] flex-shrink-0" style={{ color: theme.textSecondary }}>
+                        {[player.height, player.weight ? `${player.weight} lbs` : ''].filter(Boolean).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div
+                className={`rounded-xl p-6 text-center ${darkMode ? 'glass-card' : ''}`}
+                style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
+              >
+                <p className="text-[12px]" style={{ color: theme.textSecondary }}>
+                  Roster not available
+                </p>
+              </div>
+            )}
+          </section>
+        )}
+      </div>
 
       <BottomNav />
     </div>

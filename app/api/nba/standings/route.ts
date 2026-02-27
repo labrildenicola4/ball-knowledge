@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
 import { getNBAStandings } from '@/lib/api-espn-nba';
 import { supabase } from '@/lib/supabase';
+import { createServiceClient } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
 // 5 minute freshness threshold for standings
 const STANDINGS_FRESHNESS_MS = 5 * 60 * 1000;
+
+function getCurrentSeason(): number {
+  const now = new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+  return month >= 7 ? year : year - 1;
+}
 
 export async function GET() {
   try {
@@ -26,9 +34,38 @@ export async function GET() {
       }
     }
 
-    // Fall back to direct ESPN API
-    const standings = await getNBAStandings();
-    return NextResponse.json(standings);
+    // Cache is stale or missing — try ESPN
+    try {
+      const standings = await getNBAStandings();
+
+      // Fire-and-forget: backfill cache
+      createServiceClient()
+        .from('standings_cache')
+        .upsert({
+          sport_type: 'basketball_nba',
+          league_code: 'NBA',
+          league_name: 'NBA',
+          season: getCurrentSeason(),
+          standings,
+        }, {
+          onConflict: 'league_code,season,sport_type',
+          ignoreDuplicates: false,
+        })
+        .then(({ error }) => {
+          if (error) console.error('[nba] standings cache write error:', error.message);
+        });
+
+      return NextResponse.json(standings);
+    } catch (espnError) {
+      console.error('[API/NBA/Standings] ESPN fetch failed:', espnError);
+
+      // Fall back to stale cache
+      if (!cacheError && cached?.standings) {
+        return NextResponse.json({ ...cached.standings, cached: true, stale: true });
+      }
+
+      throw espnError;
+    }
   } catch (error) {
     console.error('[API/NBA/Standings] Error:', error);
     return NextResponse.json(

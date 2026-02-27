@@ -103,12 +103,62 @@ export interface NHLStandings {
   conferences: NHLConference[];
 }
 
+export interface NHLSkaterSeasonStats {
+  type: 'skater';
+  gamesPlayed: number;
+  goals: number;
+  assists: number;
+  points: number;
+  plusMinus: number;
+  penaltyMinutes: number;
+  powerPlayGoals: number;
+  shortHandedGoals: number;
+  gameWinningGoals: number;
+  shots: number;
+  shotPct: number;
+  timeOnIce: string;
+  hits: number;
+  blockedShots: number;
+}
+
+export interface NHLGoalieSeasonStats {
+  type: 'goalie';
+  gamesPlayed: number;
+  wins: number;
+  losses: number;
+  otLosses: number;
+  goalsAgainst: number;
+  goalsAgainstAverage: number;
+  saves: number;
+  savePercentage: number;
+  shutouts: number;
+}
+
+export type NHLPlayerSeasonStats = NHLSkaterSeasonStats | NHLGoalieSeasonStats;
+
+export interface NHLPlayer {
+  id: string;
+  name: string;
+  jersey: string;
+  position: string;
+  headshot: string;
+  height: string;
+  weight: string;
+  age?: number;
+  birthDate?: string;
+  birthPlace?: string;
+  shoots?: string;
+  experience: number;
+  stats: NHLPlayerSeasonStats | null;
+}
+
 export interface NHLTeamInfo {
   team: NHLTeam;
   conference: string;
   division: string;
   record: string;
   standing?: NHLStanding;
+  roster?: NHLPlayer[];
   schedule: NHLTeamScheduleGame[];
   venue?: {
     name: string;

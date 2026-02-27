@@ -5,6 +5,7 @@ import {
   CollegeFootballGame,
   CollegeFootballTeam,
   CollegeFootballTeamInfo,
+  CollegeFootballPlayer,
   CollegeFootballStanding,
   CollegeFootballRanking,
 } from './types/college-football';
@@ -32,11 +33,8 @@ async function fetchESPN<T>(
   // Check cache
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < cacheTTL) {
-    console.log(`[ESPN-Football] Cache hit: ${url.substring(0, 80)}...`);
     return cached.data as T;
   }
-
-  console.log(`[ESPN-Football] Fetching: ${url}`);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
@@ -48,7 +46,6 @@ async function fetchESPN<T>(
   clearTimeout(timeout);
 
   if (!response.ok) {
-    console.error(`[ESPN-Football] HTTP Error: ${response.status}`);
     throw new Error(`ESPN API Error: ${response.status}`);
   }
 
@@ -105,6 +102,7 @@ function transformGame(event: ESPNEvent): CollegeFootballGame {
       month: 'short',
       day: 'numeric',
     }),
+    rawDate: event.date,
     startTime: new Date(event.date).toLocaleTimeString('en-US', {
       timeZone: 'America/New_York',
       hour: 'numeric',
@@ -193,9 +191,30 @@ export async function getCollegeFootballTeam(teamId: string): Promise<CollegeFoo
         capacity: team.franchise.venue.capacity,
       } : undefined,
     };
-  } catch (error) {
-    console.error(`[ESPN-Football] Error fetching team ${teamId}:`, error);
+  } catch {
     return null;
+  }
+}
+
+// Get college football team roster
+export async function getCollegeFootballRoster(teamId: string): Promise<CollegeFootballPlayer[]> {
+  const url = `${API_BASE}/teams/${teamId}/roster`;
+
+  try {
+    const data = await fetchESPN<ESPNRosterResponse>(url);
+
+    return data.athletes?.map((athlete) => ({
+      id: athlete.id,
+      name: athlete.displayName,
+      jersey: athlete.jersey || '',
+      position: athlete.position?.abbreviation || '',
+      headshot: athlete.headshot?.href || '',
+      height: athlete.displayHeight || '',
+      weight: athlete.displayWeight || '',
+      year: athlete.experience?.displayValue || '',
+    })) || [];
+  } catch {
+    return [];
   }
 }
 
@@ -300,8 +319,7 @@ export async function getCollegeFootballRankings(): Promise<CollegeFootballRanki
         trend: rank.current < rank.previous ? 'up' : rank.current > rank.previous ? 'down' : 'same',
       };
     });
-  } catch (error) {
-    console.error('[ESPN-Football] Error fetching rankings:', error);
+  } catch {
     return [];
   }
 }
@@ -422,5 +440,18 @@ interface ESPNRankingsResponse {
       team: ESPNTeamBase;
       recordSummary?: string;
     }>;
+  }>;
+}
+
+interface ESPNRosterResponse {
+  athletes?: Array<{
+    id: string;
+    displayName: string;
+    jersey?: string;
+    position?: { abbreviation: string };
+    headshot?: { href: string };
+    displayHeight?: string;
+    displayWeight?: string;
+    experience?: { displayValue: string };
   }>;
 }

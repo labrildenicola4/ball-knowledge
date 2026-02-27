@@ -26,7 +26,6 @@ export async function GET(
 
     // If we have cached full match details AND match is finished, return them
     if (cachedMatch?.match_details && cachedMatch.status === 'FT') {
-      console.log(`[Match API] Returning cached match_details for ${matchId}`);
       return NextResponse.json(cachedMatch.match_details, {
         headers: { 'Cache-Control': 'public, max-age=3600' },
       });
@@ -38,7 +37,6 @@ export async function GET(
     if (!fixture) {
       // If not in API, try to return basic cached data
       if (cachedMatch) {
-        console.log(`[Match API] Fixture not in API, returning cached basic data for ${matchId}`);
         return buildResponseFromCache(cachedMatch);
       }
       return NextResponse.json({ error: 'Match not found' }, { status: 404 });
@@ -197,9 +195,7 @@ export async function GET(
         .eq('api_id', matchId);
 
       if (cacheError) {
-        console.error(`[Match API] Failed to cache match ${matchId}:`, cacheError);
-      } else {
-        console.log(`[Match API] Cached full details for match ${matchId}`);
+        // silently ignore
       }
     }
 
@@ -208,8 +204,7 @@ export async function GET(
         'Cache-Control': isFinished ? 'public, max-age=3600' : 'no-store',
       },
     });
-  } catch (error) {
-    console.error('[Match API] Error:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch match details' },
       { status: 500 }

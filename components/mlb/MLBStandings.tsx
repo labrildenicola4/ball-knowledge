@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { MLBStanding } from '@/lib/types/mlb';
+import { SafeImage } from '@/components/SafeImage';
 
 interface MLBStandingsProps {
   standings: MLBStanding[];
@@ -69,7 +70,7 @@ export function MLBStandings({ standings, divisionName }: MLBStandingsProps) {
                 {idx + 1}
               </span>
               {standing.team.logo && (
-                <img
+                <SafeImage
                   src={standing.team.logo}
                   alt={standing.team.name}
                   className="h-5 w-5 object-contain logo-glow"

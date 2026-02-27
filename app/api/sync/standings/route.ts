@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
   }
 
   const startTime = Date.now();
-  console.log('[Sync] Starting standings sync (API-Football)...');
 
   try {
     const supabase = createServiceClient();
@@ -38,8 +37,6 @@ export async function GET(request: NextRequest) {
 
     for (const league of STANDINGS_LEAGUES) {
       try {
-        console.log(`[Sync] Fetching standings for ${league.name} (${league.code})...`);
-
         const standings = await getStandings(league.id);
 
         if (standings.length > 0) {
@@ -74,18 +71,14 @@ export async function GET(request: NextRequest) {
               ignoreDuplicates: false,
             });
 
-          if (error) {
-            console.error(`[Sync] Error upserting standings for ${league.name}:`, error);
-          } else {
+          if (!error) {
             totalSynced++;
-            console.log(`[Sync] Synced standings for ${league.name} (${standings.length} teams)`);
           }
         }
 
         // Small delay between requests to avoid rate limiting
         await new Promise(r => setTimeout(r, 100));
-      } catch (error) {
-        console.error(`[Sync] Error fetching standings for ${league.name}:`, error);
+      } catch {
         // Continue with other leagues
       }
     }
@@ -100,8 +93,6 @@ export async function GET(request: NextRequest) {
       completed_at: new Date().toISOString(),
     });
 
-    console.log(`[Sync] Completed standings sync in ${duration}ms. Synced ${totalSynced} leagues.`);
-
     return NextResponse.json({
       success: true,
       synced: totalSynced,
@@ -109,8 +100,6 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[Sync] Fatal error:', error);
-
     // Try to log the error
     try {
       const supabase = createServiceClient();

@@ -4,6 +4,7 @@ import { useTheme } from '@/lib/theme';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { getThemedLogo, shouldUseWhiteFilter } from '@/lib/constants/dark-mode-logos';
+import { SafeImage } from '@/components/SafeImage';
 
 const SAMPLE_LOGOS = [
   { slug: 'premier-league', name: 'Premier League', logo: 'https://media.api-sports.io/football/leagues/39.png' },
@@ -55,7 +56,7 @@ export default function LogoPreviewPage() {
                 return (
                   <div key={league.name} className="flex flex-col items-center gap-2">
                     <div className="h-14 w-14 flex items-center justify-center">
-                      <img
+                      <SafeImage
                         src={logoSrc}
                         alt={league.name}
                         className="h-10 w-10 object-contain logo-glow"
@@ -96,7 +97,7 @@ export default function LogoPreviewPage() {
                     className="h-14 w-14 rounded-full flex items-center justify-center"
                     style={{ backgroundColor: '#ffffff' }}
                   >
-                    <img
+                    <SafeImage
                       src={league.logo}
                       alt={league.name}
                       className="h-10 w-10 object-contain logo-glow"
@@ -130,7 +131,7 @@ export default function LogoPreviewPage() {
                     className="h-14 w-14 rounded-full flex items-center justify-center"
                     style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
                   >
-                    <img
+                    <SafeImage
                       src={league.logo}
                       alt={league.name}
                       className="h-10 w-10 object-contain logo-glow"
@@ -164,7 +165,7 @@ export default function LogoPreviewPage() {
                     className="h-14 w-14 rounded-xl flex items-center justify-center"
                     style={{ backgroundColor: '#ffffff' }}
                   >
-                    <img
+                    <SafeImage
                       src={league.logo}
                       alt={league.name}
                       className="h-10 w-10 object-contain logo-glow"
@@ -198,7 +199,7 @@ export default function LogoPreviewPage() {
                     className="h-14 w-14 rounded-xl flex items-center justify-center"
                     style={{ backgroundColor: '#f0f0f0' }}
                   >
-                    <img
+                    <SafeImage
                       src={league.logo}
                       alt={league.name}
                       className="h-10 w-10 object-contain logo-glow"
@@ -237,7 +238,7 @@ export default function LogoPreviewPage() {
                       className="h-14 w-14 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: useFilter ? 'transparent' : '#ffffff' }}
                     >
-                      <img
+                      <SafeImage
                         src={league.logo}
                         alt={league.name}
                         className="h-10 w-10 object-contain logo-glow"
@@ -276,7 +277,7 @@ export default function LogoPreviewPage() {
               {SAMPLE_LOGOS.map(league => (
                 <div key={league.name} className="flex flex-col items-center gap-2">
                   <div className="h-14 w-14 flex items-center justify-center">
-                    <img
+                    <SafeImage
                       src={league.logo}
                       alt={league.name}
                       className="h-10 w-10 object-contain logo-glow"
@@ -311,7 +312,7 @@ export default function LogoPreviewPage() {
               {SAMPLE_LOGOS.map(league => (
                 <div key={league.name} className="flex flex-col items-center gap-2">
                   <div className="h-14 w-14 flex items-center justify-center">
-                    <img
+                    <SafeImage
                       src={league.logo}
                       alt={league.name}
                       className="h-10 w-10 object-contain logo-glow"
@@ -343,7 +344,7 @@ export default function LogoPreviewPage() {
               {SAMPLE_LOGOS.map(league => (
                 <div key={league.name} className="flex flex-col items-center gap-2">
                   <div className="h-14 w-14 flex items-center justify-center">
-                    <img
+                    <SafeImage
                       src={league.logo}
                       alt={league.name}
                       className="h-10 w-10 object-contain logo-glow"

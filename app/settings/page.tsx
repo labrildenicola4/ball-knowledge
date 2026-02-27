@@ -1,12 +1,13 @@
 'use client';
 
-import { Moon, Sun, Trash2, Info, ExternalLink } from 'lucide-react';
-import { Header } from '@/components/Header';
+import { Moon, Sun, Trash2, Info, ExternalLink, ChevronLeft } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { useTheme } from '@/lib/theme';
 import { useFavorites } from '@/lib/use-favorites';
+import { useSafeBack } from '@/lib/use-safe-back';
 
 export default function SettingsPage() {
+  const goBack = useSafeBack('/');
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const { favorites, clearFavorites } = useFavorites();
 
@@ -64,7 +65,15 @@ export default function SettingsPage() {
       className="flex min-h-screen flex-col transition-theme"
       style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}
     >
-      <Header />
+      <header className="safe-top flex items-center gap-3 px-4 py-3 glass-header">
+        <button onClick={goBack} className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
+          style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+          <ChevronLeft size={18} style={{ color: theme.text }} />
+        </button>
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold" style={{ color: theme.text }}>Settings</h1>
+        </div>
+      </header>
 
       <main className="flex-1 overflow-y-auto pb-24 px-4 py-4">
         {/* Appearance Section */}

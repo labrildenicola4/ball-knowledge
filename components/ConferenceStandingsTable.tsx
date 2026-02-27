@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
+import { SafeImage } from '@/components/SafeImage';
 
 export interface ConferenceStandingsTeam {
   id: string;
@@ -99,7 +100,7 @@ export function ConferenceStandingsTable({ teams, sport, highlightTeamId, emptyM
                   #{team.rank}
                 </span>
               )}
-              <img
+              <SafeImage
                 src={team.logo}
                 alt={team.name}
                 className="h-6 w-6 object-contain logo-glow flex-shrink-0"

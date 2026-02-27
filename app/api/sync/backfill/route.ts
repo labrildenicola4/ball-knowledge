@@ -32,8 +32,6 @@ export async function GET(request: NextRequest) {
   const startDateParam = searchParams.get('start') || '2025-08-01';
   const endDateParam = searchParams.get('end') || getEasternDate(new Date());
 
-  console.log(`[Backfill] Starting historical sync from ${startDateParam} to ${endDateParam}`);
-
   try {
     const supabase = createServiceClient();
 
@@ -47,8 +45,6 @@ export async function GET(request: NextRequest) {
       dates.push(getEasternDate(current));
       current.setDate(current.getDate() + 1);
     }
-
-    console.log(`[Backfill] Will fetch ${dates.length} days of fixtures`);
 
     const allFixtures: Array<{
       api_id: number;
@@ -86,8 +82,7 @@ export async function GET(request: NextRequest) {
         try {
           const fixtures = await getFixturesByDate(date);
           return fixtures.filter(f => ALL_LEAGUE_IDS.includes(f.league.id));
-        } catch (error) {
-          console.error(`[Backfill] Error fetching ${date}:`, error);
+        } catch {
           return [];
         }
       });
@@ -130,15 +125,12 @@ export async function GET(request: NextRequest) {
       }
 
       processedDates += dateBatch.length;
-      console.log(`[Backfill] Processed ${processedDates}/${dates.length} days, ${allFixtures.length} fixtures so far`);
 
       // Rate limit delay between batches (300ms)
       if (i + batchSize < dates.length) {
         await new Promise(r => setTimeout(r, 300));
       }
     }
-
-    console.log(`[Backfill] Total fixtures to upsert: ${allFixtures.length}`);
 
     // Extract unique teams
     const teamsMap = new Map<number, {
@@ -174,7 +166,6 @@ export async function GET(request: NextRequest) {
     }
 
     const allTeams = Array.from(teamsMap.values());
-    console.log(`[Backfill] Found ${allTeams.length} unique teams`);
 
     // Upsert fixtures in batches
     const upsertBatchSize = 100;
@@ -190,9 +181,7 @@ export async function GET(request: NextRequest) {
           ignoreDuplicates: false,
         });
 
-      if (error) {
-        console.error(`[Backfill] Batch upsert error:`, error);
-      } else {
+      if (!error) {
         totalUpserted += batch.length;
       }
     }
@@ -209,9 +198,7 @@ export async function GET(request: NextRequest) {
           ignoreDuplicates: false,
         });
 
-      if (error) {
-        console.error(`[Backfill] Teams upsert error:`, error);
-      } else {
+      if (!error) {
         teamsUpserted += batch.length;
       }
     }
@@ -226,8 +213,6 @@ export async function GET(request: NextRequest) {
       completed_at: new Date().toISOString(),
     });
 
-    console.log(`[Backfill] Completed in ${duration}ms. Synced ${totalUpserted} fixtures, ${teamsUpserted} teams.`);
-
     return NextResponse.json({
       success: true,
       dateRange: { start: startDateParam, end: endDateParam },
@@ -238,8 +223,6 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[Backfill] Fatal error:', error);
-
     try {
       const supabase = createServiceClient();
       await supabase.from('sync_log').insert({

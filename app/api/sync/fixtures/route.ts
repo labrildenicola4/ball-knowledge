@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
   }
 
   const startTime = Date.now();
-  console.log('[Sync] Starting fixtures sync (API-Football)...');
 
   try {
     const supabase = createServiceClient();
@@ -42,8 +41,6 @@ export async function GET(request: NextRequest) {
       d.setDate(today.getDate() + i);
       dates.push(getEasternDate(d));
     }
-
-    console.log(`[Sync] Fetching fixtures for ${dates.length} days`);
 
     const allFixtures: Array<{
       api_id: number;
@@ -84,8 +81,7 @@ export async function GET(request: NextRequest) {
 
           // Filter to only our supported leagues
           return fixtures.filter(f => ALL_LEAGUE_IDS.includes(f.league.id));
-        } catch (error) {
-          console.error(`[Sync] Error fetching ${date}:`, error);
+        } catch {
           return [];
         }
       });
@@ -127,15 +123,11 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      console.log(`[Sync] Processed dates ${i + 1}-${Math.min(i + batchSize, dates.length)} of ${dates.length}, total fixtures: ${allFixtures.length}`);
-
       // Small delay between batches to avoid rate limits
       if (i + batchSize < dates.length) {
         await new Promise(r => setTimeout(r, 200));
       }
     }
-
-    console.log(`[Sync] Total fixtures to upsert: ${allFixtures.length}`);
 
     // Extract unique teams
     const teamsMap = new Map<number, {
@@ -171,7 +163,6 @@ export async function GET(request: NextRequest) {
     }
 
     const allTeams = Array.from(teamsMap.values());
-    console.log(`[Sync] Found ${allTeams.length} unique teams`);
 
     // Upsert fixtures in batches
     const upsertBatchSize = 100;
@@ -187,9 +178,7 @@ export async function GET(request: NextRequest) {
           ignoreDuplicates: false,
         });
 
-      if (error) {
-        console.error(`[Sync] Batch upsert error:`, error);
-      } else {
+      if (!error) {
         totalUpserted += batch.length;
       }
     }
@@ -206,14 +195,10 @@ export async function GET(request: NextRequest) {
           ignoreDuplicates: false,
         });
 
-      if (error) {
-        console.error(`[Sync] Teams upsert error:`, error);
-      } else {
+      if (!error) {
         teamsUpserted += batch.length;
       }
     }
-
-    console.log(`[Sync] Upserted ${teamsUpserted} teams`);
 
     // Log the sync
     const duration = Date.now() - startTime;
@@ -225,8 +210,6 @@ export async function GET(request: NextRequest) {
       completed_at: new Date().toISOString(),
     });
 
-    console.log(`[Sync] Completed in ${duration}ms. Synced ${totalUpserted} fixtures.`);
-
     return NextResponse.json({
       success: true,
       synced: totalUpserted,
@@ -235,8 +218,6 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[Sync] Fatal error:', error);
-
     try {
       const supabase = createServiceClient();
       await supabase.from('sync_log').insert({

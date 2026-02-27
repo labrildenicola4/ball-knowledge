@@ -11,6 +11,8 @@ import { ConferenceStandingsTable, ConferenceStandingsTeam } from '@/components/
 import { useTheme } from '@/lib/theme';
 import { BasketballGame, BasketballRanking, BasketballStanding } from '@/lib/types/basketball';
 import { POWER_CONFERENCES, MID_MAJOR_CONFERENCES } from '@/lib/constants/basketball-conferences';
+import { SectionSkeleton, StandingsSkeleton } from '@/components/Skeleton';
+import { SafeImage } from '@/components/SafeImage';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -88,6 +90,7 @@ export default function BasketballHomePage() {
 
   const selectedConferenceInfo = CONFERENCES_FOR_DROPDOWN.find(c => c.id === selectedConference);
 
+
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
@@ -150,15 +153,7 @@ export default function BasketballHomePage() {
         {activeTab === 'schedule' && (
           <>
             {gamesLoading ? (
-              <div className="py-8 text-center">
-                <div
-                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                  style={{ color: theme.accent }}
-                />
-                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-                  Loading games...
-                </p>
-              </div>
+              <SectionSkeleton cards={4} />
             ) : games.length === 0 ? (
               <div
                 className="rounded-lg py-8 text-center glass-card"
@@ -302,15 +297,7 @@ export default function BasketballHomePage() {
         {activeTab === 'rankings' && (
           <>
             {rankingsLoading ? (
-              <div className="py-8 text-center">
-                <div
-                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                  style={{ color: theme.accent }}
-                />
-                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-                  Loading rankings...
-                </p>
-              </div>
+              <StandingsSkeleton rows={10} />
             ) : rankings.length === 0 ? (
               <div
                 className="rounded-lg py-8 text-center glass-card"
@@ -356,7 +343,7 @@ export default function BasketballHomePage() {
                       {ranking.rank}
                     </span>
                     <div className="flex-1 flex items-center gap-2 min-w-0">
-                      <img
+                      <SafeImage
                         src={ranking.team.logo}
                         alt={ranking.team.name}
                         className="h-6 w-6 object-contain logo-glow flex-shrink-0"
@@ -408,12 +395,7 @@ export default function BasketballHomePage() {
 
             {/* Conference Standings View */}
             {standingsLoading ? (
-              <div className="py-8 text-center">
-                <div
-                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                  style={{ color: theme.accent }}
-                />
-              </div>
+              <StandingsSkeleton />
             ) : (
               <ConferenceStandingsTable
                 teams={standings.map((s): ConferenceStandingsTeam => ({

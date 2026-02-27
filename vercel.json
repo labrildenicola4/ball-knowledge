@@ -15,6 +15,30 @@
     {
       "path": "/api/sync/espn?mode=full",
       "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/sync/f1?mode=full",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/sync/f1?mode=live",
+      "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/sync/golf?mode=full",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/sync/golf?mode=live",
+      "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/sync/ufc?mode=full",
+      "schedule": "0 */12 * * *"
+    },
+    {
+      "path": "/api/sync/players",
+      "schedule": "0 */12 * * *"
     }
   ]
 }

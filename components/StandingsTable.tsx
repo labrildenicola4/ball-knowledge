@@ -4,7 +4,9 @@ import { Star, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
+import { tapMedium } from '@/lib/haptics';
 import { useFavorites } from '@/lib/use-favorites';
+import { SafeImage } from '@/components/SafeImage';
 
 interface Standing {
   position: number;
@@ -91,7 +93,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
               style={{ color: theme.text }}
             >
               {team.logo && (
-                <img src={team.logo} alt={team.team} className="h-5 w-5 object-contain logo-glow" />
+                <SafeImage src={team.logo} alt={team.team} className="h-5 w-5 object-contain logo-glow" />
               )}
               <span className="truncate">{team.team}</span>
               {isFavorite('team', team.teamId) && (
@@ -120,6 +122,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
             <button
               onClick={(e) => {
                 e.preventDefault();
+                tapMedium();
                 handleFavoriteClick(team.teamId);
               }}
               className="flex items-center justify-center p-1"
@@ -181,7 +184,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
               style={{ color: theme.text }}
             >
               {team.logo && (
-                <img src={team.logo} alt={team.team} className="h-6 w-6 object-contain logo-glow" />
+                <SafeImage src={team.logo} alt={team.team} className="h-6 w-6 object-contain logo-glow" />
               )}
               <span className="truncate">{team.team}</span>
               {isFavorite('team', team.teamId) && (
@@ -231,6 +234,7 @@ export function StandingsTable({ standings, leagueName }: StandingsTableProps) {
             <button
               onClick={(e) => {
                 e.preventDefault();
+                tapMedium();
                 handleFavoriteClick(team.teamId);
               }}
               className="flex items-center justify-center p-1"

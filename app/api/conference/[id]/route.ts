@@ -39,7 +39,6 @@ async function getFootballConferenceStandings(conferenceGroupId: number): Promis
     // Find the specific conference within children
     const conf = data.children?.find((c: { id: number }) => c.id === conferenceGroupId);
     if (!conf) {
-      console.log(`[API/Conference] Football conference ${conferenceGroupId} not found`);
       return null;
     }
 
@@ -85,8 +84,7 @@ async function getFootballConferenceStandings(conferenceGroupId: number): Promis
       name: conf.name || 'Unknown',
       teams,
     };
-  } catch (error) {
-    console.error(`[API/Conference] Failed to fetch football standings:`, error);
+  } catch {
     return null;
   }
 }
@@ -130,8 +128,7 @@ export async function GET(
       basketball: basketballStandings,
       football: footballStandings,
     });
-  } catch (error) {
-    console.error('[API/Conference] Error:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch conference data' },
       { status: 500 }

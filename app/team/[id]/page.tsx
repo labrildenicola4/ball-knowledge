@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { ChevronLeft, ChevronDown, MapPin, Trophy, Sun, Moon, Heart } from 'lucide-react';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { useTheme } from '@/lib/theme';
+import { useSafeBack } from '@/lib/use-safe-back';
 import { shouldUseWhiteFilterByCode } from '@/lib/constants/dark-mode-logos';
 import { BottomNav } from '@/components/BottomNav';
 import { createBrowserClient } from '@supabase/ssr';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { SafeImage } from '@/components/SafeImage';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 429 ? 'Rate limited' : 'Failed to fetch');
@@ -133,7 +135,7 @@ const DOMESTIC_LEAGUES = ['PD', 'PL', 'SA', 'BL1', 'FL1', 'BSA', 'DED', 'PPL', '
 
 export default function TeamPage() {
   const params = useParams();
-  const router = useRouter();
+  const goBack = useSafeBack('/');
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const teamId = params.id;
 
@@ -330,7 +332,7 @@ export default function TeamPage() {
           style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
         >
           {/* Competition logo */}
-          <img
+          <SafeImage
             src={match.competitionLogo}
             alt=""
             className="h-5 w-5 object-contain logo-glow"
@@ -352,7 +354,7 @@ export default function TeamPage() {
 
           {/* Opponent */}
           <div className="flex flex-1 items-center gap-2">
-            <img src={opponent.logo} alt={opponent.name} className="h-6 w-6 object-contain logo-glow" />
+            <SafeImage src={opponent.logo} alt={opponent.name} className="h-6 w-6 object-contain logo-glow" />
             <span className="text-sm font-medium truncate" style={{ color: theme.text }}>
               {opponent.name}
             </span>
@@ -426,7 +428,7 @@ export default function TeamPage() {
       <div className="flex min-h-screen flex-col items-center justify-center transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-sm" style={{ color: theme.red }}>{error || 'Team not found'}</p>
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className={`mt-4 rounded-lg px-4 py-2 text-sm ${darkMode ? 'glass-pill' : ''}`}
           style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
@@ -441,10 +443,10 @@ export default function TeamPage() {
   return (
     <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <header className="safe-top flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
-          onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          onClick={goBack}
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
@@ -457,7 +459,7 @@ export default function TeamPage() {
         </div>
         <button
           onClick={toggleDarkMode}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
@@ -474,7 +476,7 @@ export default function TeamPage() {
           {/* Crest */}
           <div className="flex justify-center mb-4">
             <div className="h-24 w-24">
-              <img src={team.crest} alt={team.name} className="h-full w-full object-contain logo-glow" />
+              <SafeImage src={team.crest} alt={team.name} className="h-full w-full object-contain logo-glow" />
             </div>
           </div>
 
@@ -555,7 +557,7 @@ export default function TeamPage() {
                     className="flex items-center gap-2 rounded-lg px-3 py-2"
                     style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
                   >
-                    <img
+                    <SafeImage
                       src={comp.logo}
                       alt={comp.name}
                       className="h-5 w-5 object-contain logo-glow"
@@ -681,7 +683,7 @@ export default function TeamPage() {
                     >
                       <div className="flex items-center gap-3">
                         {selectedCompetitionData && (
-                          <img
+                          <SafeImage
                             src={selectedCompetitionData.logo}
                             alt=""
                             className="h-5 w-5 object-contain logo-glow"
@@ -721,7 +723,7 @@ export default function TeamPage() {
                               borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                             }}
                           >
-                            <img
+                            <SafeImage
                               src={comp.logo}
                               alt=""
                               className="h-5 w-5 object-contain logo-glow"
@@ -800,7 +802,7 @@ export default function TeamPage() {
                             style={{ fontWeight: isCurrentTeam ? 600 : 500, color: theme.text }}
                           >
                             {standing.logo && (
-                              <img src={standing.logo} alt={standing.team} className="h-6 w-6 object-contain logo-glow" />
+                              <SafeImage src={standing.logo} alt={standing.team} className="h-6 w-6 object-contain logo-glow" />
                             )}
                             <span className="truncate">{standing.team}</span>
                           </span>
@@ -957,9 +959,11 @@ export default function TeamPage() {
                                   >
                                     {player.shirtNumber ?? '-'}
                                   </span>
-                                  <span className="w-48 text-sm font-medium truncate" style={{ color: theme.text }}>
-                                    {player.name}
-                                  </span>
+                                  <Link href={`/player/soccer/${player.id}`} className="contents">
+                                    <span className="w-48 text-sm font-medium truncate hover:underline" style={{ color: theme.text }}>
+                                      {player.name}
+                                    </span>
+                                  </Link>
                                   <span className="w-28 text-xs truncate" style={{ color: theme.textSecondary }}>
                                     {player.nationality || '-'}
                                   </span>
@@ -1127,7 +1131,7 @@ export default function TeamPage() {
           <div className="flex flex-col items-center text-center">
             {/* Crest */}
             <div className="mb-3 h-20 w-20">
-              <img src={team.crest} alt={team.name} className="h-full w-full object-contain logo-glow" />
+              <SafeImage src={team.crest} alt={team.name} className="h-full w-full object-contain logo-glow" />
             </div>
 
             {/* Name with favorite button */}
@@ -1244,7 +1248,7 @@ export default function TeamPage() {
                 >
                   <div className="flex items-center gap-3">
                     {selectedCompetitionData && (
-                      <img
+                      <SafeImage
                         src={selectedCompetitionData.logo}
                         alt=""
                         className="h-5 w-5 object-contain logo-glow"
@@ -1284,7 +1288,7 @@ export default function TeamPage() {
                           borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}`,
                         }}
                       >
-                        <img
+                        <SafeImage
                           src={comp.logo}
                           alt=""
                           className="h-5 w-5 object-contain logo-glow"
@@ -1360,7 +1364,7 @@ export default function TeamPage() {
                         style={{ fontWeight: isCurrentTeam ? 600 : 500, color: theme.text }}
                       >
                         {standing.logo && (
-                          <img src={standing.logo} alt={standing.team} className="h-5 w-5 object-contain logo-glow" />
+                          <SafeImage src={standing.logo} alt={standing.team} className="h-5 w-5 object-contain logo-glow" />
                         )}
                         <span className="truncate">{standing.team}</span>
                       </span>
@@ -1497,9 +1501,11 @@ export default function TeamPage() {
                               >
                                 {player.shirtNumber ?? '-'}
                               </span>
-                              <span className="w-36 text-sm font-medium truncate" style={{ color: theme.text }}>
-                                {player.name}
-                              </span>
+                              <Link href={`/player/soccer/${player.id}`} className="contents">
+                                <span className="w-36 text-sm font-medium truncate hover:underline" style={{ color: theme.text }}>
+                                  {player.name}
+                                </span>
+                              </Link>
                               <span className="w-24 text-xs truncate" style={{ color: theme.textSecondary }}>
                                 {player.nationality || '-'}
                               </span>

@@ -19,6 +19,7 @@ import { MLBGame } from '@/lib/types/mlb';
 import { NFLGame } from '@/lib/types/nfl';
 import { NFLGameCard } from '@/components/nfl/NFLGameCard';
 import { SOCCER_ICON, BASKETBALL_ICON, FOOTBALL_ICON } from '@/lib/sport-icons';
+import { SafeImage } from '@/components/SafeImage';
 
 interface Match {
   id: number;
@@ -697,7 +698,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src={SOCCER_ICON} alt="Soccer" className="h-5 w-5 object-contain" />
+          <SafeImage src={SOCCER_ICON} alt="Soccer" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">Soccer</span>
         </button>
         <button
@@ -708,7 +709,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src={BASKETBALL_ICON} alt="CBB" className="h-5 w-5 object-contain" />
+          <SafeImage src={BASKETBALL_ICON} alt="CBB" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">CBB</span>
         </button>
         <button
@@ -719,7 +720,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="MLB" className="h-5 w-5 object-contain" />
+          <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="MLB" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">MLB</span>
         </button>
         <button
@@ -730,7 +731,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA" className="h-5 w-5 object-contain" />
+          <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">NBA</span>
         </button>
         <button
@@ -741,7 +742,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="h-5 w-5 object-contain" />
+          <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">NFL</span>
         </button>
         <button
@@ -752,7 +753,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png" alt="NHL" className="h-5 w-5 object-contain" />
+          <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png" alt="NHL" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">NHL</span>
         </button>
         <button
@@ -763,7 +764,7 @@ export default function CalendarPage() {
             minWidth: '40px',
           }}
         >
-          <img src={FOOTBALL_ICON} alt="CFB" className="h-5 w-5 object-contain" />
+          <SafeImage src={FOOTBALL_ICON} alt="CFB" className="h-5 w-5 object-contain" />
           <span className="hidden md:inline">CFB</span>
         </button>
       </div>
@@ -804,7 +805,7 @@ export default function CalendarPage() {
                 }}
               >
                 {logo && (
-                  <img
+                  <SafeImage
                     src={logo}
                     alt={tournament.name}
                     className="w-5 h-5 object-contain logo-glow"
@@ -907,7 +908,7 @@ export default function CalendarPage() {
             {matches.length > 0 && (
               <section>
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                  <img src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain logo-glow inline" /> Soccer ({matches.length})
+                  <SafeImage src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain logo-glow inline" /> Soccer ({matches.length})
                 </h3>
                 <div className="flex flex-col gap-3">
                   {matches.map((match) => (
@@ -935,7 +936,7 @@ export default function CalendarPage() {
             {nbaGames.length > 0 && (
               <section>
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                  <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> NBA ({nbaGames.length})
+                  <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> NBA ({nbaGames.length})
                 </h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                   {nbaGames.map((game) => (
@@ -949,7 +950,7 @@ export default function CalendarPage() {
             {mlbGames.length > 0 && (
               <section>
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                  <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> MLB ({mlbGames.length})
+                  <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> MLB ({mlbGames.length})
                 </h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                   {mlbGames.map((game) => (
@@ -963,7 +964,7 @@ export default function CalendarPage() {
             {nflGames.length > 0 && (
               <section>
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                  <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> NFL ({nflGames.length})
+                  <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> NFL ({nflGames.length})
                 </h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                   {nflGames.map((game) => (
@@ -1038,7 +1039,7 @@ export default function CalendarPage() {
               {myTeamsMatches.length > 0 && (
                 <section>
                   <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                    <img src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain logo-glow inline" /> Soccer ({myTeamsMatches.length})
+                    <SafeImage src={SOCCER_ICON} alt="" className="h-4 w-4 object-contain logo-glow inline" /> Soccer ({myTeamsMatches.length})
                   </h3>
                   <div className="flex flex-col gap-3">
                     {myTeamsMatches.map((match) => (
@@ -1066,7 +1067,7 @@ export default function CalendarPage() {
               {myTeamsNba.length > 0 && (
                 <section>
                   <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                    <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> NBA ({myTeamsNba.length})
+                    <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> NBA ({myTeamsNba.length})
                   </h3>
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                     {myTeamsNba.map((game) => (
@@ -1080,7 +1081,7 @@ export default function CalendarPage() {
               {myTeamsMlb.length > 0 && (
                 <section>
                   <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                    <img src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> MLB ({myTeamsMlb.length})
+                    <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> MLB ({myTeamsMlb.length})
                   </h3>
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                     {myTeamsMlb.map((game) => (
@@ -1094,7 +1095,7 @@ export default function CalendarPage() {
               {myTeamsNfl.length > 0 && (
                 <section>
                   <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: theme.text }}>
-                    <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> NFL ({myTeamsNfl.length})
+                    <SafeImage src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="" className="h-4 w-4 object-contain logo-glow inline" /> NFL ({myTeamsNfl.length})
                   </h3>
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                     {myTeamsNfl.map((game) => (

@@ -1,15 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useSafeBack } from '@/lib/use-safe-back';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { ChevronLeft, MapPin, Calendar, BarChart3, Users, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { BottomNav } from '@/components/BottomNav';
+import { GameOdds } from '@/components/GameOdds';
 import { MLBLiveStats } from '@/components/mlb/MLBLiveStats';
 import { MLBBoxScore } from '@/components/mlb/MLBBoxScore';
 import { MLBGame, MLBBoxScore as BoxScoreType } from '@/lib/types/mlb';
+
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { SafeImage } from '@/components/SafeImage';
 
 const fetcher = (url: string) => fetch(url).then(res => {
   if (!res.ok) throw new Error(res.status === 404 ? 'Game not found' : 'Failed to fetch');
@@ -18,13 +23,13 @@ const fetcher = (url: string) => fetch(url).then(res => {
 
 export default function MLBGamePage() {
   const params = useParams();
-  const router = useRouter();
+  const goBack = useSafeBack('/mlb');
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const gameId = params.id as string;
 
   const [activeTab, setActiveTab] = useState<'stats' | 'boxscore'>('stats');
 
-  const { data, error, isLoading, isValidating } = useSWR<{
+  const { data, error, isLoading, isValidating, mutate } = useSWR<{
     game: MLBGame;
     boxScore: BoxScoreType | null;
     lastPlay?: string;
@@ -63,7 +68,7 @@ export default function MLBGamePage() {
       <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Game not found'}</p>
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
           style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
@@ -85,10 +90,10 @@ export default function MLBGamePage() {
   return (
     <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <header className="safe-top flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
-          onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          onClick={goBack}
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
@@ -118,7 +123,7 @@ export default function MLBGamePage() {
         )}
         <button
           onClick={toggleDarkMode}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
@@ -129,13 +134,13 @@ export default function MLBGamePage() {
       <section className={`px-4 py-8 ${darkMode ? 'glass-section' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary }}>
         <div className="flex items-start justify-between">
           {/* Away Team */}
-          <Link href={`/mlb/team/${game.awayTeam.id}`} className="flex-1 text-center">
+          <Link href={`/mlb/team/${game.awayTeam.id}`} className="flex-1 text-center logo-press">
             <span className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Away
             </span>
             <div className="mx-auto mb-3 h-16 w-16">
               {game.awayTeam.logo ? (
-                <img src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-full w-full object-contain logo-glow" />
+                <SafeImage src={game.awayTeam.logo} alt={game.awayTeam.name} className="h-full w-full object-contain logo-glow" />
               ) : (
                 <div className="h-full w-full rounded-full" style={{ backgroundColor: game.awayTeam.color || theme.bgTertiary }} />
               )}
@@ -203,13 +208,13 @@ export default function MLBGamePage() {
           </div>
 
           {/* Home Team */}
-          <Link href={`/mlb/team/${game.homeTeam.id}`} className="flex-1 text-center">
+          <Link href={`/mlb/team/${game.homeTeam.id}`} className="flex-1 text-center logo-press">
             <span className="inline-block mb-2 text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Home
             </span>
             <div className="mx-auto mb-3 h-16 w-16">
               {game.homeTeam.logo ? (
-                <img src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-full w-full object-contain logo-glow" />
+                <SafeImage src={game.homeTeam.logo} alt={game.homeTeam.name} className="h-full w-full object-contain logo-glow" />
               ) : (
                 <div className="h-full w-full rounded-full" style={{ backgroundColor: game.homeTeam.color || theme.bgTertiary }} />
               )}
@@ -242,6 +247,17 @@ export default function MLBGamePage() {
             </p>
           </div>
         )}
+
+        <GameOdds
+          sport="mlb"
+          homeAbbrev={game.homeTeam.abbreviation}
+          awayAbbrev={game.awayTeam.abbreviation}
+          homeTeamName={game.homeTeam.shortDisplayName}
+          awayTeamName={game.awayTeam.shortDisplayName}
+          gameDate={game.rawDate || ''}
+          isLive={isLive}
+          isUpcoming={game.status === 'scheduled'}
+        />
       </section>
 
       {/* Game Info */}
@@ -286,6 +302,7 @@ export default function MLBGamePage() {
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto pb-24 px-4 py-6">
+        <PullToRefresh onRefresh={async () => { await mutate(); }}>
         {activeTab === 'stats' && (
           <MLBLiveStats
             homeTeam={game.homeTeam}
@@ -303,6 +320,7 @@ export default function MLBGamePage() {
             isLoading={isValidating && !boxScore}
           />
         )}
+        </PullToRefresh>
       </div>
 
       <BottomNav />

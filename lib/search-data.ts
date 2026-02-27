@@ -32,12 +32,15 @@ const getNBALogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/nba/50
 // ESPN NFL logo URL pattern
 const getNFLLogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/nfl/500/${abbrev.toLowerCase()}.png`;
 
+// ESPN NHL logo URL pattern
+const getNHLLogo = (abbrev: string) => `https://a.espncdn.com/i/teamlogos/nhl/500/${abbrev.toLowerCase()}.png`;
+
 // American Sports League interface
 export interface SearchableAmericanLeague {
   id: string;
   name: string;
   shortName: string;
-  sport: 'nfl' | 'nba' | 'mlb' | 'ncaab' | 'ncaaf';
+  sport: 'nfl' | 'nba' | 'mlb' | 'nhl' | 'ncaab' | 'ncaaf' | 'ufc' | 'f1' | 'golf';
   logo: string;
   href: string;
 }
@@ -47,8 +50,12 @@ export const AMERICAN_LEAGUES: SearchableAmericanLeague[] = [
   { id: 'nfl', name: 'National Football League', shortName: 'NFL', sport: 'nfl', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png', href: '/nfl' },
   { id: 'nba', name: 'National Basketball Association', shortName: 'NBA', sport: 'nba', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png', href: '/nba' },
   { id: 'mlb', name: 'Major League Baseball', shortName: 'MLB', sport: 'mlb', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png', href: '/mlb' },
+  { id: 'nhl', name: 'National Hockey League', shortName: 'NHL', sport: 'nhl', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png', href: '/nhl' },
   { id: 'ncaab', name: 'NCAA Basketball', shortName: 'NCAA Basketball', sport: 'ncaab', logo: BASKETBALL_ICON, href: '/basketball' },
   { id: 'ncaaf', name: 'NCAA Football', shortName: 'College Football', sport: 'ncaaf', logo: FOOTBALL_ICON, href: '/football' },
+  { id: 'ufc', name: 'Ultimate Fighting Championship', shortName: 'UFC', sport: 'ufc', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/ufc.png', href: '/ufc' },
+  { id: 'f1', name: 'Formula 1', shortName: 'F1', sport: 'f1', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/f1.png', href: '/f1' },
+  { id: 'golf', name: 'PGA Tour', shortName: 'Golf', sport: 'golf', logo: 'https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-golf.png', href: '/golf' },
 ];
 
 export interface SearchableMLBTeam {
@@ -61,6 +68,15 @@ export interface SearchableMLBTeam {
 }
 
 export interface SearchableNBATeam {
+  id: string;
+  name: string;
+  abbreviation: string;
+  conference: 'Eastern' | 'Western';
+  division: string;
+  logo: string;
+}
+
+export interface SearchableNHLTeam {
   id: string;
   name: string;
   abbreviation: string;
@@ -84,6 +100,33 @@ export interface SearchableCollegeFootballTeam {
   conference: string;
   logo: string;
 }
+
+export interface SearchableF1Driver {
+  id: string;
+  name: string;
+  team: string;
+  nationality: string;
+  headshot: string;
+}
+
+export interface SearchableGolfer {
+  id: string;
+  name: string;
+  country: string;
+  headshot: string;
+}
+
+export interface SearchableUFCFighter {
+  id: string;
+  name: string;
+  weightClass: string;
+  country: string;
+  headshot: string;
+}
+
+const getF1Headshot = (id: string) => `https://a.espncdn.com/i/headshots/rpm/players/full/${id}.png`;
+const getGolfHeadshot = (id: string) => `https://a.espncdn.com/i/headshots/golf/players/full/${id}.png`;
+const getUFCHeadshot = (id: string) => `https://a.espncdn.com/i/headshots/mma/players/full/${id}.png`;
 
 export interface SearchableNFLTeam {
   id: string;
@@ -255,6 +298,46 @@ export const NFL_TEAMS: SearchableNFLTeam[] = [
   { id: '14', name: 'Los Angeles Rams', abbreviation: 'LAR', conference: 'NFC', division: 'West', logo: getNFLLogo('lar') },
   { id: '25', name: 'San Francisco 49ers', abbreviation: 'SF', conference: 'NFC', division: 'West', logo: getNFLLogo('sf') },
   { id: '26', name: 'Seattle Seahawks', abbreviation: 'SEA', conference: 'NFC', division: 'West', logo: getNFLLogo('sea') },
+];
+
+export const NHL_TEAMS: SearchableNHLTeam[] = [
+  // Eastern Conference - Atlantic
+  { id: '1', name: 'Boston Bruins', abbreviation: 'BOS', conference: 'Eastern', division: 'Atlantic', logo: getNHLLogo('bos') },
+  { id: '7', name: 'Buffalo Sabres', abbreviation: 'BUF', conference: 'Eastern', division: 'Atlantic', logo: getNHLLogo('buf') },
+  { id: '8', name: 'Detroit Red Wings', abbreviation: 'DET', conference: 'Eastern', division: 'Atlantic', logo: getNHLLogo('det') },
+  { id: '13', name: 'Florida Panthers', abbreviation: 'FLA', conference: 'Eastern', division: 'Atlantic', logo: getNHLLogo('fla') },
+  { id: '14', name: 'Montreal Canadiens', abbreviation: 'MTL', conference: 'Eastern', division: 'Atlantic', logo: getNHLLogo('mtl') },
+  { id: '9', name: 'Ottawa Senators', abbreviation: 'OTT', conference: 'Eastern', division: 'Atlantic', logo: getNHLLogo('ott') },
+  { id: '20', name: 'Tampa Bay Lightning', abbreviation: 'TB', conference: 'Eastern', division: 'Atlantic', logo: getNHLLogo('tb') },
+  { id: '10', name: 'Toronto Maple Leafs', abbreviation: 'TOR', conference: 'Eastern', division: 'Atlantic', logo: getNHLLogo('tor') },
+  // Eastern Conference - Metropolitan
+  { id: '15', name: 'Carolina Hurricanes', abbreviation: 'CAR', conference: 'Eastern', division: 'Metropolitan', logo: getNHLLogo('car') },
+  { id: '29', name: 'Columbus Blue Jackets', abbreviation: 'CBJ', conference: 'Eastern', division: 'Metropolitan', logo: getNHLLogo('cbj') },
+  { id: '2', name: 'New Jersey Devils', abbreviation: 'NJD', conference: 'Eastern', division: 'Metropolitan', logo: getNHLLogo('njd') },
+  { id: '3', name: 'New York Islanders', abbreviation: 'NYI', conference: 'Eastern', division: 'Metropolitan', logo: getNHLLogo('nyi') },
+  { id: '4', name: 'New York Rangers', abbreviation: 'NYR', conference: 'Eastern', division: 'Metropolitan', logo: getNHLLogo('nyr') },
+  { id: '5', name: 'Philadelphia Flyers', abbreviation: 'PHI', conference: 'Eastern', division: 'Metropolitan', logo: getNHLLogo('phi') },
+  { id: '6', name: 'Pittsburgh Penguins', abbreviation: 'PIT', conference: 'Eastern', division: 'Metropolitan', logo: getNHLLogo('pit') },
+  { id: '12', name: 'Washington Capitals', abbreviation: 'WSH', conference: 'Eastern', division: 'Metropolitan', logo: getNHLLogo('wsh') },
+  // Western Conference - Central
+  { id: '16', name: 'Arizona Coyotes', abbreviation: 'ARI', conference: 'Western', division: 'Central', logo: getNHLLogo('ari') },
+  { id: '21', name: 'Chicago Blackhawks', abbreviation: 'CHI', conference: 'Western', division: 'Central', logo: getNHLLogo('chi') },
+  { id: '17', name: 'Colorado Avalanche', abbreviation: 'COL', conference: 'Western', division: 'Central', logo: getNHLLogo('col') },
+  { id: '25', name: 'Dallas Stars', abbreviation: 'DAL', conference: 'Western', division: 'Central', logo: getNHLLogo('dal') },
+  { id: '30', name: 'Minnesota Wild', abbreviation: 'MIN', conference: 'Western', division: 'Central', logo: getNHLLogo('min') },
+  { id: '18', name: 'Nashville Predators', abbreviation: 'NSH', conference: 'Western', division: 'Central', logo: getNHLLogo('nsh') },
+  { id: '19', name: 'St. Louis Blues', abbreviation: 'STL', conference: 'Western', division: 'Central', logo: getNHLLogo('stl') },
+  { id: '52', name: 'Winnipeg Jets', abbreviation: 'WPG', conference: 'Western', division: 'Central', logo: getNHLLogo('wpg') },
+  // Western Conference - Pacific
+  { id: '24', name: 'Anaheim Ducks', abbreviation: 'ANA', conference: 'Western', division: 'Pacific', logo: getNHLLogo('ana') },
+  { id: '23', name: 'Calgary Flames', abbreviation: 'CGY', conference: 'Western', division: 'Pacific', logo: getNHLLogo('cgy') },
+  { id: '22', name: 'Edmonton Oilers', abbreviation: 'EDM', conference: 'Western', division: 'Pacific', logo: getNHLLogo('edm') },
+  { id: '26', name: 'Los Angeles Kings', abbreviation: 'LAK', conference: 'Western', division: 'Pacific', logo: getNHLLogo('la') },
+  { id: '28', name: 'San Jose Sharks', abbreviation: 'SJS', conference: 'Western', division: 'Pacific', logo: getNHLLogo('sj') },
+  { id: '55', name: 'Seattle Kraken', abbreviation: 'SEA', conference: 'Western', division: 'Pacific', logo: getNHLLogo('sea') },
+  { id: '53', name: 'Utah Hockey Club', abbreviation: 'UTA', conference: 'Western', division: 'Central', logo: getNHLLogo('uta') },
+  { id: '27', name: 'Vancouver Canucks', abbreviation: 'VAN', conference: 'Western', division: 'Pacific', logo: getNHLLogo('van') },
+  { id: '54', name: 'Vegas Golden Knights', abbreviation: 'VGK', conference: 'Western', division: 'Pacific', logo: getNHLLogo('vgk') },
 ];
 
 export const COLLEGE_BASKETBALL_TEAMS: SearchableCollegeBasketballTeam[] = [
@@ -434,6 +517,80 @@ export const COLLEGE_FOOTBALL_TEAMS: SearchableCollegeFootballTeam[] = [
   { id: '87', name: 'Notre Dame Fighting Irish', abbreviation: 'ND', conference: 'Independent', logo: getCollegeLogo('87') },
 ];
 
+export const F1_DRIVERS: SearchableF1Driver[] = [
+  { id: '4665', name: 'Max Verstappen', team: 'Red Bull Racing', nationality: 'Netherlands', headshot: getF1Headshot('4665') },
+  { id: '5579', name: 'Lando Norris', team: 'McLaren', nationality: 'United Kingdom', headshot: getF1Headshot('5579') },
+  { id: '868', name: 'Lewis Hamilton', team: 'Ferrari', nationality: 'United Kingdom', headshot: getF1Headshot('868') },
+  { id: '5498', name: 'Charles Leclerc', team: 'Ferrari', nationality: 'Monaco', headshot: getF1Headshot('5498') },
+  { id: '4686', name: 'Carlos Sainz', team: 'Williams', nationality: 'Spain', headshot: getF1Headshot('4686') },
+  { id: '5503', name: 'George Russell', team: 'Mercedes', nationality: 'United Kingdom', headshot: getF1Headshot('5503') },
+  { id: '5752', name: 'Oscar Piastri', team: 'McLaren', nationality: 'Australia', headshot: getF1Headshot('5752') },
+  { id: '348', name: 'Fernando Alonso', team: 'Aston Martin', nationality: 'Spain', headshot: getF1Headshot('348') },
+  { id: '5501', name: 'Pierre Gasly', team: 'Alpine', nationality: 'France', headshot: getF1Headshot('5501') },
+  { id: '5652', name: 'Yuki Tsunoda', team: 'Red Bull Racing', nationality: 'Japan', headshot: getF1Headshot('5652') },
+  { id: '5592', name: 'Alexander Albon', team: 'Williams', nationality: 'Thailand', headshot: getF1Headshot('5592') },
+  { id: '4775', name: 'Lance Stroll', team: 'Aston Martin', nationality: 'Canada', headshot: getF1Headshot('4775') },
+  { id: '4678', name: 'Esteban Ocon', team: 'Haas', nationality: 'France', headshot: getF1Headshot('4678') },
+  { id: '4396', name: 'Nico Hulkenberg', team: 'Sauber', nationality: 'Germany', headshot: getF1Headshot('4396') },
+  { id: '5789', name: 'Oliver Bearman', team: 'Haas', nationality: 'United Kingdom', headshot: getF1Headshot('5789') },
+  { id: '5829', name: 'Kimi Antonelli', team: 'Mercedes', nationality: 'Italy', headshot: getF1Headshot('5829') },
+  { id: '5746', name: 'Jack Doohan', team: 'Alpine', nationality: 'Australia', headshot: getF1Headshot('5746') },
+  { id: '5835', name: 'Gabriel Bortoleto', team: 'Sauber', nationality: 'Brazil', headshot: getF1Headshot('5835') },
+  { id: '5790', name: 'Isack Hadjar', team: 'Red Bull Racing', nationality: 'France', headshot: getF1Headshot('5790') },
+  { id: '5741', name: 'Liam Lawson', team: 'Red Bull Racing', nationality: 'New Zealand', headshot: getF1Headshot('5741') },
+];
+
+export const GOLFERS: SearchableGolfer[] = [
+  { id: '1225', name: 'Scottie Scheffler', country: 'USA', headshot: getGolfHeadshot('1225') },
+  { id: '10140', name: 'Xander Schauffele', country: 'USA', headshot: getGolfHeadshot('10140') },
+  { id: '10592', name: 'Rory McIlroy', country: 'Northern Ireland', headshot: getGolfHeadshot('10592') },
+  { id: '9780', name: 'Jon Rahm', country: 'Spain', headshot: getGolfHeadshot('9780') },
+  { id: '9478', name: 'Collin Morikawa', country: 'USA', headshot: getGolfHeadshot('9478') },
+  { id: '11119', name: 'Wyndham Clark', country: 'USA', headshot: getGolfHeadshot('11119') },
+  { id: '4364873', name: 'Viktor Hovland', country: 'Norway', headshot: getGolfHeadshot('4364873') },
+  { id: '6007', name: 'Patrick Cantlay', country: 'USA', headshot: getGolfHeadshot('6007') },
+  { id: '9025', name: 'Ludvig Åberg', country: 'Sweden', headshot: getGolfHeadshot('9025') },
+  { id: '10046', name: 'Bryson DeChambeau', country: 'USA', headshot: getGolfHeadshot('10046') },
+  { id: '6798', name: 'Brooks Koepka', country: 'USA', headshot: getGolfHeadshot('6798') },
+  { id: '4848', name: 'Justin Thomas', country: 'USA', headshot: getGolfHeadshot('4848') },
+  { id: '5467', name: 'Jordan Spieth', country: 'USA', headshot: getGolfHeadshot('5467') },
+  { id: '780', name: 'Tiger Woods', country: 'USA', headshot: getGolfHeadshot('780') },
+  { id: '461', name: 'Phil Mickelson', country: 'USA', headshot: getGolfHeadshot('461') },
+  { id: '5860', name: 'Tommy Fleetwood', country: 'England', headshot: getGolfHeadshot('5860') },
+  { id: '10980', name: 'Sahith Theegala', country: 'USA', headshot: getGolfHeadshot('10980') },
+  { id: '11382', name: 'Sungjae Im', country: 'South Korea', headshot: getGolfHeadshot('11382') },
+  { id: '5500', name: 'Hideki Matsuyama', country: 'Japan', headshot: getGolfHeadshot('5500') },
+  { id: '2230', name: 'Tony Finau', country: 'USA', headshot: getGolfHeadshot('2230') },
+  { id: '3470', name: 'Dustin Johnson', country: 'USA', headshot: getGolfHeadshot('3470') },
+  { id: '3702', name: 'Shane Lowry', country: 'Ireland', headshot: getGolfHeadshot('3702') },
+  { id: '4425906', name: 'Cameron Young', country: 'USA', headshot: getGolfHeadshot('4425906') },
+  { id: '11378', name: 'Robert MacIntyre', country: 'Scotland', headshot: getGolfHeadshot('11378') },
+  { id: '4602673', name: 'Tom Kim', country: 'South Korea', headshot: getGolfHeadshot('4602673') },
+];
+
+export const UFC_FIGHTERS: SearchableUFCFighter[] = [
+  { id: '3332412', name: 'Islam Makhachev', weightClass: 'Lightweight', country: 'Russia', headshot: getUFCHeadshot('3332412') },
+  { id: '2335639', name: 'Jon Jones', weightClass: 'Heavyweight', country: 'USA', headshot: getUFCHeadshot('2335639') },
+  { id: '4705658', name: 'Alex Pereira', weightClass: 'Light Heavyweight', country: 'Brazil', headshot: getUFCHeadshot('4705658') },
+  { id: '3949584', name: 'Alexander Volkanovski', weightClass: 'Featherweight', country: 'Australia', headshot: getUFCHeadshot('3949584') },
+  { id: '4350812', name: 'Ilia Topuria', weightClass: 'Featherweight', country: 'Spain', headshot: getUFCHeadshot('4350812') },
+  { id: '4205093', name: 'Sean O\'Malley', weightClass: 'Bantamweight', country: 'USA', headshot: getUFCHeadshot('4205093') },
+  { id: '3166126', name: 'Dricus du Plessis', weightClass: 'Middleweight', country: 'South Africa', headshot: getUFCHeadshot('3166126') },
+  { id: '3152929', name: 'Leon Edwards', weightClass: 'Welterweight', country: 'United Kingdom', headshot: getUFCHeadshot('3152929') },
+  { id: '3088812', name: 'Kamaru Usman', weightClass: 'Welterweight', country: 'Nigeria', headshot: getUFCHeadshot('3088812') },
+  { id: '3093653', name: 'Sean Strickland', weightClass: 'Middleweight', country: 'USA', headshot: getUFCHeadshot('3093653') },
+  { id: '3948572', name: 'Merab Dvalishvili', weightClass: 'Bantamweight', country: 'Georgia', headshot: getUFCHeadshot('3948572') },
+  { id: '3022677', name: 'Conor McGregor', weightClass: 'Welterweight', country: 'Ireland', headshot: getUFCHeadshot('3022677') },
+  { id: '2506549', name: 'Dustin Poirier', weightClass: 'Lightweight', country: 'USA', headshot: getUFCHeadshot('2506549') },
+  { id: '3172112', name: 'Belal Muhammad', weightClass: 'Welterweight', country: 'USA', headshot: getUFCHeadshot('3172112') },
+  { id: '2614933', name: 'Max Holloway', weightClass: 'Featherweight', country: 'USA', headshot: getUFCHeadshot('2614933') },
+  { id: '2504169', name: 'Charles Oliveira', weightClass: 'Lightweight', country: 'Brazil', headshot: getUFCHeadshot('2504169') },
+  { id: '3009717', name: 'Robert Whittaker', weightClass: 'Middleweight', country: 'Australia', headshot: getUFCHeadshot('3009717') },
+  { id: '4426000', name: 'Ciryl Gane', weightClass: 'Heavyweight', country: 'France', headshot: getUFCHeadshot('4426000') },
+  { id: '2554705', name: 'Valentina Shevchenko', weightClass: 'Flyweight', country: 'Kyrgyzstan', headshot: getUFCHeadshot('2554705') },
+  { id: '2516131', name: 'Amanda Nunes', weightClass: 'Bantamweight', country: 'Brazil', headshot: getUFCHeadshot('2516131') },
+];
+
 // Competition emblem URLs from API-Football
 const LEAGUE_LOGOS: Record<string, string> = {
   'PD': 'https://media.api-sports.io/football/leagues/140.png',
@@ -585,10 +742,14 @@ export function searchAll(query: string): {
   mlbTeams: SearchableMLBTeam[];
   nbaTeams: SearchableNBATeam[];
   nflTeams: SearchableNFLTeam[];
+  nhlTeams: SearchableNHLTeam[];
   collegeBasketballTeams: SearchableCollegeBasketballTeam[];
   collegeFootballTeams: SearchableCollegeFootballTeam[];
   conferences: SearchableConference[];
   soccerLeagues: SearchableSoccerLeague[];
+  f1Drivers: SearchableF1Driver[];
+  golfers: SearchableGolfer[];
+  ufcFighters: SearchableUFCFighter[];
 } {
   const q = query.toLowerCase().trim();
   if (!q) return {
@@ -598,10 +759,14 @@ export function searchAll(query: string): {
     mlbTeams: [],
     nbaTeams: [],
     nflTeams: [],
+    nhlTeams: [],
     collegeBasketballTeams: [],
     collegeFootballTeams: [],
     conferences: [],
     soccerLeagues: [],
+    f1Drivers: [],
+    golfers: [],
+    ufcFighters: [],
   };
 
   const teams = TEAMS.filter(
@@ -631,6 +796,12 @@ export function searchAll(query: string): {
   ).slice(0, 10);
 
   const nflTeams = NFL_TEAMS.filter(
+    (t) =>
+      t.name.toLowerCase().includes(q) ||
+      t.abbreviation.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  const nhlTeams = NHL_TEAMS.filter(
     (t) =>
       t.name.toLowerCase().includes(q) ||
       t.abbreviation.toLowerCase().includes(q)
@@ -670,5 +841,25 @@ export function searchAll(query: string): {
       l.sport.toLowerCase().includes(q)
   );
 
-  return { teams, leagues, americanLeagues, mlbTeams, nbaTeams, nflTeams, collegeBasketballTeams, collegeFootballTeams, conferences, soccerLeagues };
+  const f1Drivers = F1_DRIVERS.filter(
+    (d) =>
+      d.name.toLowerCase().includes(q) ||
+      d.team.toLowerCase().includes(q) ||
+      d.nationality.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  const golfers = GOLFERS.filter(
+    (g) =>
+      g.name.toLowerCase().includes(q) ||
+      g.country.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  const ufcFighters = UFC_FIGHTERS.filter(
+    (f) =>
+      f.name.toLowerCase().includes(q) ||
+      f.weightClass.toLowerCase().includes(q) ||
+      f.country.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  return { teams, leagues, americanLeagues, mlbTeams, nbaTeams, nflTeams, nhlTeams, collegeBasketballTeams, collegeFootballTeams, conferences, soccerLeagues, f1Drivers, golfers, ufcFighters };
 }

@@ -11,6 +11,8 @@ import { NFLPlayoffBracket } from '@/components/nfl/NFLPlayoffBracket';
 import { useTheme } from '@/lib/theme';
 import { NFLPlayoffBracket as NFLPlayoffBracketData } from '@/lib/api-espn-nfl-bracket';
 import { NFLGame, NFLStandings, NFLStanding, NFLStatLeader } from '@/lib/types/nfl';
+import { SectionSkeleton, StandingsSkeleton } from '@/components/Skeleton';
+import { SafeImage } from '@/components/SafeImage';
 
 interface NFLLeadersData {
   passingYards: NFLStatLeader[];
@@ -153,6 +155,7 @@ export default function NFLHomePage() {
     c.name.toUpperCase().includes(selectedConference)
   );
 
+
   return (
     <div
       className="flex min-h-screen flex-col transition-theme"
@@ -220,15 +223,7 @@ export default function NFLHomePage() {
         {activeTab === 'schedule' && (
           <>
             {gamesLoading ? (
-              <div className="py-8 text-center">
-                <div
-                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                  style={{ color: theme.accent }}
-                />
-                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-                  Loading games...
-                </p>
-              </div>
+              <SectionSkeleton cards={4} />
             ) : games.length === 0 ? (
               <div
                 className="rounded-lg py-8 text-center glass-section"
@@ -371,15 +366,7 @@ export default function NFLHomePage() {
         {activeTab === 'bracket' && (
           <>
             {bracketLoading ? (
-              <div className="py-8 text-center">
-                <div
-                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                  style={{ color: theme.accent }}
-                />
-                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-                  Loading playoff bracket...
-                </p>
-              </div>
+              <SectionSkeleton cards={2} />
             ) : bracketData ? (
               <NFLPlayoffBracket
                 afc={bracketData.afc}
@@ -406,15 +393,7 @@ export default function NFLHomePage() {
         {activeTab === 'stats' && (
           <>
             {leadersLoading ? (
-              <div className="py-8 text-center">
-                <div
-                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                  style={{ color: theme.accent }}
-                />
-                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-                  Loading player leaders...
-                </p>
-              </div>
+              <StandingsSkeleton rows={5} />
             ) : !leadersData?.passingYards?.length && !leadersData?.rushingYards?.length ? (
               <div
                 className="rounded-xl p-8 text-center glass-section"
@@ -468,15 +447,7 @@ export default function NFLHomePage() {
         {activeTab === 'standings' && (
           <>
             {standingsLoading ? (
-              <div className="py-8 text-center">
-                <div
-                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                  style={{ color: theme.accent }}
-                />
-                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-                  Loading standings...
-                </p>
-              </div>
+              <StandingsSkeleton />
             ) : (
               <>
                 {/* Conference Toggle */}
@@ -552,7 +523,7 @@ export default function NFLHomePage() {
                               className="card-press flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
                             >
                               <div className="flex-1 flex items-center gap-2 min-w-0">
-                                <img
+                                <SafeImage
                                   src={team.logo}
                                   alt={team.name}
                                   className="h-6 w-6 object-contain logo-glow flex-shrink-0"
@@ -575,7 +546,7 @@ export default function NFLHomePage() {
                                 className="card-press flex items-center px-4 py-2.5 hover:opacity-80 transition-opacity"
                               >
                                 <div className="flex-1 flex items-center gap-2 min-w-0">
-                                  <img
+                                  <SafeImage
                                     src={team.team.logo}
                                     alt={team.team.name}
                                     className="h-6 w-6 object-contain logo-glow flex-shrink-0"
@@ -668,7 +639,7 @@ function LeaderCard({
       {leaders.map((leader, index) => (
         <Link
           key={leader.player.id}
-          href={`/nfl/team/${leader.team.id}`}
+          href={`/player/nfl/${leader.player.id}`}
           className="card-press flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5"
         >
           <span
@@ -679,7 +650,7 @@ function LeaderCard({
           </span>
           <div className="relative">
             {leader.player.headshot ? (
-              <img
+              <SafeImage
                 src={leader.player.headshot}
                 alt={leader.player.name}
                 className="h-10 w-10 rounded-full object-cover"
@@ -691,7 +662,7 @@ function LeaderCard({
               />
             )}
             {leader.team.logo && (
-              <img
+              <SafeImage
                 src={leader.team.logo}
                 alt={leader.team.abbreviation}
                 className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-white object-contain logo-glow p-0.5"

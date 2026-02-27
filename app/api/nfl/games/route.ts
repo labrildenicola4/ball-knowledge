@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getNFLGames, getNFLPlayoffGames } from '@/lib/api-espn-nfl';
 import { getCachedGames, cacheToNFLGame } from '@/lib/espn-cache-helpers';
+import { createServiceClient } from '@/lib/supabase-server';
+import { fetchESPNScoreboard, transformESPNEvent } from '@/lib/espn-unified-fetcher';
+import { ESPN_SPORTS, ESPN_GAMES_TABLE, getEasternDateString } from '@/lib/espn-sync-config';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +28,25 @@ export async function GET(request: NextRequest) {
       }
 
       const games = await getNFLGames(date);
+
+      // Fire-and-forget: backfill cache for next request
+      if (games.length > 0) {
+        fetchESPNScoreboard('nfl', date)
+          .then(events => {
+            if (events.length === 0) return;
+            createServiceClient()
+              .from(ESPN_GAMES_TABLE)
+              .upsert(
+                events.map(e => transformESPNEvent(e, ESPN_SPORTS.nfl.sportType)),
+                { onConflict: 'id', ignoreDuplicates: false }
+              )
+              .then(({ error }) => {
+                if (error) console.error('[nfl] cache write error:', error.message);
+              });
+          })
+          .catch(() => {});
+      }
+
       return NextResponse.json({
         games,
         count: games.length,
@@ -58,6 +80,25 @@ export async function GET(request: NextRequest) {
     });
 
     const games = Array.from(gameMap.values());
+
+    // Fire-and-forget: backfill cache for next request
+    if (games.length > 0) {
+      const syncDate = getEasternDateString();
+      fetchESPNScoreboard('nfl', syncDate)
+        .then(events => {
+          if (events.length === 0) return;
+          createServiceClient()
+            .from(ESPN_GAMES_TABLE)
+            .upsert(
+              events.map(e => transformESPNEvent(e, ESPN_SPORTS.nfl.sportType)),
+              { onConflict: 'id', ignoreDuplicates: false }
+            )
+            .then(({ error }) => {
+              if (error) console.error('[nfl] cache write error:', error.message);
+            });
+        })
+        .catch(() => {});
+    }
 
     return NextResponse.json({
       games,

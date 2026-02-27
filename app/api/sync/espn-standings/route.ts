@@ -3,6 +3,9 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { getNBAStandings } from '@/lib/api-espn-nba';
 import { getNFLStandings } from '@/lib/api-espn-nfl';
 import { getMLBStandings } from '@/lib/api-espn-mlb';
+import { getNHLStandings } from '@/lib/api-espn-nhl';
+import { getBasketballRankings } from '@/lib/api-espn-basketball';
+import { getCollegeFootballRankings } from '@/lib/api-espn-college-football';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -27,6 +30,24 @@ const ESPN_STANDINGS_SPORTS = [
     leagueCode: 'MLB',
     fetchStandings: getMLBStandings,
   },
+  {
+    name: 'NHL',
+    sportType: 'hockey_nhl',
+    leagueCode: 'NHL',
+    fetchStandings: getNHLStandings,
+  },
+  {
+    name: 'College Basketball Rankings',
+    sportType: 'basketball',
+    leagueCode: 'CBB_RANKINGS',
+    fetchStandings: getBasketballRankings,
+  },
+  {
+    name: 'College Football Rankings',
+    sportType: 'football_college',
+    leagueCode: 'CFB_RANKINGS',
+    fetchStandings: getCollegeFootballRankings,
+  },
 ] as const;
 
 function getCurrentSeason(): number {
@@ -46,7 +67,6 @@ export async function GET(request: NextRequest) {
   }
 
   const startTime = Date.now();
-  console.log('[ESPN-Standings-Sync] Starting standings sync...');
 
   const supabase = createServiceClient();
   const season = getCurrentSeason();
@@ -56,8 +76,6 @@ export async function GET(request: NextRequest) {
   try {
     for (const sport of ESPN_STANDINGS_SPORTS) {
       try {
-        console.log(`[ESPN-Standings-Sync] Fetching ${sport.name} standings...`);
-
         const standings = await sport.fetchStandings();
 
         // Store the full response as JSONB
@@ -75,15 +93,12 @@ export async function GET(request: NextRequest) {
           });
 
         if (error) {
-          console.error(`[ESPN-Standings-Sync] Error upserting ${sport.name}:`, error);
           errors.push(`${sport.name}: ${error.message}`);
         } else {
           totalSynced++;
-          console.log(`[ESPN-Standings-Sync] Synced ${sport.name} standings`);
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        console.error(`[ESPN-Standings-Sync] Error fetching ${sport.name}:`, message);
         errors.push(`${sport.name}: ${message}`);
       }
 
@@ -103,8 +118,6 @@ export async function GET(request: NextRequest) {
       completed_at: new Date().toISOString(),
     });
 
-    console.log(`[ESPN-Standings-Sync] Completed in ${duration}ms. Synced ${totalSynced} leagues.`);
-
     return NextResponse.json({
       success: errors.length === 0,
       synced: totalSynced,
@@ -112,8 +125,6 @@ export async function GET(request: NextRequest) {
       duration: `${duration}ms`,
     });
   } catch (error) {
-    console.error('[ESPN-Standings-Sync] Fatal error:', error);
-
     try {
       await supabase.from('sync_log').insert({
         sync_type: 'espn_standings',
@@ -122,7 +133,9 @@ export async function GET(request: NextRequest) {
         error_message: error instanceof Error ? error.message : 'Unknown error',
         completed_at: new Date().toISOString(),
       });
-    } catch { }
+    } catch (logErr) {
+      console.error('[standings-sync] sync_log insert failed:', logErr instanceof Error ? logErr.message : logErr);
+    }
 
     return NextResponse.json(
       { error: 'Sync failed', message: error instanceof Error ? error.message : 'Unknown error' },

@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Header } from '@/components/Header';
+import { useSafeBack } from '@/lib/use-safe-back';
 import { BottomNav } from '@/components/BottomNav';
 import { useTheme } from '@/lib/theme';
 import { getThemedLogo, shouldUseWhiteFilter } from '@/lib/constants/dark-mode-logos';
+import { SafeImage } from '@/components/SafeImage';
 
 // Leagues ordered by importance
 const SOCCER_LEAGUES = [
@@ -21,6 +22,8 @@ const SOCCER_LEAGUES = [
 ];
 
 const OTHER_COMPETITIONS = [
+  // Americas
+  { slug: 'mls', name: 'Major League Soccer', shortName: 'MLS', country: 'USA', logo: 'https://media.api-sports.io/football/leagues/253.png' },
   // Other European Competitions
   { slug: 'europa-league', name: 'UEFA Europa League', shortName: 'UEL', country: 'Europe', logo: 'https://media.api-sports.io/football/leagues/3.png' },
   // Other Top Leagues
@@ -49,7 +52,7 @@ function LeagueCard({ league }: { league: typeof SOCCER_LEAGUES[0] }) {
       href={`/league/${league.slug}`}
       className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:opacity-80 glass-card"
     >
-      <img
+      <SafeImage
         src={logoSrc}
         alt={league.name}
         className="h-10 w-10 object-contain logo-glow"
@@ -71,7 +74,7 @@ function LeagueCard({ league }: { league: typeof SOCCER_LEAGUES[0] }) {
 
 export default function SoccerHubPage() {
   const { theme, darkMode } = useTheme();
-  const router = useRouter();
+  const goBack = useSafeBack('/all');
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', {
@@ -93,7 +96,7 @@ export default function SoccerHubPage() {
       >
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.back()}
+            onClick={goBack}
             className="tap-highlight flex items-center justify-center rounded-full p-2.5 -ml-1.5 hover:opacity-70 transition-opacity glass-card"
           >
             <ChevronLeft size={20} style={{ color: theme.text }} />

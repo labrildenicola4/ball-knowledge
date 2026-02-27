@@ -1,4 +1,6 @@
 // College Football Playoff Bracket API functions
+import { getCurrentCFBSeason, getCFPDateRanges } from './espn-season-utils';
+
 const API_BASE = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football';
 
 // Simple cache
@@ -155,16 +157,14 @@ function transformToBracketGame(event: any): CFBBracketGame & { round: string } 
 export async function getCFBPlayoffBracket(): Promise<CFBPlayoffBracket> {
   try {
     // Fetch CFP games by date ranges (seasontype=3 alone doesn't return all games)
-    // 2025-26 CFP dates:
-    // - First Round: Dec 20-21, 2025
-    // - Quarterfinals (NY6 Bowls): Dec 31 - Jan 2, 2026
-    // - Semifinals: Jan 9-10, 2026
-    // - Championship: Jan 20, 2026
+    const season = getCurrentCFBSeason();
+    const cfpDates = getCFPDateRanges(season);
+
     const [firstRoundData, quarterfinalsData, semifinalsData, championshipData] = await Promise.all([
-      fetchESPN<any>(`${API_BASE}/scoreboard?dates=20251220-20251221`),
-      fetchESPN<any>(`${API_BASE}/scoreboard?dates=20251231-20260102`),
-      fetchESPN<any>(`${API_BASE}/scoreboard?dates=20260109-20260110`),
-      fetchESPN<any>(`${API_BASE}/scoreboard?dates=20260119-20260121`),
+      fetchESPN<any>(`${API_BASE}/scoreboard?dates=${cfpDates.firstRound}`),
+      fetchESPN<any>(`${API_BASE}/scoreboard?dates=${cfpDates.quarterfinals}`),
+      fetchESPN<any>(`${API_BASE}/scoreboard?dates=${cfpDates.semifinals}`),
+      fetchESPN<any>(`${API_BASE}/scoreboard?dates=${cfpDates.championship}`),
     ]);
 
     // Combine all events
@@ -193,7 +193,7 @@ export async function getCFBPlayoffBracket(): Promise<CFBPlayoffBracket> {
     const championshipGame = allGames.find((g: any) => g.cfpRound === 'CHAMPIONSHIP') || null;
 
     return {
-      season: '2025',
+      season: String(getCurrentCFBSeason()),
       firstRound,
       quarterfinals,
       semifinals,
@@ -202,7 +202,7 @@ export async function getCFBPlayoffBracket(): Promise<CFBPlayoffBracket> {
   } catch (error) {
     console.error('[ESPN-CFB-Bracket] Failed to fetch playoff bracket:', error);
     return {
-      season: '2025',
+      season: String(getCurrentCFBSeason()),
       firstRound: [],
       quarterfinals: [],
       semifinals: [],

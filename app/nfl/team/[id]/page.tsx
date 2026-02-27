@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useSafeBack } from '@/lib/use-safe-back';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { ChevronLeft, MapPin, Sun, Moon, TrendingUp, Trophy, Heart, BarChart3, Users } from 'lucide-react';
@@ -10,6 +11,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { NFLTeamInfo, NFLTeamScheduleGame, NFLStandings, NFLStanding, NFLPlayer } from '@/lib/types/nfl';
 import { createBrowserClient } from '@supabase/ssr';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { SafeImage } from '@/components/SafeImage';
 
 interface RecentGame {
   id: string;
@@ -33,7 +35,7 @@ const fetcher = (url: string) => fetch(url).then(res => {
 
 export default function NFLTeamPage() {
   const params = useParams();
-  const router = useRouter();
+  const goBack = useSafeBack('/nfl');
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const teamId = params.id as string;
 
@@ -156,7 +158,7 @@ export default function NFLTeamPage() {
       <div className="flex min-h-screen flex-col items-center justify-center" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
         <p className="text-[14px]" style={{ color: theme.red }}>{error?.message || 'Team not found'}</p>
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className={`mt-4 rounded-lg px-4 py-2 text-[12px] ${darkMode ? 'glass-pill' : ''}`}
           style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
@@ -187,10 +189,10 @@ export default function NFLTeamPage() {
   return (
     <div className="flex min-h-screen flex-col transition-theme" style={{ backgroundColor: darkMode ? 'transparent' : theme.bg }}>
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
+      <header className="safe-top flex items-center gap-3 px-4 py-3" style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
         <button
-          onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          onClick={goBack}
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           <ChevronLeft size={18} style={{ color: theme.text }} />
@@ -201,7 +203,7 @@ export default function NFLTeamPage() {
         </div>
         <button
           onClick={toggleDarkMode}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
+          className="tap-highlight flex h-9 w-9 items-center justify-center rounded-full"
           style={{ border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
         >
           {darkMode ? <Sun size={18} style={{ color: theme.text }} /> : <Moon size={18} style={{ color: theme.text }} />}
@@ -215,7 +217,7 @@ export default function NFLTeamPage() {
       >
         <div className="mx-auto mb-3 h-20 w-20">
           {team.logo ? (
-            <img src={team.logo} alt={team.name} className="h-full w-full object-contain logo-glow" />
+            <SafeImage src={team.logo} alt={team.name} className="h-full w-full object-contain logo-glow" />
           ) : (
             <div
               className="h-full w-full rounded-full"
@@ -373,7 +375,7 @@ export default function NFLTeamPage() {
                                 {game.isHome ? 'vs' : '@'}
                               </span>
                               {game.opponent.logo && (
-                                <img src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain logo-glow" />
+                                <SafeImage src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain logo-glow" />
                               )}
                               <span className="text-sm font-medium" style={{ color: theme.text }}>
                                 {game.opponent.shortDisplayName || game.opponent.name}
@@ -421,7 +423,7 @@ export default function NFLTeamPage() {
                                 {game.isHome ? 'vs' : '@'}
                               </span>
                               {game.opponent.logo && (
-                                <img src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain logo-glow" />
+                                <SafeImage src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain logo-glow" />
                               )}
                               <span className="text-sm font-medium" style={{ color: theme.text }}>
                                 {game.opponent.shortDisplayName || game.opponent.name}
@@ -461,13 +463,13 @@ export default function NFLTeamPage() {
             {roster && roster.length > 0 ? (
               <div className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
                 {roster.map((player, idx) => (
+                  <Link key={player.id} href={`/player/nfl/${player.id}`} className="contents">
                   <div
-                    key={player.id}
                     className="flex items-center gap-3 px-4 py-3"
                     style={{ borderTop: idx > 0 ? `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` : 'none' }}
                   >
                     {player.headshot ? (
-                      <img src={player.headshot} alt={player.name} className="h-10 w-10 rounded-full object-cover" />
+                      <SafeImage src={player.headshot} alt={player.name} className="h-10 w-10 rounded-full object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}>
                         {player.jersey || '#'}
@@ -482,6 +484,7 @@ export default function NFLTeamPage() {
                       </p>
                     </div>
                   </div>
+                  </Link>
                 ))}
               </div>
             ) : (
@@ -510,8 +513,8 @@ export default function NFLTeamPage() {
                       Passing Yards
                     </div>
                     {teamStats.passing.map((player, index) => (
+                      <Link key={player.player.id || index} href={`/player/nfl/${player.player.id}`} className="contents">
                       <div
-                        key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
                         style={{ borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                       >
@@ -522,7 +525,7 @@ export default function NFLTeamPage() {
                           {index + 1}
                         </span>
                         {player.player.headshot && (
-                          <img
+                          <SafeImage
                             src={player.player.headshot}
                             alt={player.player.name}
                             className="h-8 w-8 rounded-full object-cover"
@@ -545,6 +548,7 @@ export default function NFLTeamPage() {
                           </p>
                         </div>
                       </div>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -562,8 +566,8 @@ export default function NFLTeamPage() {
                       Rushing Yards
                     </div>
                     {teamStats.rushing.map((player, index) => (
+                      <Link key={player.player.id || index} href={`/player/nfl/${player.player.id}`} className="contents">
                       <div
-                        key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
                         style={{ borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                       >
@@ -574,7 +578,7 @@ export default function NFLTeamPage() {
                           {index + 1}
                         </span>
                         {player.player.headshot && (
-                          <img
+                          <SafeImage
                             src={player.player.headshot}
                             alt={player.player.name}
                             className="h-8 w-8 rounded-full object-cover"
@@ -597,6 +601,7 @@ export default function NFLTeamPage() {
                           </p>
                         </div>
                       </div>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -614,8 +619,8 @@ export default function NFLTeamPage() {
                       Receiving Yards
                     </div>
                     {teamStats.receiving.map((player, index) => (
+                      <Link key={player.player.id || index} href={`/player/nfl/${player.player.id}`} className="contents">
                       <div
-                        key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
                         style={{ borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                       >
@@ -626,7 +631,7 @@ export default function NFLTeamPage() {
                           {index + 1}
                         </span>
                         {player.player.headshot && (
-                          <img
+                          <SafeImage
                             src={player.player.headshot}
                             alt={player.player.name}
                             className="h-8 w-8 rounded-full object-cover"
@@ -649,6 +654,7 @@ export default function NFLTeamPage() {
                           </p>
                         </div>
                       </div>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -666,8 +672,8 @@ export default function NFLTeamPage() {
                       Total Tackles
                     </div>
                     {teamStats.defense.map((player, index) => (
+                      <Link key={player.player.id || index} href={`/player/nfl/${player.player.id}`} className="contents">
                       <div
-                        key={player.player.id || index}
                         className="flex items-center gap-3 px-4 py-3"
                         style={{ borderTop: index === 0 ? 'none' : `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                       >
@@ -678,7 +684,7 @@ export default function NFLTeamPage() {
                           {index + 1}
                         </span>
                         {player.player.headshot && (
-                          <img
+                          <SafeImage
                             src={player.player.headshot}
                             alt={player.player.name}
                             className="h-8 w-8 rounded-full object-cover"
@@ -701,6 +707,7 @@ export default function NFLTeamPage() {
                           </p>
                         </div>
                       </div>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -805,7 +812,7 @@ export default function NFLTeamPage() {
                               {standingTeam.seed}
                             </span>
                           )}
-                          <img
+                          <SafeImage
                             src={standingTeam.team.logo}
                             alt={standingTeam.team.name}
                             className="h-5 w-5 object-contain logo-glow flex-shrink-0"

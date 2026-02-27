@@ -25,6 +25,7 @@ export interface CollegeFootballGame {
   venue?: string;
   broadcast?: string;
   date: string;
+  rawDate?: string;
   startTime: string;
   conferenceGame: boolean;
   neutralSite: boolean;
@@ -50,6 +51,17 @@ export interface CollegeFootballTeamScheduleGame {
   status: 'scheduled' | 'in_progress' | 'final';
 }
 
+export interface CollegeFootballPlayer {
+  id: string;
+  name: string;
+  jersey: string;
+  position: string;
+  headshot: string;
+  height: string;
+  weight: string;
+  year?: string;
+}
+
 export interface CollegeFootballTeamInfo {
   team: CollegeFootballTeam;
   conference: CollegeFootballConference;
@@ -57,6 +69,7 @@ export interface CollegeFootballTeamInfo {
   conferenceRecord: string;
   rank?: number;
   schedule: CollegeFootballTeamScheduleGame[];
+  roster?: CollegeFootballPlayer[];
   venue?: {
     name: string;
     city: string;

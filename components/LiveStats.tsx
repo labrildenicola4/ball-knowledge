@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTheme } from '@/lib/theme';
+import { tapLight } from '@/lib/haptics';
 
 export interface MatchStat {
   label: string;
@@ -95,7 +96,7 @@ export function LiveStats({ stats, homeShortName, awayShortName, matchStatus, is
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => { tapLight(); setActiveTab(tab.key); }}
             className={`flex-1 py-2 px-4 rounded-full text-[11px] font-semibold transition-all ${darkMode ? (activeTab === tab.key ? 'glass-pill-active' : '') : ''}`}
             style={{
               ...(darkMode ? {} : { backgroundColor: activeTab === tab.key ? theme.bgSecondary : 'transparent', border: activeTab === tab.key ? `1px solid ${theme.border}` : '1px solid transparent' }),

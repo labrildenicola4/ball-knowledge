@@ -11,6 +11,8 @@ import { NBAGameCard } from '@/components/nba/NBAGameCard';
 import { useTheme } from '@/lib/theme';
 import { BasketballGame } from '@/lib/types/basketball';
 import { NBALeaders, NBAStandings, NBATeamRankings } from '@/lib/api-espn-nba';
+import { SectionSkeleton, StandingsSkeleton } from '@/components/Skeleton';
+import { SafeImage } from '@/components/SafeImage';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -73,6 +75,7 @@ export default function NBAHomePage() {
     { id: 'stats' as Tab, label: 'Stats', icon: BarChart3 },
     { id: 'standings' as Tab, label: 'Standings', icon: Trophy },
   ];
+
 
   return (
     <div
@@ -141,15 +144,7 @@ export default function NBAHomePage() {
         {activeTab === 'schedule' && (
           <>
             {gamesLoading ? (
-              <div className="py-8 text-center">
-                <div
-                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                  style={{ color: theme.accent }}
-                />
-                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-                  Loading games...
-                </p>
-              </div>
+              <SectionSkeleton cards={4} />
             ) : games.length === 0 ? (
               <div
                 className="rounded-lg py-8 text-center glass-section"
@@ -309,15 +304,7 @@ export default function NBAHomePage() {
             {statsView === 'players' && (
               <>
                 {leadersLoading ? (
-                  <div className="py-8 text-center">
-                    <div
-                      className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                      style={{ color: theme.accent }}
-                    />
-                    <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-                      Loading player leaders...
-                    </p>
-                  </div>
+                  <StandingsSkeleton rows={5} />
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <LeaderCard
@@ -359,15 +346,7 @@ export default function NBAHomePage() {
             {statsView === 'teams' && (
               <>
                 {teamRankingsLoading ? (
-                  <div className="py-8 text-center">
-                    <div
-                      className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                      style={{ color: theme.accent }}
-                    />
-                    <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-                      Loading team rankings...
-                    </p>
-                  </div>
+                  <StandingsSkeleton rows={5} />
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <TeamRankingCard
@@ -411,15 +390,7 @@ export default function NBAHomePage() {
         {activeTab === 'standings' && (
           <>
             {standingsLoading ? (
-              <div className="py-8 text-center">
-                <div
-                  className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"
-                  style={{ color: theme.accent }}
-                />
-                <p className="mt-3 text-sm" style={{ color: theme.textSecondary }}>
-                  Loading standings...
-                </p>
-              </div>
+              <StandingsSkeleton />
             ) : (
               <>
                 {/* Conference Toggle */}
@@ -483,7 +454,7 @@ export default function NBAHomePage() {
                                   {team.seed}
                                 </span>
                                 <div className="flex-1 flex items-center gap-2 min-w-0">
-                                  <img
+                                  <SafeImage
                                     src={team.logo}
                                     alt={team.name}
                                     className="h-6 w-6 object-contain logo-glow flex-shrink-0"
@@ -612,7 +583,7 @@ function LeaderCard({
       {leaders.map((leader, index) => (
         <Link
           key={leader.player.id}
-          href={`/nba/team/${leader.team.id}`}
+          href={`/player/nba/${leader.player.id}`}
           className="card-press flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5"
         >
           <span
@@ -623,7 +594,7 @@ function LeaderCard({
           </span>
           <div className="relative">
             {leader.player.headshot ? (
-              <img
+              <SafeImage
                 src={leader.player.headshot}
                 alt={leader.player.name}
                 className="h-10 w-10 rounded-full object-cover"
@@ -635,7 +606,7 @@ function LeaderCard({
               />
             )}
             {leader.team.logo && (
-              <img
+              <SafeImage
                 src={leader.team.logo}
                 alt={leader.team.abbreviation}
                 className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-white object-contain logo-glow p-0.5"
@@ -704,7 +675,7 @@ function TeamRankingCard({
             {index + 1}
           </span>
           {ranking.team.logo ? (
-            <img
+            <SafeImage
               src={ranking.team.logo}
               alt={ranking.team.name}
               className="h-10 w-10 object-contain logo-glow"

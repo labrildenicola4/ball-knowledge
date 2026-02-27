@@ -13,10 +13,15 @@ import {
   MLB_TEAMS,
   NBA_TEAMS,
   NFL_TEAMS,
+  NHL_TEAMS,
   COLLEGE_BASKETBALL_TEAMS,
   COLLEGE_FOOTBALL_TEAMS,
   SEARCHABLE_SOCCER_LEAGUES,
+  F1_DRIVERS,
+  GOLFERS,
+  UFC_FIGHTERS,
 } from '@/lib/search-data';
+import { SafeImage } from '@/components/SafeImage';
 
 interface TeamInfo {
   teamId: number;
@@ -148,6 +153,10 @@ export default function MyStuffPage() {
   const nflFavoriteIds = getFavoriteIds('nfl_team');
   const ncaabFavoriteIds = getFavoriteIds('ncaab_team');
   const ncaafFavoriteIds = getFavoriteIds('ncaaf_team');
+  const nhlFavoriteIds = getFavoriteIds('nhl_team');
+  const f1DriverFavoriteIds = getFavoriteIds('f1_driver');
+  const golferFavoriteIds = getFavoriteIds('golfer');
+  const ufcFighterFavoriteIds = getFavoriteIds('ufc_fighter');
   const leagueFavoriteIds = getFavoriteIds('league');
 
   // Helper to check if ID matches (handles string/number comparison)
@@ -160,6 +169,10 @@ export default function MyStuffPage() {
   const nflFavorites = NFL_TEAMS.filter(t => idMatches(t.id, nflFavoriteIds));
   const ncaabFavorites = COLLEGE_BASKETBALL_TEAMS.filter(t => idMatches(t.id, ncaabFavoriteIds));
   const ncaafFavorites = COLLEGE_FOOTBALL_TEAMS.filter(t => idMatches(t.id, ncaafFavoriteIds));
+  const nhlFavorites = NHL_TEAMS.filter(t => idMatches(t.id, nhlFavoriteIds));
+  const f1DriverFavorites = F1_DRIVERS.filter(d => idMatches(d.id, f1DriverFavoriteIds));
+  const golferFavorites = GOLFERS.filter(g => idMatches(g.id, golferFavoriteIds));
+  const ufcFighterFavorites = UFC_FIGHTERS.filter(f => idMatches(f.id, ufcFighterFavoriteIds));
   const leagueFavorites = SEARCHABLE_SOCCER_LEAGUES.filter(l => idMatches(l.id, leagueFavoriteIds));
 
   const hasAnyFavorites = favorites.length > 0;
@@ -211,7 +224,7 @@ export default function MyStuffPage() {
           style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
         >
           <div className="flex items-center gap-3">
-            <img
+            <SafeImage
               src={user.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user.email}&background=random`}
               alt="Avatar"
               className="h-12 w-12 rounded-full"
@@ -281,7 +294,7 @@ export default function MyStuffPage() {
                     >
                       <Link href={`/team/${team.teamId}`} className="card-press flex items-center gap-3 flex-1">
                         {team.logo && (
-                          <img
+                          <SafeImage
                             src={team.logo}
                             alt={team.team}
                             className="h-10 w-10 object-contain logo-glow"
@@ -353,7 +366,7 @@ export default function MyStuffPage() {
                       }}
                     >
                       <Link href={`/mlb/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
-                        <img
+                        <SafeImage
                           src={team.logo}
                           alt={team.name}
                           className="h-10 w-10 object-contain logo-glow"
@@ -400,7 +413,7 @@ export default function MyStuffPage() {
                       }}
                     >
                       <Link href={`/nba/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
-                        <img
+                        <SafeImage
                           src={team.logo}
                           alt={team.name}
                           className="h-10 w-10 object-contain logo-glow"
@@ -447,7 +460,7 @@ export default function MyStuffPage() {
                       }}
                     >
                       <Link href={`/nfl/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
-                        <img
+                        <SafeImage
                           src={team.logo}
                           alt={team.name}
                           className="h-10 w-10 object-contain logo-glow"
@@ -463,6 +476,53 @@ export default function MyStuffPage() {
                       </Link>
                       <button
                         onClick={() => removeFavorite('nfl_team', Number(team.id))}
+                        className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
+                      >
+                        <Heart size={16} color={theme.gold} fill={theme.gold} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* NHL Teams Section */}
+            {nhlFavorites.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
+                >
+                  NHL Teams
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {nhlFavorites.map((team) => (
+                    <div
+                      key={team.id}
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href={`/nhl/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
+                        <SafeImage
+                          src={team.logo}
+                          alt={team.name}
+                          className="h-10 w-10 object-contain logo-glow"
+                        />
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {team.name}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {team.conference} &bull; {team.division}
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => removeFavorite('nhl_team', Number(team.id))}
                         className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
                         style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
                       >
@@ -494,7 +554,7 @@ export default function MyStuffPage() {
                       }}
                     >
                       <Link href={`/basketball/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
-                        <img
+                        <SafeImage
                           src={team.logo}
                           alt={team.name}
                           className="h-10 w-10 object-contain logo-glow"
@@ -541,7 +601,7 @@ export default function MyStuffPage() {
                       }}
                     >
                       <Link href={`/football/team/${team.id}`} className="card-press flex items-center gap-3 flex-1">
-                        <img
+                        <SafeImage
                           src={team.logo}
                           alt={team.name}
                           className="h-10 w-10 object-contain logo-glow"
@@ -568,6 +628,237 @@ export default function MyStuffPage() {
               </section>
             )}
 
+            {/* F1 Drivers Section */}
+            {f1DriverFavoriteIds.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
+                >
+                  F1 Drivers
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {f1DriverFavorites.map((driver) => (
+                    <div
+                      key={driver.id}
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href="/f1" className="card-press flex items-center gap-3 flex-1">
+                        <SafeImage
+                          src={driver.headshot}
+                          alt={driver.name}
+                          className="h-10 w-10 rounded-full object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {driver.name}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {driver.team} &bull; {driver.nationality}
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => removeFavorite('f1_driver', Number(driver.id))}
+                        className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
+                      >
+                        <Heart size={16} color={theme.gold} fill={theme.gold} />
+                      </button>
+                    </div>
+                  ))}
+                  {/* Fallback for unmatched F1 driver IDs */}
+                  {f1DriverFavoriteIds
+                    .filter(id => !f1DriverFavorites.some(d => idMatches(d.id, [id])))
+                    .map(id => (
+                      <div
+                        key={id}
+                        className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                        style={darkMode ? undefined : {
+                          backgroundColor: theme.bgSecondary,
+                          border: `1px solid ${theme.border}`,
+                        }}
+                      >
+                        <Link href="/f1" className="card-press flex items-center gap-3 flex-1">
+                          <span className="text-2xl">🏎️</span>
+                          <div className="flex-1">
+                            <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                              F1 Driver #{id}
+                            </p>
+                          </div>
+                        </Link>
+                        <button
+                          onClick={() => removeFavorite('f1_driver', Number(id))}
+                          className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                          style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
+                        >
+                          <Heart size={16} color={theme.gold} fill={theme.gold} />
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              </section>
+            )}
+
+            {/* Golfers Section */}
+            {golferFavoriteIds.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
+                >
+                  Golfers
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {golferFavorites.map((golfer) => (
+                    <div
+                      key={golfer.id}
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href="/golf" className="card-press flex items-center gap-3 flex-1">
+                        <SafeImage
+                          src={golfer.headshot}
+                          alt={golfer.name}
+                          className="h-10 w-10 rounded-full object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {golfer.name}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {golfer.country}
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => removeFavorite('golfer', Number(golfer.id))}
+                        className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
+                      >
+                        <Heart size={16} color={theme.gold} fill={theme.gold} />
+                      </button>
+                    </div>
+                  ))}
+                  {/* Fallback for unmatched golfer IDs */}
+                  {golferFavoriteIds
+                    .filter(id => !golferFavorites.some(g => idMatches(g.id, [id])))
+                    .map(id => (
+                      <div
+                        key={id}
+                        className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                        style={darkMode ? undefined : {
+                          backgroundColor: theme.bgSecondary,
+                          border: `1px solid ${theme.border}`,
+                        }}
+                      >
+                        <Link href="/golf" className="card-press flex items-center gap-3 flex-1">
+                          <span className="text-2xl">⛳</span>
+                          <div className="flex-1">
+                            <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                              Golfer #{id}
+                            </p>
+                          </div>
+                        </Link>
+                        <button
+                          onClick={() => removeFavorite('golfer', Number(id))}
+                          className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                          style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
+                        >
+                          <Heart size={16} color={theme.gold} fill={theme.gold} />
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              </section>
+            )}
+
+            {/* UFC Fighters Section */}
+            {ufcFighterFavoriteIds.length > 0 && (
+              <section>
+                <h2
+                  className="mb-3 text-[10px] font-semibold uppercase tracking-wider"
+                  style={darkMode ? undefined : { color: theme.textSecondary }}
+                >
+                  UFC Fighters
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {ufcFighterFavorites.map((fighter) => (
+                    <div
+                      key={fighter.id}
+                      className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                      style={darkMode ? undefined : {
+                        backgroundColor: theme.bgSecondary,
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      <Link href="/ufc" className="card-press flex items-center gap-3 flex-1">
+                        <SafeImage
+                          src={fighter.headshot}
+                          alt={fighter.name}
+                          className="h-10 w-10 rounded-full object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                            {fighter.name}
+                          </p>
+                          <p className="text-[11px]" style={{ color: theme.textSecondary }}>
+                            {fighter.weightClass} &bull; {fighter.country}
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => removeFavorite('ufc_fighter', Number(fighter.id))}
+                        className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                        style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
+                      >
+                        <Heart size={16} color={theme.gold} fill={theme.gold} />
+                      </button>
+                    </div>
+                  ))}
+                  {/* Fallback for unmatched UFC fighter IDs */}
+                  {ufcFighterFavoriteIds
+                    .filter(id => !ufcFighterFavorites.some(f => idMatches(f.id, [id])))
+                    .map(id => (
+                      <div
+                        key={id}
+                        className={`flex items-center gap-3 rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
+                        style={darkMode ? undefined : {
+                          backgroundColor: theme.bgSecondary,
+                          border: `1px solid ${theme.border}`,
+                        }}
+                      >
+                        <Link href="/ufc" className="card-press flex items-center gap-3 flex-1">
+                          <span className="text-2xl">🥊</span>
+                          <div className="flex-1">
+                            <p className="text-[13px] font-medium" style={{ color: theme.text }}>
+                              Fighter #{id}
+                            </p>
+                          </div>
+                        </Link>
+                        <button
+                          onClick={() => removeFavorite('ufc_fighter', Number(id))}
+                          className={`tap-highlight flex h-11 w-11 items-center justify-center rounded-full ${darkMode ? 'glass-pill' : ''}`}
+                          style={darkMode ? undefined : { backgroundColor: theme.bgTertiary }}
+                        >
+                          <Heart size={16} color={theme.gold} fill={theme.gold} />
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              </section>
+            )}
+
             {/* Leagues Section */}
             {leagueFavorites.length > 0 && (
               <section>
@@ -588,7 +879,7 @@ export default function MyStuffPage() {
                       }}
                     >
                       <Link href={`/league/${league.slug}`} className="card-press flex items-center gap-3 flex-1">
-                        <img
+                        <SafeImage
                           src={league.logo}
                           alt={league.name}
                           className="h-10 w-10 object-contain logo-glow"

@@ -4,23 +4,31 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trophy, Sun, Moon, Search, X } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
-import { searchAll, type SearchableTeam, type SearchableSoccerLeague, type SearchableAmericanLeague, type SearchableMLBTeam, type SearchableNBATeam, type SearchableNFLTeam, type SearchableCollegeBasketballTeam, type SearchableCollegeFootballTeam } from '@/lib/search-data';
+import { tapLight } from '@/lib/haptics';
+import Link from 'next/link';
+import { searchAll, type SearchableTeam, type SearchableSoccerLeague, type SearchableAmericanLeague, type SearchableMLBTeam, type SearchableNBATeam, type SearchableNFLTeam, type SearchableNHLTeam, type SearchableCollegeBasketballTeam, type SearchableCollegeFootballTeam, type SearchableF1Driver, type SearchableGolfer, type SearchableUFCFighter } from '@/lib/search-data';
+import { SafeImage } from '@/components/SafeImage';
 
 export function Header() {
   const { darkMode, toggleDarkMode, theme } = useTheme();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<{ teams: SearchableTeam[]; leagues: SearchableSoccerLeague[]; americanLeagues: SearchableAmericanLeague[]; mlbTeams: SearchableMLBTeam[]; nbaTeams: SearchableNBATeam[]; nflTeams: SearchableNFLTeam[]; collegeBasketballTeams: SearchableCollegeBasketballTeam[]; collegeFootballTeams: SearchableCollegeFootballTeam[] }>({
+  const [results, setResults] = useState<{ teams: SearchableTeam[]; leagues: SearchableSoccerLeague[]; americanLeagues: SearchableAmericanLeague[]; mlbTeams: SearchableMLBTeam[]; nbaTeams: SearchableNBATeam[]; nflTeams: SearchableNFLTeam[]; nhlTeams: SearchableNHLTeam[]; collegeBasketballTeams: SearchableCollegeBasketballTeam[]; collegeFootballTeams: SearchableCollegeFootballTeam[]; f1Drivers: SearchableF1Driver[]; golfers: SearchableGolfer[]; ufcFighters: SearchableUFCFighter[] }>({
     teams: [],
     leagues: [],
     americanLeagues: [],
     mlbTeams: [],
     nbaTeams: [],
     nflTeams: [],
+    nhlTeams: [],
     collegeBasketballTeams: [],
     collegeFootballTeams: [],
+    f1Drivers: [],
+    golfers: [],
+    ufcFighters: [],
   });
+  const [playerResults, setPlayerResults] = useState<Array<{ id: string; name: string; sport: string; sportDisplay: string; team: string; headshot: string; jersey: string }>>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -37,7 +45,8 @@ export function Header() {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setSearchOpen(false);
         setQuery('');
-        setResults({ teams: [], leagues: [], americanLeagues: [], mlbTeams: [], nbaTeams: [], nflTeams: [], collegeBasketballTeams: [], collegeFootballTeams: [] });
+        setResults({ teams: [], leagues: [], americanLeagues: [], mlbTeams: [], nbaTeams: [], nflTeams: [], nhlTeams: [], collegeBasketballTeams: [], collegeFootballTeams: [], f1Drivers: [], golfers: [], ufcFighters: [] });
+        setPlayerResults([]);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -50,7 +59,16 @@ export function Header() {
       const searchResults = searchAll(query);
       setResults(searchResults);
     } else {
-      setResults({ teams: [], leagues: [], americanLeagues: [], mlbTeams: [], nbaTeams: [], nflTeams: [], collegeBasketballTeams: [], collegeFootballTeams: [] });
+      setResults({ teams: [], leagues: [], americanLeagues: [], mlbTeams: [], nbaTeams: [], nflTeams: [], nhlTeams: [], collegeBasketballTeams: [], collegeFootballTeams: [], f1Drivers: [], golfers: [], ufcFighters: [] });
+    }
+
+    if (query.length >= 3) {
+      fetch(`/api/search/players?q=${encodeURIComponent(query)}`)
+        .then(r => r.ok ? r.json() : [])
+        .then(data => setPlayerResults(data))
+        .catch(() => setPlayerResults([]));
+    } else {
+      setPlayerResults([]);
     }
   }, [query]);
 
@@ -85,6 +103,12 @@ export function Header() {
     setQuery('');
   };
 
+  const handleNHLTeamClick = (team: SearchableNHLTeam) => {
+    router.push(`/nhl/team/${team.id}`);
+    setSearchOpen(false);
+    setQuery('');
+  };
+
   const handleCollegeBasketballTeamClick = (team: SearchableCollegeBasketballTeam) => {
     router.push(`/basketball/team/${team.id}`);
     setSearchOpen(false);
@@ -103,7 +127,7 @@ export function Header() {
     setQuery('');
   };
 
-  const hasResults = results.teams.length > 0 || results.leagues.length > 0 || results.americanLeagues.length > 0 || results.mlbTeams.length > 0 || results.nbaTeams.length > 0 || results.nflTeams.length > 0 || results.collegeBasketballTeams.length > 0 || results.collegeFootballTeams.length > 0;
+  const hasResults = results.teams.length > 0 || results.leagues.length > 0 || results.americanLeagues.length > 0 || results.mlbTeams.length > 0 || results.nbaTeams.length > 0 || results.nflTeams.length > 0 || results.nhlTeams.length > 0 || results.collegeBasketballTeams.length > 0 || results.collegeFootballTeams.length > 0 || results.f1Drivers.length > 0 || results.golfers.length > 0 || results.ufcFighters.length > 0 || playerResults.length > 0;
 
   return (
     <header
@@ -186,7 +210,7 @@ export function Header() {
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
-                              <img
+                              <SafeImage
                                 src={league.logo}
                                 alt={league.name}
                                 className="h-8 w-8 object-contain logo-glow"
@@ -221,7 +245,7 @@ export function Header() {
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
-                              <img
+                              <SafeImage
                                 src={league.logo}
                                 alt={league.name}
                                 className="h-8 w-8 object-contain logo-glow"
@@ -256,7 +280,7 @@ export function Header() {
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
-                              <img
+                              <SafeImage
                                 src={team.logo}
                                 alt={team.name}
                                 className="h-8 w-8 object-contain logo-glow"
@@ -291,7 +315,7 @@ export function Header() {
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
-                              <img
+                              <SafeImage
                                 src={team.logo}
                                 alt={team.name}
                                 className="h-8 w-8 object-contain logo-glow"
@@ -326,7 +350,7 @@ export function Header() {
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
-                              <img
+                              <SafeImage
                                 src={team.logo}
                                 alt={team.name}
                                 className="h-8 w-8 object-contain logo-glow"
@@ -361,7 +385,42 @@ export function Header() {
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
-                              <img
+                              <SafeImage
+                                src={team.logo}
+                                alt={team.name}
+                                className="h-8 w-8 object-contain logo-glow"
+                                loading="lazy"
+                              />
+                              <div>
+                                <p className="text-sm font-medium" style={{ color: theme.text }}>
+                                  {team.name}
+                                </p>
+                                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                                  {team.conference} {team.division}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* NHL Teams */}
+                      {results.nhlTeams.length > 0 && (
+                        <div>
+                          <div
+                            className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
+                          >
+                            NHL
+                          </div>
+                          {results.nhlTeams.map((team) => (
+                            <button
+                              key={`nhl-${team.id}`}
+                              onClick={() => handleNHLTeamClick(team)}
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              style={{ borderBottom: `1px solid ${theme.border}` }}
+                            >
+                              <SafeImage
                                 src={team.logo}
                                 alt={team.name}
                                 className="h-8 w-8 object-contain logo-glow"
@@ -396,7 +455,7 @@ export function Header() {
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
-                              <img
+                              <SafeImage
                                 src={team.logo}
                                 alt={team.name}
                                 className="h-8 w-8 object-contain logo-glow"
@@ -431,7 +490,7 @@ export function Header() {
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
-                              <img
+                              <SafeImage
                                 src={team.logo}
                                 alt={team.name}
                                 className="h-8 w-8 object-contain logo-glow"
@@ -446,6 +505,158 @@ export function Header() {
                                 </p>
                               </div>
                             </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Players (dynamic ESPN search) */}
+                      {playerResults.length > 0 && (
+                        <div>
+                          <div
+                            className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
+                          >
+                            Players
+                          </div>
+                          {playerResults.map((player) => (
+                            <Link
+                              key={`player-${player.sport}-${player.id}`}
+                              href={`/player/${player.sport}/${player.id}`}
+                              onClick={() => { setQuery(''); setSearchOpen(false); }}
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              style={{ borderBottom: `1px solid ${theme.border}` }}
+                            >
+                              <SafeImage
+                                src={player.headshot}
+                                alt={player.name}
+                                className="h-8 w-8 rounded-full object-cover"
+                                style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : theme.bgTertiary }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                loading="lazy"
+                              />
+                              <div>
+                                <p className="text-sm font-medium" style={{ color: theme.text }}>
+                                  {player.name}
+                                </p>
+                                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                                  {player.team}{player.team && ' · '}{player.sportDisplay}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* F1 Drivers */}
+                      {results.f1Drivers.length > 0 && (
+                        <div>
+                          <div
+                            className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
+                          >
+                            F1 Drivers
+                          </div>
+                          {results.f1Drivers.map((driver) => (
+                            <Link
+                              key={`f1-${driver.id}`}
+                              href={`/player/f1/${driver.id}`}
+                              onClick={() => { setQuery(''); setSearchOpen(false); }}
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              style={{ borderBottom: `1px solid ${theme.border}` }}
+                            >
+                              <SafeImage
+                                src={driver.headshot}
+                                alt={driver.name}
+                                className="h-8 w-8 rounded-full object-cover"
+                                style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : theme.bgTertiary }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                loading="lazy"
+                              />
+                              <div>
+                                <p className="text-sm font-medium" style={{ color: theme.text }}>
+                                  {driver.name}
+                                </p>
+                                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                                  {driver.team} · {driver.nationality}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Golfers */}
+                      {results.golfers.length > 0 && (
+                        <div>
+                          <div
+                            className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
+                          >
+                            Golfers
+                          </div>
+                          {results.golfers.map((golfer) => (
+                            <Link
+                              key={`golf-${golfer.id}`}
+                              href={`/player/golf/${golfer.id}`}
+                              onClick={() => { setQuery(''); setSearchOpen(false); }}
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              style={{ borderBottom: `1px solid ${theme.border}` }}
+                            >
+                              <SafeImage
+                                src={golfer.headshot}
+                                alt={golfer.name}
+                                className="h-8 w-8 rounded-full object-cover"
+                                style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : theme.bgTertiary }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                loading="lazy"
+                              />
+                              <div>
+                                <p className="text-sm font-medium" style={{ color: theme.text }}>
+                                  {golfer.name}
+                                </p>
+                                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                                  {golfer.country}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* UFC Fighters */}
+                      {results.ufcFighters.length > 0 && (
+                        <div>
+                          <div
+                            className="px-4 py-2 text-xs font-semibold uppercase tracking-wider"
+                            style={{ color: theme.textSecondary, backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary }}
+                          >
+                            UFC Fighters
+                          </div>
+                          {results.ufcFighters.map((fighter) => (
+                            <Link
+                              key={`ufc-${fighter.id}`}
+                              href={`/player/ufc/${fighter.id}`}
+                              onClick={() => { setQuery(''); setSearchOpen(false); }}
+                              className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
+                              style={{ borderBottom: `1px solid ${theme.border}` }}
+                            >
+                              <SafeImage
+                                src={fighter.headshot}
+                                alt={fighter.name}
+                                className="h-8 w-8 rounded-full object-cover"
+                                style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : theme.bgTertiary }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                loading="lazy"
+                              />
+                              <div>
+                                <p className="text-sm font-medium" style={{ color: theme.text }}>
+                                  {fighter.name}
+                                </p>
+                                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                                  {fighter.weightClass} · {fighter.country}
+                                </p>
+                              </div>
+                            </Link>
                           ))}
                         </div>
                       )}
@@ -466,7 +677,7 @@ export function Header() {
 
           {/* Theme Toggle */}
           <button
-            onClick={toggleDarkMode}
+            onClick={() => { tapLight(); toggleDarkMode(); }}
             className="tap-highlight flex h-11 w-11 items-center justify-center rounded-full transition-colors glass-pill"
             aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >

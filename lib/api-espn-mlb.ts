@@ -9,6 +9,9 @@ import {
   MLBPlayerPitchingStats,
   MLBStanding,
   MLBTeamInfo,
+  MLBPlayerSeasonStats,
+  MLBLeader,
+  MLBLeadersResponse,
 } from './types/mlb';
 import { GAME_STATUS_MAP, INNING_HALF_MAP } from './constants/mlb-teams';
 
@@ -30,11 +33,8 @@ async function fetchESPN<T>(
   // Check cache
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < cacheTTL) {
-    console.log(`[ESPN-MLB] Cache hit: ${url.substring(0, 80)}...`);
     return cached.data as T;
   }
-
-  console.log(`[ESPN-MLB] Fetching: ${url}`);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
@@ -46,7 +46,6 @@ async function fetchESPN<T>(
   clearTimeout(timeout);
 
   if (!response.ok) {
-    console.error(`[ESPN-MLB] HTTP Error: ${response.status}`);
     throw new Error(`ESPN API Error: ${response.status}`);
   }
 
@@ -133,6 +132,7 @@ function transformGame(event: ESPNEvent): MLBGame {
       day: 'numeric',
       timeZone: 'America/New_York',
     }),
+    rawDate: event.date,
     startTime: new Date(event.date).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -170,6 +170,22 @@ export async function getMLBGameSummary(gameId: string): Promise<{
   game: MLBGame;
   boxScore: MLBBoxScore | null;
   lastPlay?: string;
+  enrichment: {
+    venue?: { name: string; city: string; state?: string; capacity?: number };
+    attendance?: number;
+    officials?: string[];
+    headlines?: string[];
+    weather?: { temperature?: string; condition?: string; wind?: string };
+    probablePitchers?: { home?: string; away?: string };
+    scoringPlays?: Array<{
+      inning: number;
+      halfInning: string;
+      text: string;
+      awayScore: number;
+      homeScore: number;
+    }>;
+    gameNote?: string;
+  };
 }> {
   const url = `${API_BASE}/summary?event=${gameId}`;
   const data = await fetchESPN<ESPNGameSummary>(url, true);
@@ -209,6 +225,7 @@ export async function getMLBGameSummary(gameId: string): Promise<{
       day: 'numeric',
       timeZone: 'America/New_York',
     }),
+    rawDate: data.header.competitions[0].date,
     startTime: new Date(data.header.competitions[0].date).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -253,6 +270,9 @@ export async function getMLBGameSummary(gameId: string): Promise<{
           strikeouts: parseInt(getStatValue('K')) || parseInt(getStatValue('SO')) || 0,
           homeRuns: parseInt(getStatValue('HR')) || 0,
           avg: getStatValue('AVG') || '.000',
+          obp: getStatValue('OBP') || undefined,
+          slg: getStatValue('SLG') || undefined,
+          ops: getStatValue('OPS') || undefined,
         });
       });
       return players;
@@ -335,10 +355,117 @@ export async function getMLBGameSummary(gameId: string): Promise<{
     };
   }
 
+  // --- RAG Enrichment extraction ---
+  const enrichment: {
+    venue?: { name: string; city: string; state?: string; capacity?: number };
+    attendance?: number;
+    officials?: string[];
+    headlines?: string[];
+    weather?: { temperature?: string; condition?: string; wind?: string };
+    probablePitchers?: { home?: string; away?: string };
+    scoringPlays?: Array<{
+      inning: number;
+      halfInning: string;
+      text: string;
+      awayScore: number;
+      homeScore: number;
+    }>;
+    gameNote?: string;
+  } = {};
+
+  // Venue info
+  const venueData = data.gameInfo?.venue;
+  if (venueData?.fullName) {
+    enrichment.venue = {
+      name: venueData.fullName,
+      city: venueData.address?.city || venueData.city || '',
+      state: venueData.address?.state || venueData.state,
+      capacity: venueData.capacity,
+    };
+  }
+
+  // Attendance
+  if (data.gameInfo?.attendance != null) {
+    enrichment.attendance = data.gameInfo.attendance;
+  }
+
+  // Officials / umpires
+  if (data.gameInfo?.officials && data.gameInfo.officials.length > 0) {
+    enrichment.officials = data.gameInfo.officials
+      .map(o => o.displayName || o.fullName || '')
+      .filter(Boolean);
+  }
+
+  // Weather
+  if (data.gameInfo?.weather) {
+    const w = data.gameInfo.weather;
+    const weatherObj: { temperature?: string; condition?: string; wind?: string } = {};
+    if (w.temperature != null) {
+      weatherObj.temperature = `${w.temperature}°F`;
+    }
+    if (w.displayValue) {
+      weatherObj.condition = w.displayValue;
+    }
+    if (w.link?.text) {
+      weatherObj.wind = w.link.text;
+    }
+    if (Object.keys(weatherObj).length > 0) {
+      enrichment.weather = weatherObj;
+    }
+  }
+
+  // Game notes from header
+  const notes = data.header.competitions?.[0]?.notes;
+  if (notes && notes.length > 0) {
+    const noteText = notes
+      .map(n => n.headline || n.text || '')
+      .filter(Boolean);
+    if (noteText.length > 0) {
+      enrichment.gameNote = noteText.join('; ');
+    }
+  }
+
+  // News headlines
+  if (data.news?.articles && data.news.articles.length > 0) {
+    const headlines = data.news.articles
+      .map(a => a.headline || '')
+      .filter(Boolean);
+    if (headlines.length > 0) {
+      enrichment.headlines = headlines;
+    }
+  }
+
+  // Probable pitchers - extract from boxscore pitching stats (first pitcher per team)
+  const homePitchers = boxScore?.homeTeam?.pitching;
+  const awayPitchers = boxScore?.awayTeam?.pitching;
+  if (homePitchers?.[0] || awayPitchers?.[0]) {
+    enrichment.probablePitchers = {
+      home: homePitchers?.[0]?.name,
+      away: awayPitchers?.[0]?.name,
+    };
+  }
+
+  // Scoring plays
+  if (data.plays && data.plays.length > 0) {
+    const scoring = data.plays
+      .filter(p => p.scoringPlay === true)
+      .map(p => ({
+        inning: p.period?.number || 0,
+        halfInning: p.halfInning || (p.type?.text || ''),
+        text: p.text,
+        awayScore: p.awayScore || 0,
+        homeScore: p.homeScore || 0,
+      }));
+    if (scoring.length > 0) {
+      enrichment.scoringPlays = scoring;
+    }
+  }
+
   return {
     game,
     boxScore,
     lastPlay: data.plays?.[data.plays.length - 1]?.text,
+    enrichment,
   };
 }
 
@@ -447,8 +574,7 @@ export async function getMLBTeam(teamId: string): Promise<MLBTeamInfo | null> {
         capacity: team.franchise.venue.capacity,
       } : undefined,
     };
-  } catch (error) {
-    console.error(`[ESPN-MLB] Error fetching team ${teamId}:`, error);
+  } catch {
     return null;
   }
 }
@@ -540,16 +666,53 @@ interface ESPNGameSummary {
       };
       date: string;
       series?: { summary: string };
+      notes?: Array<{ headline?: string; text?: string }>;
     }>;
   };
   gameInfo?: {
-    venue?: { fullName: string };
-    weather?: { displayValue: string };
+    venue?: {
+      fullName: string;
+      city?: string;
+      state?: string;
+      capacity?: number;
+      address?: { city?: string; state?: string };
+    };
+    weather?: {
+      displayValue: string;
+      temperature?: number;
+      conditionId?: string;
+      highTemperature?: number;
+      link?: { text?: string };
+    };
+    attendance?: number;
+    officials?: Array<{
+      displayName?: string;
+      fullName?: string;
+      position?: { name?: string };
+    }>;
   };
   boxscore?: {
     players?: ESPNBoxscoreTeam[];
   };
-  plays?: Array<{ text: string }>;
+  plays?: Array<{
+    text: string;
+    scoringPlay?: boolean;
+    period?: { number?: number };
+    homeScore?: number;
+    awayScore?: number;
+    type?: { text?: string; abbreviation?: string };
+    halfInning?: string;
+  }>;
+  news?: {
+    articles?: Array<{
+      headline?: string;
+      description?: string;
+    }>;
+  };
+  predictor?: {
+    homeTeam?: { gameProjection?: number };
+    awayTeam?: { gameProjection?: number };
+  };
 }
 
 interface ESPNStandingStat {
@@ -610,7 +773,89 @@ interface ESPNTeamResponse {
   };
 }
 
-// Get MLB team roster
+// Fetch individual MLB player season stats
+async function fetchMLBPlayerStats(playerId: string): Promise<MLBPlayerSeasonStats | null> {
+  const url = `https://site.web.api.espn.com/apis/common/v3/sports/baseball/mlb/athletes/${playerId}/stats`;
+
+  try {
+    const response = await fetch(url, { next: { revalidate: 300 } });
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const categories = data.categories;
+    if (!categories || !Array.isArray(categories)) return null;
+
+    const result: MLBPlayerSeasonStats = {};
+
+    // Look for batting stats
+    const battingCategory = categories.find((c: any) =>
+      c.name === 'batting' || c.displayName?.toLowerCase().includes('batting')
+    );
+    if (battingCategory?.statistics?.length) {
+      const currentSeason = battingCategory.statistics[battingCategory.statistics.length - 1];
+      const stats = currentSeason?.stats || [];
+      const labels = battingCategory.labels || [];
+
+      const get = (label: string): string => {
+        const idx = labels.indexOf(label);
+        return idx >= 0 ? stats[idx] : '0';
+      };
+
+      result.batting = {
+        games: parseInt(get('GP')) || parseInt(get('G')) || 0,
+        atBats: parseInt(get('AB')) || 0,
+        runs: parseInt(get('R')) || 0,
+        hits: parseInt(get('H')) || 0,
+        homeRuns: parseInt(get('HR')) || 0,
+        rbi: parseInt(get('RBI')) || 0,
+        stolenBases: parseInt(get('SB')) || 0,
+        battingAverage: get('AVG') || '.000',
+        onBasePct: get('OBP') || '.000',
+        sluggingPct: get('SLG') || '.000',
+        ops: get('OPS') || '.000',
+        strikeouts: parseInt(get('K')) || parseInt(get('SO')) || 0,
+        walks: parseInt(get('BB')) || 0,
+      };
+    }
+
+    // Look for pitching stats
+    const pitchingCategory = categories.find((c: any) =>
+      c.name === 'pitching' || c.displayName?.toLowerCase().includes('pitching')
+    );
+    if (pitchingCategory?.statistics?.length) {
+      const currentSeason = pitchingCategory.statistics[pitchingCategory.statistics.length - 1];
+      const stats = currentSeason?.stats || [];
+      const labels = pitchingCategory.labels || [];
+
+      const get = (label: string): string => {
+        const idx = labels.indexOf(label);
+        return idx >= 0 ? stats[idx] : '0';
+      };
+
+      result.pitching = {
+        wins: parseInt(get('W')) || 0,
+        losses: parseInt(get('L')) || 0,
+        era: get('ERA') || '0.00',
+        inningsPitched: get('IP') || '0.0',
+        strikeouts: parseInt(get('K')) || parseInt(get('SO')) || 0,
+        walks: parseInt(get('BB')) || 0,
+        whip: get('WHIP') || '0.00',
+        saves: parseInt(get('SV')) || 0,
+        gamesStarted: parseInt(get('GS')) || 0,
+        qualityStarts: parseInt(get('QS')) || 0,
+      };
+    }
+
+    // Return null if we found neither
+    if (!result.batting && !result.pitching) return null;
+
+    return result;
+  } catch {
+    return null;
+  }
+}
+
+// Get MLB team roster with player stats
 export async function getMLBRoster(teamId: string): Promise<import('./types/mlb').MLBPlayer[]> {
   const url = `${API_BASE}/teams/${teamId}/roster`;
 
@@ -619,7 +864,9 @@ export async function getMLBRoster(teamId: string): Promise<import('./types/mlb'
 
     if (!data.athletes) return [];
 
-    return data.athletes.flatMap((group: any) =>
+    const PITCHING_POSITIONS = ['P', 'SP', 'RP', 'CL'];
+
+    const players: import('./types/mlb').MLBPlayer[] = data.athletes.flatMap((group: any) =>
       (group.items || []).map((athlete: any) => ({
         id: athlete.id,
         name: athlete.displayName || athlete.fullName,
@@ -632,10 +879,37 @@ export async function getMLBRoster(teamId: string): Promise<import('./types/mlb'
         birthDate: athlete.dateOfBirth,
         batHand: athlete.hand?.displayValue || athlete.batHand?.displayValue,
         throwHand: athlete.throwHand?.displayValue,
+        stats: null as MLBPlayerSeasonStats | null,
       }))
     );
-  } catch (error) {
-    console.error(`[ESPN-MLB] Failed to fetch roster for team ${teamId}:`, error);
+
+    // Fetch stats for all players in parallel (batched)
+    const batchSize = 5;
+    for (let i = 0; i < players.length; i += batchSize) {
+      const batch = players.slice(i, i + batchSize);
+      const statsResults = await Promise.all(batch.map(p => fetchMLBPlayerStats(p.id)));
+      batch.forEach((player, idx) => {
+        const fullStats = statsResults[idx];
+        if (!fullStats) {
+          player.stats = null;
+          return;
+        }
+
+        const isPitcher = PITCHING_POSITIONS.includes(player.position);
+
+        // Two-way players get both; otherwise filter by position
+        if (fullStats.batting && fullStats.pitching) {
+          player.stats = fullStats;
+        } else if (isPitcher) {
+          player.stats = fullStats.pitching ? { pitching: fullStats.pitching } : null;
+        } else {
+          player.stats = fullStats.batting ? { batting: fullStats.batting } : null;
+        }
+      });
+    }
+
+    return players;
+  } catch {
     return [];
   }
 }
@@ -697,8 +971,7 @@ export async function getMLBTeamSchedule(teamId: string): Promise<import('./type
         status,
       };
     });
-  } catch (error) {
-    console.error(`[ESPN-MLB] Failed to fetch schedule for team ${teamId}:`, error);
+  } catch {
     return [];
   }
 }
@@ -757,8 +1030,89 @@ export async function getMLBTeamStats(teamId: string): Promise<import('./types/m
         whip: getStat(categories, 'pitching', 'WHIP'),
       },
     };
-  } catch (error) {
-    console.error(`[ESPN-MLB] Failed to fetch stats for team ${teamId}:`, error);
+  } catch {
     return null;
   }
+}
+
+// Get MLB stat leaders
+export async function getMLBLeaders(): Promise<MLBLeadersResponse> {
+  const url = 'https://site.api.espn.com/apis/site/v3/sports/baseball/mlb/leaders';
+
+  try {
+    const data = await fetchESPN<ESPNMLBLeadersResponse>(url);
+
+    const extractLeaders = (categoryName: string): MLBLeader[] => {
+      const category = data.leaders?.categories?.find(c =>
+        c.name?.toLowerCase().includes(categoryName.toLowerCase()) ||
+        c.abbreviation?.toLowerCase() === categoryName.toLowerCase()
+      );
+
+      if (!category?.leaders) return [];
+
+      return category.leaders.slice(0, 5).map(leader => ({
+        player: {
+          id: leader.athlete?.id || '',
+          name: leader.athlete?.displayName || '',
+          headshot: leader.athlete?.headshot?.href || '',
+        },
+        team: {
+          id: leader.team?.id || '',
+          name: leader.team?.name || '',
+          abbreviation: leader.team?.abbreviation || '',
+          logo: leader.team?.logos?.[0]?.href || '',
+        },
+        value: leader.value || 0,
+        displayValue: leader.displayValue || String(leader.value || 0),
+      }));
+    };
+
+    return {
+      battingAverage: extractLeaders('battingAverage'),
+      homeRuns: extractLeaders('homeRuns'),
+      rbi: extractLeaders('RBI'),
+      stolenBases: extractLeaders('stolenBases'),
+      era: extractLeaders('ERA'),
+      strikeouts: extractLeaders('strikeoutsPitching'),
+      wins: extractLeaders('wins'),
+      saves: extractLeaders('saves'),
+    };
+  } catch {
+    return {
+      battingAverage: [],
+      homeRuns: [],
+      rbi: [],
+      stolenBases: [],
+      era: [],
+      strikeouts: [],
+      wins: [],
+      saves: [],
+    };
+  }
+}
+
+// ESPN MLB Leaders Response
+interface ESPNMLBLeadersResponse {
+  leaders?: {
+    categories?: Array<{
+      name?: string;
+      displayName?: string;
+      abbreviation?: string;
+      leaders?: Array<{
+        athlete?: {
+          id: string;
+          displayName: string;
+          headshot?: { href: string };
+        };
+        team?: {
+          id: string;
+          name: string;
+          abbreviation: string;
+          logos?: Array<{ href: string }>;
+        };
+        value?: number;
+        displayValue?: string;
+      }>;
+    }>;
+  };
 }

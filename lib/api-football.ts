@@ -39,12 +39,8 @@ async function fetchApi<T>(
   // Check cache
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < cacheTTL) {
-    console.log(`[API-Football] Cache hit: ${endpoint}`);
     return cached.data as T[];
   }
-
-  console.log(`[API-Football] Fetching: ${url}`);
-  console.log(`[API-Football] Using API key: ${API_KEY ? API_KEY.substring(0, 8) + '...' : 'NOT SET'}`);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
@@ -58,13 +54,10 @@ async function fetchApi<T>(
   clearTimeout(timeout);
 
   if (!response.ok) {
-    console.error(`[API-Football] HTTP Error: ${response.status}`);
     throw new Error(`API Error: ${response.status}`);
   }
 
   const data: ApiResponse<T> = await response.json();
-
-  console.log(`[API-Football] Response results: ${data.results}, errors: ${JSON.stringify(data.errors)}`);
 
   // Check for API errors
   const hasErrors = Array.isArray(data.errors)
@@ -72,9 +65,7 @@ async function fetchApi<T>(
     : Object.keys(data.errors || {}).length > 0;
 
   if (hasErrors) {
-    const errorMsg = JSON.stringify(data.errors);
-    console.error(`[API-Football] API Error: ${errorMsg}`);
-    throw new Error(`API returned errors: ${errorMsg}`);
+    throw new Error(`API returned errors: ${JSON.stringify(data.errors)}`);
   }
 
   // Cache the response
@@ -319,13 +310,8 @@ export async function findFixtureByTeams(
       return homeMatch && awayMatch;
     });
 
-    if (match) {
-      console.log(`[API-Football] Found fixture: ${match.teams.home.name} vs ${match.teams.away.name}`);
-    }
-
     return match?.fixture.id || null;
-  } catch (error) {
-    console.error('[API-Football] Error finding fixture:', error);
+  } catch {
     return null;
   }
 }
@@ -348,7 +334,6 @@ async function findFixtureWithFallback(
     const dayBefore = new Date(dateObj);
     dayBefore.setDate(dayBefore.getDate() - 1);
     const dayBeforeStr = dayBefore.toISOString().split('T')[0];
-    console.log(`[API-Football] Not found on ${date}, trying ${dayBeforeStr}...`);
     fixtureId = await findFixtureByTeams(leagueId, dayBeforeStr, homeTeamName, awayTeamName);
 
     // Try day after
@@ -356,7 +341,6 @@ async function findFixtureWithFallback(
       const dayAfter = new Date(dateObj);
       dayAfter.setDate(dayAfter.getDate() + 1);
       const dayAfterStr = dayAfter.toISOString().split('T')[0];
-      console.log(`[API-Football] Not found on ${dayBeforeStr}, trying ${dayAfterStr}...`);
       fixtureId = await findFixtureByTeams(leagueId, dayAfterStr, homeTeamName, awayTeamName);
     }
   }
@@ -373,22 +357,16 @@ export async function getLineupsForMatch(
 ): Promise<FixtureLineup[]> {
   const leagueId = LEAGUE_IDS[leagueKey];
   if (!leagueId) {
-    console.log(`[API-Football] Unknown league: ${leagueKey}`);
     return [];
   }
-
-  console.log(`[API-Football] Looking for ${homeTeamName} vs ${awayTeamName} in league ${leagueKey} (${leagueId}) on ${date}`);
 
   const fixtureId = await findFixtureWithFallback(leagueId, date, homeTeamName, awayTeamName);
 
   if (!fixtureId) {
-    console.log(`[API-Football] Fixture not found for ${homeTeamName} vs ${awayTeamName} around ${date}`);
     return [];
   }
 
-  console.log(`[API-Football] Found fixture ${fixtureId}, fetching lineups...`);
   const lineups = await getFixtureLineups(fixtureId);
-  console.log(`[API-Football] Got ${lineups.length} team lineups`);
   return lineups;
 }
 
@@ -408,34 +386,25 @@ export async function getMatchDataForFixture(
 ): Promise<MatchDataFromApiFootball> {
   const leagueId = LEAGUE_IDS[leagueKey];
   if (!leagueId) {
-    console.log(`[API-Football] Unknown league: ${leagueKey}`);
     return { lineups: [], statistics: [], fixtureId: null };
   }
-
-  console.log(`[API-Football] Looking for ${homeTeamName} vs ${awayTeamName} in league ${leagueKey} (${leagueId}) on ${date}`);
 
   const fixtureId = await findFixtureWithFallback(leagueId, date, homeTeamName, awayTeamName);
 
   if (!fixtureId) {
-    console.log(`[API-Football] Fixture not found for ${homeTeamName} vs ${awayTeamName} around ${date}`);
     return { lineups: [], statistics: [], fixtureId: null };
   }
 
-  console.log(`[API-Football] Found fixture ${fixtureId}, fetching lineups and statistics...`);
-
   // Fetch lineups and statistics in parallel
   const [lineups, statistics] = await Promise.all([
-    getFixtureLineups(fixtureId).catch((err) => {
-      console.error('[API-Football] Error fetching lineups:', err);
+    getFixtureLineups(fixtureId).catch(() => {
       return [];
     }),
-    getFixtureStatistics(fixtureId).catch((err) => {
-      console.error('[API-Football] Error fetching statistics:', err);
+    getFixtureStatistics(fixtureId).catch(() => {
       return [];
     }),
   ]);
 
-  console.log(`[API-Football] Got ${lineups.length} team lineups, ${statistics.length} team stats`);
   return { lineups, statistics, fixtureId };
 }
 
@@ -456,6 +425,14 @@ export async function getStandings(leagueId: number, season?: number): Promise<S
     season: season || getSeason(),
   });
   return response[0]?.league?.standings?.[0] || [];
+}
+
+export async function getGroupedStandings(leagueId: number, season?: number): Promise<Standing[][]> {
+  const response = await fetchApi<StandingsResponse>('/standings', {
+    league: leagueId,
+    season: season || getSeason(),
+  });
+  return response[0]?.league?.standings || [];
 }
 
 export async function getTeamForm(teamId: number, last: number = 5): Promise<string[]> {
@@ -778,13 +755,10 @@ export async function getTeamPlayers(
     // Check cache
     const cached = cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log(`[API-Football] Cache hit: /players page ${currentPage}`);
       const cachedData = cached.data as { response: PlayerWithStats[]; paging: { total: number } };
       allPlayers.push(...cachedData.response);
       totalPages = cachedData.paging.total;
     } else {
-      console.log(`[API-Football] Fetching: ${url}`);
-
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
       const response = await fetch(url, {
@@ -796,7 +770,6 @@ export async function getTeamPlayers(
       clearTimeout(timeout);
 
       if (!response.ok) {
-        console.error(`[API-Football] HTTP Error: ${response.status}`);
         throw new Error(`API Error: ${response.status}`);
       }
 
@@ -808,11 +781,8 @@ export async function getTeamPlayers(
         : Object.keys(data.errors || {}).length > 0;
 
       if (hasErrors) {
-        console.error(`[API-Football] API Error: ${JSON.stringify(data.errors)}`);
         break;
       }
-
-      console.log(`[API-Football] Players page ${currentPage}/${data.paging.total}, got ${data.results} players`);
 
       // Cache this page
       cache.set(cacheKey, { data: { response: data.response, paging: data.paging }, timestamp: Date.now() });
@@ -824,7 +794,6 @@ export async function getTeamPlayers(
     currentPage++;
   } while (currentPage <= totalPages);
 
-  console.log(`[API-Football] Total players fetched: ${allPlayers.length}`);
   return allPlayers;
 }
 
@@ -950,13 +919,10 @@ export async function getLeaguePlayers(
     // Check cache
     const cached = cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log(`[API-Football] Cache hit: /players (league) page ${currentPage}`);
       const cachedData = cached.data as { response: PlayerWithStats[]; paging: { total: number } };
       allPlayers.push(...cachedData.response);
       totalPages = Math.min(cachedData.paging.total, maxPages);
     } else {
-      console.log(`[API-Football] Fetching: ${url}`);
-
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
       const response = await fetch(url, {
@@ -968,7 +934,6 @@ export async function getLeaguePlayers(
       clearTimeout(timeout);
 
       if (!response.ok) {
-        console.error(`[API-Football] HTTP Error: ${response.status}`);
         throw new Error(`API Error: ${response.status}`);
       }
 
@@ -979,7 +944,6 @@ export async function getLeaguePlayers(
         ? data.errors.length > 0
         : Object.keys(data.errors || {}).length > 0;
       if (hasErrors) {
-        console.error('[API-Football] API returned errors:', data.errors);
         break;
       }
 
@@ -993,7 +957,6 @@ export async function getLeaguePlayers(
     currentPage++;
   } while (currentPage <= totalPages);
 
-  console.log(`[API-Football] Fetched ${allPlayers.length} players for league ${leagueId}`);
   return allPlayers;
 }
 
@@ -1011,8 +974,7 @@ export async function getLeagueTeamStatistics(
   for (let i = 0; i < teamIds.length; i += batchSize) {
     const batch = teamIds.slice(i, i + batchSize);
     const promises = batch.map(teamId =>
-      getTeamStatistics(teamId, leagueId, seasonYear).catch(err => {
-        console.error(`[API-Football] Failed to fetch stats for team ${teamId}:`, err);
+      getTeamStatistics(teamId, leagueId, seasonYear).catch(() => {
         return null;
       })
     );
