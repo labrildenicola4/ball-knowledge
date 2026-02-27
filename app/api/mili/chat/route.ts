@@ -18,46 +18,46 @@ import { getFixturesByDate, getFixture, getFixtureStatistics, getFixtureLineups,
 // Register all Ball Knowledge fetchers with Mili (runs once on first import)
 registerToolHandlers({
   // NBA
-  get_nba_games: (args) => getNBAGames(args.date),
-  get_nba_game_details: (args) => getNBAGameSummary(args.game_id),
+  get_nba_games: (args: any) => getNBAGames(args.date),
+  get_nba_game_details: (args: any) => getNBAGameSummary(args.game_id),
   get_nba_standings: () => getNBAStandings(),
   get_nba_leaders: () => getNBALeaders(),
-  get_nba_team_details: async (args) => {
+  get_nba_team_details: async (args: any) => {
     const [team, roster] = await Promise.all([getNBATeam(args.team_id), getNBARoster(args.team_id)]);
     return { team, roster };
   },
   get_nba_team_rankings: () => getNBATeamRankings(),
 
   // NFL
-  get_nfl_games: (args) => getNFLGames(args.date),
-  get_nfl_game_details: (args) => getNFLGameSummary(args.game_id),
+  get_nfl_games: (args: any) => getNFLGames(args.date),
+  get_nfl_game_details: (args: any) => getNFLGameSummary(args.game_id),
   get_nfl_standings: () => getNFLStandings(),
   get_nfl_leaders: () => getNFLLeaders(),
-  get_nfl_team_stats: (args) => getNFLTeamStats(args.team_id),
+  get_nfl_team_stats: (args: any) => getNFLTeamStats(args.team_id),
 
   // MLB
-  get_mlb_games: (args) => getMLBGames(args.date),
-  get_mlb_game_details: (args) => getMLBGameSummary(args.game_id),
+  get_mlb_games: (args: any) => getMLBGames(args.date),
+  get_mlb_game_details: (args: any) => getMLBGameSummary(args.game_id),
   get_mlb_standings: () => getMLBStandings(),
-  get_mlb_team_details: async (args) => {
+  get_mlb_team_details: async (args: any) => {
     const [team, roster] = await Promise.all([getMLBTeam(args.team_id), getMLBRoster(args.team_id)]);
     return { team, roster };
   },
 
   // NCAA Basketball
-  get_college_basketball_games: (args) => getBasketballGames(args.date),
-  get_college_basketball_game_details: (args) => getBasketballGameSummary(args.game_id),
-  get_college_basketball_standings: (args) => getBasketballStandings(args.conference_id),
+  get_college_basketball_games: (args: any) => getBasketballGames(args.date),
+  get_college_basketball_game_details: (args: any) => getBasketballGameSummary(args.game_id),
+  get_college_basketball_standings: (args: any) => getBasketballStandings(args.conference_id),
   get_college_basketball_rankings: () => getBasketballRankings(),
 
   // College Football
-  get_college_football_games: (args) => getCollegeFootballGames(args.date),
-  get_college_football_standings: (args) => getCollegeFootballStandings(args.conference_id),
+  get_college_football_games: (args: any) => getCollegeFootballGames(args.date),
+  get_college_football_standings: (args: any) => getCollegeFootballStandings(args.conference_id),
   get_college_football_rankings: () => getCollegeFootballRankings(),
 
   // Soccer
-  get_soccer_fixtures: (args) => getFixturesByDate(args.date, args.league_id),
-  get_soccer_match_details: async (args) => {
+  get_soccer_fixtures: (args: any) => getFixturesByDate(args.date, args.league_id),
+  get_soccer_match_details: async (args: any) => {
     const [fixture, statistics, lineups] = await Promise.all([
       getFixture(args.fixture_id),
       getFixtureStatistics(args.fixture_id),
@@ -65,9 +65,9 @@ registerToolHandlers({
     ]);
     return { fixture, statistics, lineups };
   },
-  get_soccer_standings: (args) => getStandings(args.league_id),
-  get_soccer_top_scorers: (args) => getTopScorers(args.league_id),
-  get_soccer_team_info: async (args) => {
+  get_soccer_standings: (args: any) => getStandings(args.league_id),
+  get_soccer_top_scorers: (args: any) => getTopScorers(args.league_id),
+  get_soccer_team_info: async (args: any) => {
     const [info, squad, fixtures] = await Promise.all([
       getTeamInfo(args.team_id),
       getTeamSquad(args.team_id),
