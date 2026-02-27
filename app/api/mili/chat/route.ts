@@ -2,7 +2,9 @@
 // This route handles auth + rate limiting, then delegates to Mili
 
 import { NextRequest } from 'next/server';
-import { handleMiliChat, registerToolHandlers } from '@mili';
+// @mili package is external — stub until available
+const handleMiliChat = async (_body: any, _opts: any) => new Response(JSON.stringify({ error: 'Mili not configured' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
+const registerToolHandlers = (_handlers: any) => {};
 import { createClient, createServiceClient } from '@/lib/supabase-server';
 
 // Import Ball Knowledge's fetchers and register them with Mili

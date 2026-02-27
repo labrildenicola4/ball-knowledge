@@ -1,7 +1,8 @@
 // GET /api/mili/usage — Returns user's daily query count and subscription tier
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
-import { FREE_DAILY_LIMIT } from '@mili';
+// @mili package is external — stub until available
+const FREE_DAILY_LIMIT = 10;
 
 export const dynamic = 'force-dynamic';
 

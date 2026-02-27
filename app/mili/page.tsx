@@ -1,7 +1,8 @@
 'use client';
 
 import { useTheme } from '@/lib/theme';
-import { MiliChat } from '@mili';
+// @mili package is external — stub until available
+const MiliChat = ({ theme, darkMode }: any) => null;
 
 export default function MiliPage() {
   const { theme, darkMode } = useTheme();
@@ -10,7 +11,7 @@ export default function MiliPage() {
     <div
       style={{
         height: 'calc(100vh - 80px - env(safe-area-inset-bottom, 0px))',
-        marginTop: '-16px', // Offset the page padding from layout
+        marginTop: '-16px',
       }}
     >
       <MiliChat
