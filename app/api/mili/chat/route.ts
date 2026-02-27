@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       tier,
       dailyCount,
-      onQueryComplete: async (data) => {
+      onQueryComplete: async (data: any) => {
         const serviceClient = createServiceClient();
         await serviceClient.from('chat_queries').insert({
           user_id: data.userId,
