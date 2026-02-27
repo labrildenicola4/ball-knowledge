@@ -22,7 +22,7 @@ export async function GET(
 
     const data = await getNHLGameSummary(id);
 
-    const gameStatus = cached?.status ?? data?.status ?? 'scheduled';
+    const gameStatus = cached?.status ?? data?.game?.status ?? 'scheduled';
 
     let sMaxAge = 300; // default: scheduled
     if (gameStatus === 'final' || gameStatus === 'post') {
