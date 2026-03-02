@@ -26,7 +26,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
   return (
     <Link href={`/mlb/game/${game.id}`}>
       <div
-        className="card-press cursor-pointer p-4 md:p-5 transition-theme glass-match-card"
+        className="card-press cursor-pointer p-3 md:p-5 transition-theme glass-match-card"
       >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
@@ -87,7 +87,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
                 Away
               </span>
               <span
-                className="text-[15px] font-medium truncate"
+                className="text-base sm:text-[15px] font-medium line-clamp-2"
                 style={{
                   color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: awayWon ? 600 : 500,
@@ -115,7 +115,7 @@ export const MLBGameCard = memo(function MLBGameCard({ game }: MLBGameCardProps)
                 Home
               </span>
               <span
-                className="text-[15px] font-medium truncate text-right"
+                className="text-base sm:text-[15px] font-medium line-clamp-2 text-right"
                 style={{
                   color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: homeWon ? 600 : 500,

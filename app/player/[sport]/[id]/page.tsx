@@ -308,7 +308,7 @@ export default function PlayerPage() {
                 {player.extras?.flagUrl && (
                   <SafeImage src={player.extras.flagUrl} alt={player.nationality} className="h-3.5 w-5 object-contain" />
                 )}
-                <span className="text-[11px]" style={{ color: theme.textSecondary }}>{player.nationality}</span>
+                <span className="text-sm sm:text-[11px]" style={{ color: theme.textSecondary }}>{player.nationality}</span>
               </div>
             )}
             {player.experience != null && (
@@ -348,10 +348,10 @@ export default function PlayerPage() {
                   className={`rounded-lg p-3 text-center ${darkMode ? 'glass-card' : ''}`}
                   style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                 >
-                  <p className="text-[16px] font-bold" style={{ color: theme.text }}>
+                  <p className="text-lg sm:text-[16px] font-bold" style={{ color: theme.text }}>
                     {value}
                   </p>
-                  <p className="text-[10px] mt-0.5" style={{ color: theme.textSecondary }}>
+                  <p className="text-xs sm:text-[10px] mt-0.5" style={{ color: theme.textSecondary }}>
                     {label}
                   </p>
                 </div>
@@ -407,7 +407,7 @@ export default function PlayerPage() {
                 style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <div className="overflow-x-auto scrollbar-hide">
-                  <table className="w-full text-[11px]" style={{ minWidth: Math.max(500, ((gamelogData.labels?.length || 0) + 3) * 55) }}>
+                  <table className="w-full text-xs sm:text-[11px]" style={{ minWidth: Math.max(500, ((gamelogData.labels?.length || 0) + 3) * 55) }}>
                     <thead>
                       <tr style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
                         <th className="sticky left-0 z-10 px-3 py-2 text-left font-semibold"
@@ -497,7 +497,7 @@ export default function PlayerPage() {
                 style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
               >
                 <div className="overflow-x-auto scrollbar-hide">
-                  <table className="w-full text-[11px]" style={{ minWidth: Math.max(400, player.statLabels!.length * 55) }}>
+                  <table className="w-full text-xs sm:text-[11px]" style={{ minWidth: Math.max(400, player.statLabels!.length * 55) }}>
                     <thead>
                       <tr style={{ borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
                         <th className="sticky left-0 z-10 px-3 py-2 text-left font-semibold"
@@ -568,8 +568,8 @@ function BioPill({ label, value, darkMode, theme }: {
       className={`flex flex-col items-center rounded-full px-3 py-1.5 ${darkMode ? 'glass-pill' : ''}`}
       style={darkMode ? undefined : { backgroundColor: 'rgba(255,255,255,0.6)', border: `1px solid ${theme.border}` }}
     >
-      <span className="text-[10px]" style={{ color: theme.textSecondary }}>{label}</span>
-      <span className="text-[11px] font-medium" style={{ color: theme.text }}>{value}</span>
+      <span className="text-xs sm:text-[10px]" style={{ color: theme.textSecondary }}>{label}</span>
+      <span className="text-sm sm:text-[11px] font-medium" style={{ color: theme.text }}>{value}</span>
     </div>
   );
 }

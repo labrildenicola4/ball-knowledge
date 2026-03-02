@@ -17,6 +17,7 @@ const STANDINGS_LEAGUES: Array<{ id: number; code: string; name: string }> = [
   { id: 88, code: 'DED', name: 'Eredivisie' },
   { id: 94, code: 'PPL', name: 'Primeira Liga' },
   { id: 40, code: 'ELC', name: 'Championship' },
+  { id: 262, code: 'MX', name: 'Liga MX' },
 ];
 
 export async function GET(request: NextRequest) {

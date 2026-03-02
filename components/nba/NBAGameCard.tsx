@@ -20,7 +20,7 @@ export const NBAGameCard = memo(function NBAGameCard({ game }: NBAGameCardProps)
   return (
     <Link href={`/nba/game/${game.id}`}>
       <div
-        className="card-press cursor-pointer p-4 md:p-5 transition-theme glass-match-card"
+        className="card-press cursor-pointer p-3 md:p-5 transition-theme glass-match-card"
       >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
@@ -79,7 +79,7 @@ export const NBAGameCard = memo(function NBAGameCard({ game }: NBAGameCardProps)
                 Away {game.awayTeam.record && `(${game.awayTeam.record})`}
               </span>
               <span
-                className="text-[15px] md:text-base font-medium truncate"
+                className="text-base font-medium line-clamp-2"
                 style={{
                   color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: awayWon ? 600 : 500,
@@ -107,7 +107,7 @@ export const NBAGameCard = memo(function NBAGameCard({ game }: NBAGameCardProps)
                 Home {game.homeTeam.record && `(${game.homeTeam.record})`}
               </span>
               <span
-                className="text-[15px] md:text-base font-medium truncate text-right"
+                className="text-base font-medium line-clamp-2 text-right"
                 style={{
                   color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: homeWon ? 600 : 500,

@@ -174,6 +174,26 @@ export interface FixtureLineup {
   coach: LineupCoach;
 }
 
+export interface FixtureEvent {
+  time: { elapsed: number; extra: number | null };
+  team: { id: number; name: string; logo: string };
+  player: { id: number; name: string };
+  assist: { id: number | null; name: string | null };
+  type: string;       // "Goal", "Card", "subst", "Var"
+  detail: string;     // "Normal Goal", "Yellow Card", "Substitution 1", etc.
+  comments: string | null;
+}
+
+export interface MatchEvent {
+  minute: number;
+  extraMinute: number | null;
+  teamId: number;
+  playerName: string;
+  assistName: string | null;
+  type: 'goal' | 'card' | 'sub' | 'var';
+  detail: string;
+}
+
 export interface StandingsResponse {
   league: {
     id: number;
@@ -225,6 +245,10 @@ export async function getFixtureStatistics(fixtureId: number): Promise<FixtureSt
 
 export async function getFixtureLineups(fixtureId: number): Promise<FixtureLineup[]> {
   return fetchApi<FixtureLineup>('/fixtures/lineups', { fixture: fixtureId });
+}
+
+export async function getFixtureEvents(fixtureId: number): Promise<FixtureEvent[]> {
+  return fetchApi<FixtureEvent>('/fixtures/events', { fixture: fixtureId }, true);
 }
 
 // Common team name aliases for better matching
@@ -547,6 +571,21 @@ export function mapStatistics(
   if (mappedStats.length === 0) return null;
 
   return { all: mappedStats };
+}
+
+export function mapEvents(events: FixtureEvent[]): MatchEvent[] {
+  return events.map(e => ({
+    minute: e.time.elapsed,
+    extraMinute: e.time.extra,
+    teamId: e.team.id,
+    playerName: e.player.name,
+    assistName: e.assist?.name || null,
+    type: e.type === 'Goal' ? 'goal'
+      : e.type === 'Card' ? 'card'
+      : e.type === 'subst' ? 'sub'
+      : 'var',
+    detail: e.detail,
+  }));
 }
 
 // Extract matchday/round number from round string

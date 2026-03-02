@@ -20,7 +20,7 @@ export const BasketballGameCard = memo(function BasketballGameCard({ game }: Bas
   return (
     <Link href={`/basketball/game/${game.id}`}>
       <div
-        className="card-press cursor-pointer p-4 md:p-5 transition-theme glass-match-card"
+        className="card-press cursor-pointer p-3 md:p-5 transition-theme glass-match-card"
       >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
@@ -71,7 +71,7 @@ export const BasketballGameCard = memo(function BasketballGameCard({ game }: Bas
                 Away {game.awayTeam.rank ? `#${game.awayTeam.rank}` : ''}
               </span>
               <span
-                className="text-[15px] md:text-base font-medium truncate"
+                className="text-base font-medium line-clamp-2"
                 style={{
                   color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: awayWon ? 600 : 500,
@@ -99,7 +99,7 @@ export const BasketballGameCard = memo(function BasketballGameCard({ game }: Bas
                 Home {game.homeTeam.rank ? `#${game.homeTeam.rank}` : ''}
               </span>
               <span
-                className="text-[15px] md:text-base font-medium truncate text-right"
+                className="text-base font-medium line-clamp-2 text-right"
                 style={{
                   color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: homeWon ? 600 : 500,

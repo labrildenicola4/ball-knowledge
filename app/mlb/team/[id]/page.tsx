@@ -206,7 +206,7 @@ export default function MLBTeamPage() {
 
         <div className="flex items-center justify-center gap-2 mb-1">
           <div className="w-[26px]" />
-          <h1 className="text-xl font-bold" style={{ color: theme.text }}>
+          <h1 className="text-2xl sm:text-xl font-bold" style={{ color: theme.text }}>
             {team.displayName}
           </h1>
           <button onClick={toggleFavorite} className="p-1">
@@ -290,7 +290,7 @@ export default function MLBTeamPage() {
         <section className="px-4 py-4">
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 size={14} style={{ color: theme.accent }} />
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+            <h2 className="text-xs sm:text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Team Stats
             </h2>
           </div>
@@ -343,7 +343,7 @@ export default function MLBTeamPage() {
             {/* Upcoming Games */}
             {upcomingGames.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
+                <h3 className="text-sm sm:text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
                   Upcoming
                 </h3>
                 <div className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
@@ -356,7 +356,7 @@ export default function MLBTeamPage() {
                         <div className="text-[11px] w-16" style={{ color: theme.textSecondary }}>{game.date}</div>
                         <span className="text-[10px] w-6" style={{ color: theme.textSecondary }}>{game.isHome ? 'vs' : '@'}</span>
                         {game.opponent.logo && <SafeImage src={game.opponent.logo} alt="" className="h-5 w-5 object-contain logo-glow" />}
-                        <span className="text-sm font-medium flex-1" style={{ color: theme.text }}>{game.opponent.shortDisplayName}</span>
+                        <span className="text-base sm:text-sm font-medium flex-1" style={{ color: theme.text }}>{game.opponent.shortDisplayName}</span>
                       </div>
                     </Link>
                   ))}
@@ -367,7 +367,7 @@ export default function MLBTeamPage() {
             {/* Recent Games */}
             {completedGames.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
+                <h3 className="text-sm sm:text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
                   Recent Games
                 </h3>
                 <div className={`rounded-xl overflow-hidden ${darkMode ? 'glass-card' : ''}`} style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
@@ -380,7 +380,7 @@ export default function MLBTeamPage() {
                         <div className="text-[11px] w-16" style={{ color: theme.textSecondary }}>{game.date}</div>
                         <span className="text-[10px] w-6" style={{ color: theme.textSecondary }}>{game.isHome ? 'vs' : '@'}</span>
                         {game.opponent.logo && <SafeImage src={game.opponent.logo} alt="" className="h-5 w-5 object-contain logo-glow" />}
-                        <span className="text-sm font-medium flex-1" style={{ color: theme.text }}>{game.opponent.shortDisplayName}</span>
+                        <span className="text-base sm:text-sm font-medium flex-1" style={{ color: theme.text }}>{game.opponent.shortDisplayName}</span>
                         {game.result && (
                           <span
                             className="text-xs font-mono px-2 py-0.5 rounded"
@@ -419,7 +419,7 @@ export default function MLBTeamPage() {
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="text-sm font-medium" style={{ color: theme.text }}>{player.name}</p>
+                      <p className="text-base sm:text-sm font-medium" style={{ color: theme.text }}>{player.name}</p>
                       <p className="text-[11px]" style={{ color: theme.textSecondary }}>
                         #{player.jersey} · {player.position}
                         {player.batHand && ` · Bats: ${player.batHand}`}
@@ -442,7 +442,7 @@ export default function MLBTeamPage() {
           <div className="space-y-6">
             {/* Batting Stats */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
+              <h3 className="text-sm sm:text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
                 Batting
               </h3>
               <div className="grid grid-cols-2 gap-3">
@@ -466,7 +466,7 @@ export default function MLBTeamPage() {
 
             {/* Pitching Stats */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
+              <h3 className="text-sm sm:text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: theme.textSecondary }}>
                 Pitching
               </h3>
               <div className="grid grid-cols-2 gap-3">

@@ -39,18 +39,24 @@ export function Header() {
     }
   }, [searchOpen]);
 
-  // Close search when clicking outside
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setQuery('');
+    setResults({ teams: [], leagues: [], americanLeagues: [], mlbTeams: [], nbaTeams: [], nflTeams: [], nhlTeams: [], collegeBasketballTeams: [], collegeFootballTeams: [], f1Drivers: [], golfers: [], ufcFighters: [] });
+    setPlayerResults([]);
+  };
+
+  // Close search when clicking/tapping outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setSearchOpen(false);
-        setQuery('');
-        setResults({ teams: [], leagues: [], americanLeagues: [], mlbTeams: [], nbaTeams: [], nflTeams: [], nhlTeams: [], collegeBasketballTeams: [], collegeFootballTeams: [], f1Drivers: [], golfers: [], ufcFighters: [] });
-        setPlayerResults([]);
+        closeSearch();
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   // Search as user types
@@ -74,57 +80,47 @@ export function Header() {
 
   const handleTeamClick = (team: SearchableTeam) => {
     router.push(`/team/${team.id}`);
-    setSearchOpen(false);
-    setQuery('');
+    closeSearch();
   };
 
   const handleLeagueClick = (league: SearchableSoccerLeague) => {
-    // Navigate to league page
     router.push(`/league/${league.slug}`);
-    setSearchOpen(false);
-    setQuery('');
+    closeSearch();
   };
 
   const handleMLBTeamClick = (team: SearchableMLBTeam) => {
     router.push(`/mlb/team/${team.id}`);
-    setSearchOpen(false);
-    setQuery('');
+    closeSearch();
   };
 
   const handleNBATeamClick = (team: SearchableNBATeam) => {
     router.push(`/nba/team/${team.id}`);
-    setSearchOpen(false);
-    setQuery('');
+    closeSearch();
   };
 
   const handleNFLTeamClick = (team: SearchableNFLTeam) => {
     router.push(`/nfl/team/${team.id}`);
-    setSearchOpen(false);
-    setQuery('');
+    closeSearch();
   };
 
   const handleNHLTeamClick = (team: SearchableNHLTeam) => {
     router.push(`/nhl/team/${team.id}`);
-    setSearchOpen(false);
-    setQuery('');
+    closeSearch();
   };
 
   const handleCollegeBasketballTeamClick = (team: SearchableCollegeBasketballTeam) => {
     router.push(`/basketball/team/${team.id}`);
-    setSearchOpen(false);
-    setQuery('');
+    closeSearch();
   };
 
   const handleCollegeFootballTeamClick = (team: SearchableCollegeFootballTeam) => {
     router.push(`/football/team/${team.id}`);
-    setSearchOpen(false);
-    setQuery('');
+    closeSearch();
   };
 
   const handleAmericanLeagueClick = (league: SearchableAmericanLeague) => {
     router.push(league.href);
-    setSearchOpen(false);
-    setQuery('');
+    closeSearch();
   };
 
   const hasResults = results.teams.length > 0 || results.leagues.length > 0 || results.americanLeagues.length > 0 || results.mlbTeams.length > 0 || results.nbaTeams.length > 0 || results.nflTeams.length > 0 || results.nhlTeams.length > 0 || results.collegeBasketballTeams.length > 0 || results.collegeFootballTeams.length > 0 || results.f1Drivers.length > 0 || results.golfers.length > 0 || results.ufcFighters.length > 0 || playerResults.length > 0;
@@ -172,19 +168,20 @@ export function Header() {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search teams, leagues..."
+                  placeholder="Search teams, players..."
                   className="flex-1 bg-transparent text-sm outline-none"
                   style={{ color: theme.text }}
                 />
-                <button onClick={() => { setSearchOpen(false); setQuery(''); }} className="tap-highlight flex h-11 w-11 items-center justify-center">
+                <button onClick={() => closeSearch()} className="tap-highlight flex h-11 w-11 items-center justify-center">
                   <X size={18} style={{ color: theme.textSecondary }} />
                 </button>
               </div>
 
-              {/* Results Dropdown */}
+              {/* Results Dropdown — full viewport width on mobile so taps always land on results */}
               {query.length >= 2 && (
                 <div
-                  className="absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto rounded-xl shadow-lg glass-dropdown"
+                  className="absolute left-[-16px] top-full z-[100] w-screen max-h-[70vh] overflow-y-auto sm:left-0 sm:w-auto sm:mt-2 sm:max-h-80 sm:rounded-xl sm:shadow-lg glass-dropdown"
+                  onMouseDown={(e) => e.preventDefault()}
                 >
                   {!hasResults ? (
                     <div className="px-4 py-6 text-center">
@@ -522,7 +519,7 @@ export function Header() {
                             <Link
                               key={`player-${player.sport}-${player.id}`}
                               href={`/player/${player.sport}/${player.id}`}
-                              onClick={() => { setQuery(''); setSearchOpen(false); }}
+                              onClick={() => closeSearch()}
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
@@ -560,7 +557,7 @@ export function Header() {
                             <Link
                               key={`f1-${driver.id}`}
                               href={`/player/f1/${driver.id}`}
-                              onClick={() => { setQuery(''); setSearchOpen(false); }}
+                              onClick={() => closeSearch()}
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
@@ -598,7 +595,7 @@ export function Header() {
                             <Link
                               key={`golf-${golfer.id}`}
                               href={`/player/golf/${golfer.id}`}
-                              onClick={() => { setQuery(''); setSearchOpen(false); }}
+                              onClick={() => closeSearch()}
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >
@@ -636,7 +633,7 @@ export function Header() {
                             <Link
                               key={`ufc-${fighter.id}`}
                               href={`/player/ufc/${fighter.id}`}
-                              onClick={() => { setQuery(''); setSearchOpen(false); }}
+                              onClick={() => closeSearch()}
                               className="card-press flex w-full items-center gap-3 px-4 py-3 text-left hover:opacity-80"
                               style={{ borderBottom: `1px solid ${theme.border}` }}
                             >

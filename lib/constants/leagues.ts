@@ -26,6 +26,7 @@ export const LEAGUES: LeagueConfig[] = [
   { key: 'championship', slug: 'championship', id: 40, code: 'ELC', name: 'EFL Championship', shortName: 'Championship', country: 'England', type: 'league' },
   { key: 'brasileirao', slug: 'brasileirao', id: 71, code: 'BSA', name: 'Brasileirao Serie A', shortName: 'Brasileirao', country: 'Brazil', type: 'league' },
   { key: 'mls', slug: 'mls', id: 253, code: 'MLS', name: 'Major League Soccer', shortName: 'MLS', country: 'USA', type: 'league' },
+  { key: 'ligamx', slug: 'liga-mx', id: 262, code: 'MX', name: 'Liga MX', shortName: 'Liga MX', country: 'Mexico', type: 'league' },
   // Domestic cups
   { key: 'facup', slug: 'fa-cup', id: 45, code: 'FAC', name: 'FA Cup', shortName: 'FA Cup', country: 'England', type: 'cup' },
   { key: 'copadelrey', slug: 'copa-del-rey', id: 143, code: 'CDR', name: 'Copa del Rey', shortName: 'Copa del Rey', country: 'Spain', type: 'cup' },
@@ -36,6 +37,7 @@ export const LEAGUES: LeagueConfig[] = [
   { key: 'championsleague', slug: 'champions-league', id: 2, code: 'CL', name: 'UEFA Champions League', shortName: 'UCL', country: 'Europe', type: 'cup' },
   { key: 'europaleague', slug: 'europa-league', id: 3, code: 'EL', name: 'UEFA Europa League', shortName: 'UEL', country: 'Europe', type: 'cup' },
   { key: 'copalibertadores', slug: 'copa-libertadores', id: 13, code: 'CLI', name: 'Copa Libertadores', shortName: 'Libertadores', country: 'South America', type: 'cup' },
+  { key: 'conferenceleague', slug: 'conference-league', id: 307, code: 'ECL', name: 'UEFA Conference League', shortName: 'UECL', country: 'Europe', type: 'cup' },
 ];
 
 // League IDs in API-Football (key -> API-Football ID)
@@ -68,6 +70,8 @@ export const LEAGUE_ID_TO_CODE: Record<number, string> = {
   137: 'CIT',  // Coppa Italia
   81: 'DFB',   // DFB Pokal
   253: 'MLS',  // Major League Soccer
+  262: 'MX',   // Liga MX
+  307: 'ECL',  // Conference League
 };
 
 // Reverse mapping: short code -> API-Football ID
@@ -95,6 +99,8 @@ export const CODE_TO_LEAGUE_KEY: Record<string, string> = {
   'CIT': 'coppadeitalia',
   'DFB': 'dfbpokal',
   'MLS': 'mls',
+  'MX': 'ligamx',
+  'ECL': 'conferenceleague',
 };
 
 // Set of supported league IDs for filtering

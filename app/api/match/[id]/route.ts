@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFixture, getFixtureStatistics, getFixtureLineups, getHeadToHead, getTeamForm, mapStatus, mapStatistics } from '@/lib/api-football';
+import { getFixture, getFixtureStatistics, getFixtureLineups, getFixtureEvents, getHeadToHead, getTeamForm, mapStatus, mapStatistics, mapEvents } from '@/lib/api-football';
 import { supabase } from '@/lib/supabase';
 
 // Force dynamic rendering
@@ -56,12 +56,13 @@ export async function GET(
     const displayDate = `${dayNames[matchDate.getUTCDay()]}, ${monthNames[matchDate.getUTCMonth()]} ${matchDate.getUTCDate()} · ${timeStr}`;
 
     // Fetch additional data in parallel
-    const [lineups, statistics, h2hMatches, homeForm, awayForm] = await Promise.all([
+    const [lineups, statistics, h2hMatches, homeForm, awayForm, rawEvents] = await Promise.all([
       getFixtureLineups(matchId).catch(() => []),
       (isLive || isFinished) ? getFixtureStatistics(matchId).catch(() => []) : Promise.resolve([]),
       getHeadToHead(fixture.teams.home.id, fixture.teams.away.id, 10).catch(() => []),
       getTeamForm(fixture.teams.home.id, 5).catch(() => []),
       getTeamForm(fixture.teams.away.id, 5).catch(() => []),
+      (isLive || isFinished) ? getFixtureEvents(matchId).catch(() => []) : Promise.resolve([]),
     ]);
 
     // Process lineups
@@ -98,6 +99,9 @@ export async function GET(
 
     // Process statistics
     const matchStats = statistics.length > 0 ? mapStatistics(statistics) : null;
+
+    // Process events
+    const events = rawEvents.length > 0 ? mapEvents(rawEvents) : [];
 
     // Process H2H
     const h2hStats = {
@@ -185,6 +189,7 @@ export async function GET(
         away: fixture.score.halftime.away,
       },
       stats: matchStats,
+      events,
     };
 
     // Cache finished matches for instant future loads
@@ -260,6 +265,7 @@ function buildResponseFromCache(match: Record<string, unknown>) {
     h2h: { total: 0, homeWins: 0, draws: 0, awayWins: 0, matches: [] },
     halfTimeScore: { home: null, away: null },
     stats: null,
+    events: [],
     cached: true,
   });
 }

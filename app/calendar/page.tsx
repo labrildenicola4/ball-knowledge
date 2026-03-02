@@ -58,6 +58,7 @@ const INTERNATIONAL_TOURNAMENTS: Record<string, { name: string; shortName: strin
   'CL': { name: 'Champions League', shortName: 'UCL' },
   'EL': { name: 'Europa League', shortName: 'UEL' },
   'CLI': { name: 'Copa Libertadores', shortName: 'Lib' },
+  'ECL': { name: 'Conference League', shortName: 'UECL' },
 };
 
 // Available years for dropdown
@@ -862,7 +863,7 @@ export default function CalendarPage() {
       )}
 
       {/* Fixtures */}
-      <main className="flex-1 overflow-y-auto pb-24 px-2 md:px-4 py-4">
+      <main className="flex-1 overflow-y-auto pb-24 px-2 sm:px-4 py-4">
         <div className="mb-3 flex items-center justify-between">
           <h2
             className="text-xs font-semibold uppercase tracking-wider"

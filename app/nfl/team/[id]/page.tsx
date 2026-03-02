@@ -228,7 +228,7 @@ export default function NFLTeamPage() {
 
         <div className="flex items-center justify-center gap-2 mb-1">
           <div className="w-[26px]" />
-          <h1 className="text-xl font-bold" style={{ color: theme.text }}>
+          <h1 className="text-2xl sm:text-xl font-bold" style={{ color: theme.text }}>
             {team.displayName}
           </h1>
           <button onClick={toggleFavorite} className="p-1">
@@ -346,7 +346,7 @@ export default function NFLTeamPage() {
                   if (upcomingGames.length === 0) return null;
                   return (
                     <div className="mb-4">
-                      <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
+                      <h3 className="text-xs sm:text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
                         Upcoming ({upcomingGames.length})
                       </h3>
                       <div
@@ -377,7 +377,7 @@ export default function NFLTeamPage() {
                               {game.opponent.logo && (
                                 <SafeImage src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain logo-glow" />
                               )}
-                              <span className="text-sm font-medium" style={{ color: theme.text }}>
+                              <span className="text-base sm:text-sm font-medium" style={{ color: theme.text }}>
                                 {game.opponent.shortDisplayName || game.opponent.name}
                               </span>
                             </div>
@@ -394,7 +394,7 @@ export default function NFLTeamPage() {
                   if (completedGames.length === 0) return null;
                   return (
                     <div>
-                      <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
+                      <h3 className="text-xs sm:text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
                         Completed ({completedGames.length})
                       </h3>
                       <div
@@ -425,7 +425,7 @@ export default function NFLTeamPage() {
                               {game.opponent.logo && (
                                 <SafeImage src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain logo-glow" />
                               )}
-                              <span className="text-sm font-medium" style={{ color: theme.text }}>
+                              <span className="text-base sm:text-sm font-medium" style={{ color: theme.text }}>
                                 {game.opponent.shortDisplayName || game.opponent.name}
                               </span>
                             </div>
@@ -476,7 +476,7 @@ export default function NFLTeamPage() {
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="text-sm font-medium" style={{ color: theme.text }}>{player.name}</p>
+                      <p className="text-base sm:text-sm font-medium" style={{ color: theme.text }}>{player.name}</p>
                       <p className="text-[11px]" style={{ color: theme.textSecondary }}>
                         #{player.jersey} · {player.position}
                         {player.experience && ` · ${player.experience}`}
@@ -507,7 +507,7 @@ export default function NFLTeamPage() {
                     style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <div
-                      className="px-4 py-2 text-[10px] font-semibold uppercase"
+                      className="px-4 py-2 text-xs sm:text-[10px] font-semibold uppercase"
                       style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       Passing Yards
@@ -532,7 +532,7 @@ export default function NFLTeamPage() {
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
+                          <p className="text-sm sm:text-[13px] font-medium truncate" style={{ color: theme.text }}>
                             {player.player.name}
                           </p>
                           <p className="text-[10px]" style={{ color: theme.textSecondary }}>
@@ -560,7 +560,7 @@ export default function NFLTeamPage() {
                     style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <div
-                      className="px-4 py-2 text-[10px] font-semibold uppercase"
+                      className="px-4 py-2 text-xs sm:text-[10px] font-semibold uppercase"
                       style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       Rushing Yards
@@ -585,7 +585,7 @@ export default function NFLTeamPage() {
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
+                          <p className="text-sm sm:text-[13px] font-medium truncate" style={{ color: theme.text }}>
                             {player.player.name}
                           </p>
                           <p className="text-[10px]" style={{ color: theme.textSecondary }}>
@@ -613,7 +613,7 @@ export default function NFLTeamPage() {
                     style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <div
-                      className="px-4 py-2 text-[10px] font-semibold uppercase"
+                      className="px-4 py-2 text-xs sm:text-[10px] font-semibold uppercase"
                       style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       Receiving Yards
@@ -638,7 +638,7 @@ export default function NFLTeamPage() {
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
+                          <p className="text-sm sm:text-[13px] font-medium truncate" style={{ color: theme.text }}>
                             {player.player.name}
                           </p>
                           <p className="text-[10px]" style={{ color: theme.textSecondary }}>
@@ -666,7 +666,7 @@ export default function NFLTeamPage() {
                     style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
                     <div
-                      className="px-4 py-2 text-[10px] font-semibold uppercase"
+                      className="px-4 py-2 text-xs sm:text-[10px] font-semibold uppercase"
                       style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       Total Tackles
@@ -691,7 +691,7 @@ export default function NFLTeamPage() {
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-medium truncate" style={{ color: theme.text }}>
+                          <p className="text-sm sm:text-[13px] font-medium truncate" style={{ color: theme.text }}>
                             {player.player.name}
                           </p>
                           <p className="text-[10px]" style={{ color: theme.textSecondary }}>
@@ -765,7 +765,7 @@ export default function NFLTeamPage() {
               >
                 {/* Division Header */}
                 <div
-                  className="px-4 py-2 text-[10px] font-semibold uppercase"
+                  className="px-4 py-2 text-xs sm:text-[10px] font-semibold uppercase"
                   style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                 >
                   {division.name.replace('American Football Conference ', '').replace('National Football Conference ', '')}
@@ -773,7 +773,7 @@ export default function NFLTeamPage() {
 
                 {/* Column Headers */}
                 <div
-                  className="flex items-center px-4 py-2 text-[9px] font-semibold uppercase"
+                  className="flex items-center px-4 py-2 text-[11px] sm:text-[9px] font-semibold uppercase"
                   style={{ color: theme.textSecondary, borderBottom: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}
                 >
                   <span className="flex-1 pl-2">Team</span>
@@ -818,7 +818,7 @@ export default function NFLTeamPage() {
                             className="h-5 w-5 object-contain logo-glow flex-shrink-0"
                           />
                           <span
-                            className="text-[12px] font-medium truncate"
+                            className="text-sm sm:text-[12px] font-medium truncate"
                             style={{ color: isCurrentTeam ? theme.accent : theme.text }}
                           >
                             {standingTeam.team.abbreviation}

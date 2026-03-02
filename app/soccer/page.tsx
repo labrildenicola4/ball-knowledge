@@ -32,6 +32,8 @@ const OTHER_COMPETITIONS = [
   { slug: 'championship', name: 'EFL Championship', shortName: 'Championship', country: 'England', logo: 'https://media.api-sports.io/football/leagues/40.png' },
   { slug: 'brasileirao', name: 'Brasileirão Série A', shortName: 'Brasileirão', country: 'Brazil', logo: 'https://media.api-sports.io/football/leagues/71.png' },
   { slug: 'copa-libertadores', name: 'Copa Libertadores', shortName: 'Libertadores', country: 'South America', logo: 'https://media.api-sports.io/football/leagues/13.png' },
+  { slug: 'conference-league', name: 'UEFA Conference League', shortName: 'UECL', country: 'Europe', logo: 'https://media.api-sports.io/football/leagues/307.png' },
+  { slug: 'liga-mx', name: 'Liga MX', shortName: 'Liga MX', country: 'Mexico', logo: 'https://media.api-sports.io/football/leagues/262.png' },
 ];
 
 const DOMESTIC_CUPS = [

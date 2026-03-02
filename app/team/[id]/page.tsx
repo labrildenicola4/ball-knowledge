@@ -452,7 +452,7 @@ export default function TeamPage() {
           <ChevronLeft size={18} style={{ color: theme.text }} />
         </button>
         <div className="flex-1">
-          <p className="text-base font-semibold" style={{ color: theme.text }}>{team.name}</p>
+          <p className="text-lg sm:text-base font-semibold" style={{ color: theme.text }}>{team.name}</p>
           {team.tla && (
             <p className="text-xs" style={{ color: theme.textSecondary }}>{team.tla}</p>
           )}
@@ -484,7 +484,7 @@ export default function TeamPage() {
           <div className="text-center mb-4">
             <div className="flex items-center justify-center gap-2">
               <div className="w-[26px]" />
-              <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
+              <h1 className="text-2xl sm:text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
               <button onClick={toggleFavorite} className="p-1">
                 <Heart
                   size={18}
@@ -529,7 +529,7 @@ export default function TeamPage() {
           {/* Coach */}
           {team.coach && (
             <div className="mt-6 pt-4" style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
-              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 text-center" style={{ color: theme.textSecondary }}>
+              <h3 className="text-sm sm:text-xs font-semibold uppercase tracking-wider mb-3 text-center" style={{ color: theme.textSecondary }}>
                 Manager
               </h3>
               <div
@@ -547,7 +547,7 @@ export default function TeamPage() {
           {/* Competitions */}
           {team.competitions.length > 0 && (
             <div className="mt-6 pt-4" style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
-              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 text-center" style={{ color: theme.textSecondary }}>
+              <h3 className="text-sm sm:text-xs font-semibold uppercase tracking-wider mb-3 text-center" style={{ color: theme.textSecondary }}>
                 Competitions
               </h3>
               <div className="space-y-2">
@@ -572,7 +572,7 @@ export default function TeamPage() {
 
           {/* Season Stats */}
           <div className="mt-6 pt-4" style={{ borderTop: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.07)' : theme.border}` }}>
-            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 text-center" style={{ color: theme.textSecondary }}>
+            <h3 className="text-sm sm:text-xs font-semibold uppercase tracking-wider mb-3 text-center" style={{ color: theme.textSecondary }}>
               Season Stats
             </h3>
             <div className="grid grid-cols-2 gap-2">
@@ -760,7 +760,7 @@ export default function TeamPage() {
                   >
                     {/* Header - Full columns on desktop */}
                     <div
-                      className="grid grid-cols-[40px_1fr_50px_50px_50px_50px_60px_60px] px-4 py-3 text-[11px] font-semibold uppercase tracking-wider"
+                      className="grid grid-cols-[40px_1fr_50px_50px_50px_50px_60px_60px] px-4 py-3 text-xs sm:text-[11px] font-semibold uppercase tracking-wider"
                       style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                     >
                       <span>#</span>
@@ -872,7 +872,7 @@ export default function TeamPage() {
                 {/* Coach */}
                 {team.coach && (
                   <div className="mb-4">
-                    <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                    <h3 className="mb-2 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                       Manager
                     </h3>
                     <div
@@ -881,7 +881,7 @@ export default function TeamPage() {
                     >
                       <p className="font-medium" style={{ color: theme.text }}>{team.coach}</p>
                       {team.coachNationality && (
-                        <p className="text-xs mt-0.5" style={{ color: theme.textSecondary }}>{team.coachNationality}</p>
+                        <p className="text-sm sm:text-xs mt-0.5" style={{ color: theme.textSecondary }}>{team.coachNationality}</p>
                       )}
                     </div>
                   </div>
@@ -894,7 +894,7 @@ export default function TeamPage() {
                       const isGoalkeeper = group.position === 'Goalkeeper';
                       return (
                         <div key={group.position} className="mb-4">
-                          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                          <h3 className="mb-2 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                             {group.position}
                           </h3>
                           <div
@@ -960,11 +960,11 @@ export default function TeamPage() {
                                     {player.shirtNumber ?? '-'}
                                   </span>
                                   <Link href={`/player/soccer/${player.id}`} className="contents">
-                                    <span className="w-48 text-sm font-medium truncate hover:underline" style={{ color: theme.text }}>
+                                    <span className="w-48 text-base sm:text-sm font-medium truncate hover:underline" style={{ color: theme.text }}>
                                       {player.name}
                                     </span>
                                   </Link>
-                                  <span className="w-28 text-xs truncate" style={{ color: theme.textSecondary }}>
+                                  <span className="w-28 text-sm sm:text-xs truncate" style={{ color: theme.textSecondary }}>
                                     {player.nationality || '-'}
                                   </span>
                                   <span className="w-12 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
@@ -1053,7 +1053,7 @@ export default function TeamPage() {
                 </div>
 
                 {/* Record */}
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                   Record
                 </h3>
                 <div className="grid grid-cols-3 gap-4 mb-6">
@@ -1063,7 +1063,7 @@ export default function TeamPage() {
                 </div>
 
                 {/* Goals */}
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                   Goals
                 </h3>
                 <div className="grid grid-cols-3 gap-4 mb-6">
@@ -1078,7 +1078,7 @@ export default function TeamPage() {
                 {/* Home/Away side by side on desktop */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
-                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                    <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                       Home Record
                     </h3>
                     <div
@@ -1094,7 +1094,7 @@ export default function TeamPage() {
                   </div>
 
                   <div>
-                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                    <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                       Away Record
                     </h3>
                     <div
@@ -1111,7 +1111,7 @@ export default function TeamPage() {
                 </div>
 
                 {/* Other stats */}
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                   Other
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1138,7 +1138,7 @@ export default function TeamPage() {
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-2">
                 <div className="w-[26px]" />
-                <h1 className="text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
+                <h1 className="text-2xl sm:text-xl font-semibold" style={{ color: theme.text }}>{team.name}</h1>
                 <button onClick={toggleFavorite} className="p-1">
                   <Heart
                     size={18}
@@ -1157,7 +1157,7 @@ export default function TeamPage() {
             )}
 
             {/* Team Info Row */}
-            <div className="mt-3 flex flex-wrap justify-center gap-4 text-xs" style={{ color: theme.textSecondary }}>
+            <div className="mt-3 flex flex-wrap justify-center gap-4 text-sm sm:text-xs" style={{ color: theme.textSecondary }}>
               {team.venue && (
                 <div className="flex items-center gap-1">
                   <MapPin size={12} />
@@ -1325,7 +1325,7 @@ export default function TeamPage() {
               >
                 {/* Header */}
                 <div
-                  className="grid grid-cols-[28px_1fr_36px_36px_44px] px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider"
+                  className="grid grid-cols-[28px_1fr_36px_36px_44px] px-3 py-2.5 text-xs sm:text-[11px] font-semibold uppercase tracking-wider"
                   style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                 >
                   <span>#</span>
@@ -1414,7 +1414,7 @@ export default function TeamPage() {
             {/* Coach */}
             {team.coach && (
               <div className="mb-4">
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                <h3 className="mb-2 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                   Manager
                 </h3>
                 <div
@@ -1423,7 +1423,7 @@ export default function TeamPage() {
                 >
                   <p className="font-medium" style={{ color: theme.text }}>{team.coach}</p>
                   {team.coachNationality && (
-                    <p className="text-xs mt-0.5" style={{ color: theme.textSecondary }}>{team.coachNationality}</p>
+                    <p className="text-sm sm:text-xs mt-0.5" style={{ color: theme.textSecondary }}>{team.coachNationality}</p>
                   )}
                 </div>
               </div>
@@ -1436,7 +1436,7 @@ export default function TeamPage() {
                   const isGoalkeeper = group.position === 'Goalkeeper';
                   return (
                     <div key={group.position} className="mb-4">
-                      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                      <h3 className="mb-2 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                         {group.position}
                       </h3>
                       <div
@@ -1502,11 +1502,11 @@ export default function TeamPage() {
                                 {player.shirtNumber ?? '-'}
                               </span>
                               <Link href={`/player/soccer/${player.id}`} className="contents">
-                                <span className="w-36 text-sm font-medium truncate hover:underline" style={{ color: theme.text }}>
+                                <span className="w-36 text-base sm:text-sm font-medium truncate hover:underline" style={{ color: theme.text }}>
                                   {player.name}
                                 </span>
                               </Link>
-                              <span className="w-24 text-xs truncate" style={{ color: theme.textSecondary }}>
+                              <span className="w-24 text-sm sm:text-xs truncate" style={{ color: theme.textSecondary }}>
                                 {player.nationality || '-'}
                               </span>
                               <span className="w-10 text-center text-xs font-mono" style={{ color: theme.textSecondary }}>
@@ -1576,14 +1576,14 @@ export default function TeamPage() {
 
                 {/* Glossary */}
                 <div className="mt-6">
-                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+                  <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
                     Glossary
                   </h3>
                   <div
                     className={`rounded-xl p-4 ${darkMode ? 'glass-card' : ''}`}
                     style={darkMode ? undefined : { backgroundColor: theme.bgSecondary, border: `1px solid ${theme.border}` }}
                   >
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:text-xs">
                       <div className="flex gap-2">
                         <span className="font-semibold" style={{ color: theme.text }}>NAT:</span>
                         <span style={{ color: theme.textSecondary }}>Nationality</span>
@@ -1665,7 +1665,7 @@ export default function TeamPage() {
             </div>
 
             {/* Record */}
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+            <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Record
             </h3>
             <div className="grid grid-cols-3 gap-3 mb-6">
@@ -1675,7 +1675,7 @@ export default function TeamPage() {
             </div>
 
             {/* Goals */}
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+            <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Goals
             </h3>
             <div className="grid grid-cols-3 gap-3 mb-6">
@@ -1688,7 +1688,7 @@ export default function TeamPage() {
             </div>
 
             {/* Home/Away */}
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+            <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Home Record
             </h3>
             <div
@@ -1702,7 +1702,7 @@ export default function TeamPage() {
               </div>
             </div>
 
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+            <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Away Record
             </h3>
             <div
@@ -1717,7 +1717,7 @@ export default function TeamPage() {
             </div>
 
             {/* Other stats */}
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+            <h3 className="mb-3 text-sm sm:text-xs font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Other
             </h3>
             <div className="grid grid-cols-2 gap-3">

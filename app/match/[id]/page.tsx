@@ -51,6 +51,16 @@ interface Standing {
   form: string[];
 }
 
+interface MatchEvent {
+  minute: number;
+  extraMinute: number | null;
+  teamId: number;
+  playerName: string;
+  assistName: string | null;
+  type: 'goal' | 'card' | 'sub' | 'var';
+  detail: string;
+}
+
 interface MatchDetails {
   id: number;
   league: string;
@@ -65,6 +75,7 @@ interface MatchDetails {
   h2h: { total: number; homeWins: number; draws: number; awayWins: number; matches?: Array<{ date: string; home: string; away: string; homeLogo?: string; awayLogo?: string; homeScore: number; awayScore: number; competition: string }> };
   halfTimeScore: { home: number | null; away: number | null };
   stats: LiveStatsData | null;
+  events?: MatchEvent[];
 }
 
 export default function MatchPage() {
@@ -438,6 +449,119 @@ export default function MatchPage() {
           awayTeamName={match.away.name}
           leagueCode={match.leagueCode || ''}
         />
+
+        {/* Match Events Timeline */}
+        {match.events && match.events.length > 0 && (
+          <div className="mt-6 px-2">
+            <p
+              className="text-center text-[10px] font-medium uppercase tracking-wider mb-4"
+              style={{ color: theme.textSecondary }}
+            >
+              Match Events
+            </p>
+            <div className="relative">
+              {/* Center line */}
+              <div
+                className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2"
+                style={{ backgroundColor: darkMode ? 'rgba(120, 160, 100, 0.15)' : theme.border }}
+              />
+
+              <div className="flex flex-col gap-1">
+                {match.events.map((event, idx) => {
+                  const isHome = event.teamId === match.home.id;
+                  const timeStr = event.extraMinute
+                    ? `${event.minute}+${event.extraMinute}'`
+                    : `${event.minute}'`;
+
+                  const icon =
+                    event.type === 'goal' ? '⚽' :
+                    event.type === 'card' && event.detail.includes('Red') ? '🟥' :
+                    event.type === 'card' ? '🟨' :
+                    event.type === 'sub' ? '🔄' :
+                    '📺';
+
+                  const isOwnGoal = event.detail === 'Own Goal';
+                  const isPenalty = event.detail === 'Penalty';
+                  const isMissedPenalty = event.detail === 'Missed Penalty';
+
+                  return (
+                    <div
+                      key={idx}
+                      className="relative flex items-center"
+                      style={{ minHeight: '32px' }}
+                    >
+                      {/* Home side */}
+                      <div className={`flex-1 flex items-center ${isHome ? 'justify-end' : ''} pr-4`}>
+                        {isHome && (
+                          <div className="flex flex-col items-end">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-medium" style={{ color: theme.text }}>
+                                {event.playerName}
+                                {isOwnGoal && <span style={{ color: theme.red }}> (OG)</span>}
+                                {isPenalty && <span style={{ color: theme.textSecondary }}> (P)</span>}
+                                {isMissedPenalty && <span style={{ color: theme.red }}> (P missed)</span>}
+                              </span>
+                              <span className="text-[12px]">{icon}</span>
+                            </div>
+                            {event.type === 'goal' && event.assistName && (
+                              <span className="text-[9px]" style={{ color: theme.textSecondary }}>
+                                {event.assistName}
+                              </span>
+                            )}
+                            {event.type === 'sub' && event.assistName && (
+                              <span className="text-[9px]" style={{ color: theme.textSecondary }}>
+                                for {event.assistName}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Minute bubble */}
+                      <div
+                        className="relative z-10 flex h-6 min-w-[40px] items-center justify-center rounded-full px-2 text-[9px] font-semibold"
+                        style={{
+                          backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.8)' : theme.bgSecondary,
+                          border: `1px solid ${darkMode ? 'rgba(120, 160, 100, 0.15)' : theme.border}`,
+                          color: theme.textSecondary,
+                        }}
+                      >
+                        {timeStr}
+                      </div>
+
+                      {/* Away side */}
+                      <div className={`flex-1 flex items-center ${!isHome ? 'justify-start' : ''} pl-4`}>
+                        {!isHome && (
+                          <div className="flex flex-col items-start">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[12px]">{icon}</span>
+                              <span className="text-[11px] font-medium" style={{ color: theme.text }}>
+                                {event.playerName}
+                                {isOwnGoal && <span style={{ color: theme.red }}> (OG)</span>}
+                                {isPenalty && <span style={{ color: theme.textSecondary }}> (P)</span>}
+                                {isMissedPenalty && <span style={{ color: theme.red }}> (P missed)</span>}
+                              </span>
+                            </div>
+                            {event.type === 'goal' && event.assistName && (
+                              <span className="text-[9px] ml-5" style={{ color: theme.textSecondary }}>
+                                {event.assistName}
+                              </span>
+                            )}
+                            {event.type === 'sub' && event.assistName && (
+                              <span className="text-[9px] ml-5" style={{ color: theme.textSecondary }}>
+                                for {event.assistName}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Match Info */}

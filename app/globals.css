@@ -52,7 +52,7 @@ html {
   /* Smooth momentum scrolling */
   -webkit-overflow-scrolling: touch;
   /* Prevent overscroll navigation (swipe back/forward) */
-  overscroll-behavior: none;
+  overscroll-behavior-x: none;
 }
 
 /* Re-enable text selection only on inputs, textareas, and contenteditable */
@@ -129,7 +129,7 @@ body {
   top: -15%;
   left: -10%;
   filter: blur(70px);
-  animation: auroraDrift1 19s ease-in-out infinite;
+  animation: auroraDrift1 7.6s ease-in-out infinite;
 }
 
 /* Orb 2: Olive-gold — warm green accent that keeps it country club, not forest */
@@ -142,7 +142,7 @@ body {
   top: 20%;
   right: -10%;
   filter: blur(70px);
-  animation: auroraDrift2 24s ease-in-out infinite;
+  animation: auroraDrift2 9.6s ease-in-out infinite;
 }
 
 /* Orb 3: Deep pine — cool dark green, fills the bottom */
@@ -155,7 +155,7 @@ body {
   bottom: -10%;
   left: -10%;
   filter: blur(70px);
-  animation: auroraDrift3 20s ease-in-out infinite;
+  animation: auroraDrift3 8s ease-in-out infinite;
 }
 
 @keyframes auroraDrift1 {
@@ -270,7 +270,7 @@ body {
    NO backdrop-filter — transparent green-tinted shell.
    Aurora orbs pass through to inner cards */
 .dark .glass-section {
-  background: rgba(20, 40, 20, 0.03);
+  background: rgba(20, 40, 20, 0.05);
   border-radius: 24px;
   border: 1px solid rgba(120, 160, 100, 0.05);
   box-shadow:
@@ -431,6 +431,12 @@ body {
     inset 0 1px 0 rgba(150, 180, 120, 0.04);
 }
 
+@media (max-width: 639px) {
+  .dark .glass-dropdown {
+    background: rgba(6, 12, 8, 0.97);
+  }
+}
+
 /* Pulse glow for live indicators */
 @keyframes liveGlow {
   0%, 100% {
@@ -482,7 +488,7 @@ html:not(.dark) .aurora-orb-1 {
   top: -15%;
   left: -10%;
   filter: blur(50px);
-  animation: auroraDrift1 19s ease-in-out infinite;
+  animation: auroraDrift1 7.6s ease-in-out infinite;
 }
 
 html:not(.dark) .aurora-orb-2 {
@@ -494,7 +500,7 @@ html:not(.dark) .aurora-orb-2 {
   top: 20%;
   right: -10%;
   filter: blur(50px);
-  animation: auroraDrift2 24s ease-in-out infinite;
+  animation: auroraDrift2 9.6s ease-in-out infinite;
 }
 
 html:not(.dark) .aurora-orb-3 {
@@ -506,7 +512,7 @@ html:not(.dark) .aurora-orb-3 {
   bottom: -10%;
   left: -10%;
   filter: blur(50px);
-  animation: auroraDrift3 20s ease-in-out infinite;
+  animation: auroraDrift3 8s ease-in-out infinite;
 }
 
 html:not(.dark) body::after {
@@ -654,6 +660,12 @@ html:not(.dark) .glass-dropdown {
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid rgba(160, 180, 140, 0.20);
   box-shadow: 0 16px 48px rgba(40, 70, 35, 0.10), 0 4px 16px rgba(40, 70, 35, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 639px) {
+  html:not(.dark) .glass-dropdown {
+    background: rgba(250, 248, 243, 0.98);
+  }
 }
 
 /* STEP 11: Glass Divider - Light mode */

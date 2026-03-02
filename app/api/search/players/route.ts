@@ -36,7 +36,7 @@ const SPORT_DISPLAY: Record<string, string> = {
 };
 
 // Major soccer leagues for API-Football search (search requires league param)
-const AF_SEARCH_LEAGUES = [39, 140, 135, 78, 61, 253]; // PL, La Liga, Serie A, Bundesliga, Ligue 1, MLS
+const AF_SEARCH_LEAGUES = [39, 140, 135, 78, 61, 253, 262, 307]; // PL, La Liga, Serie A, Bundesliga, Ligue 1, MLS, Liga MX, Conference League
 
 export async function GET(request: NextRequest) {
   try {

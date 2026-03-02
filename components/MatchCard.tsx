@@ -32,7 +32,7 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
   return (
     <Link href={`/match/${match.id}`}>
       <div
-        className="card-press cursor-pointer p-4 md:p-5 transition-theme glass-match-card"
+        className="card-press cursor-pointer p-3 md:p-5 transition-theme glass-match-card"
       >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
@@ -47,7 +47,7 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
               />
             )}
             <span
-              className="text-[15px] uppercase tracking-wider font-medium"
+              className="text-sm sm:text-[15px] uppercase tracking-wider font-medium"
               style={{ color: theme.textSecondary }}
             >
               {match.league}
@@ -72,7 +72,7 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
             )}
             <div className="flex flex-col min-w-0">
               <span className="hidden md:block text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Home</span>
-              <span className="text-[15px] md:text-base font-medium line-clamp-2 break-words" style={{ color: theme.text }}>{match.home}</span>
+              <span className="text-base font-medium line-clamp-2" style={{ color: theme.text }}>{match.home}</span>
             </div>
           </div>
 
@@ -90,7 +90,7 @@ export const MatchCard = memo(function MatchCard({ match }: MatchCardProps) {
           <div className="flex items-center gap-1.5 md:gap-2 flex-1 min-w-0 pl-1 md:pl-2 justify-end">
             <div className="flex flex-col items-end min-w-0">
               <span className="hidden md:block text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.textSecondary }}>Away</span>
-              <span className="text-[15px] md:text-base font-medium line-clamp-2 break-words text-right" style={{ color: theme.text }}>{match.away}</span>
+              <span className="text-base font-medium line-clamp-2 text-right" style={{ color: theme.text }}>{match.away}</span>
             </div>
             {match.awayLogo.startsWith('http') ? (
               <SafeImage src={match.awayLogo} alt={match.away} className="h-8 w-8 md:h-9 md:w-9 flex-shrink-0 object-contain logo-glow" loading="lazy" />

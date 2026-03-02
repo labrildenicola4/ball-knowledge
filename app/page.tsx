@@ -748,7 +748,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <main className="flex-1 overflow-y-auto pb-24 px-3 md:px-4 py-4">
+      <main className="flex-1 overflow-y-auto pb-24 px-2 sm:px-4 py-4">
         {isLoading && totalGames === 0 ? (
           <SectionSkeleton cards={4} />
         ) : isError ? (
@@ -847,7 +847,7 @@ export default function HomePage() {
                 </button>
 
                 {!liveCollapsed && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 p-3.5">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 p-2 sm:p-3.5">
                     {liveGames.map((game) => (
                       game.type === 'soccer' && game.soccerMatch ? (
                         <MatchCard key={game.id} match={game.soccerMatch} />
@@ -901,7 +901,7 @@ export default function HomePage() {
                 </button>
 
                 {!collapsedSections.has('completed') && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 p-3.5">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 p-2 sm:p-3.5">
                     {finishedGames.map((game) => (
                       game.type === 'soccer' && game.soccerMatch ? (
                         <MatchCard key={game.id} match={game.soccerMatch} />
@@ -958,7 +958,7 @@ export default function HomePage() {
                   </button>
 
                   {!isCollapsed && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 p-3.5">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 p-2 sm:p-3.5">
                       {games.map((game) => (
                         game.type === 'soccer' && game.soccerMatch ? (
                           <MatchCard key={game.id} match={game.soccerMatch} />

@@ -186,7 +186,7 @@ export default function CollegeFootballTeamPage() {
 
         <div className="flex items-center justify-center gap-2 mb-1">
           <div className="w-[26px]" />
-          <h1 className="text-2xl font-bold" style={{ color: theme.text }}>
+          <h1 className="text-3xl sm:text-2xl font-bold" style={{ color: theme.text }}>
             {team.displayName}
           </h1>
           <button onClick={toggleFavorite} className="p-1">
@@ -298,7 +298,7 @@ export default function CollegeFootballTeamPage() {
                           className="h-5 w-5 object-contain logo-glow"
                         />
                       )}
-                      <span className="text-sm font-medium" style={{ color: theme.text }}>
+                      <span className="text-base sm:text-sm font-medium" style={{ color: theme.text }}>
                         {game.opponent.shortDisplayName || game.opponent.name}
                       </span>
                     </div>
@@ -357,7 +357,7 @@ export default function CollegeFootballTeamPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-medium truncate" style={{ color: theme.text }}>
+                      <p className="text-sm sm:text-[12px] font-medium truncate" style={{ color: theme.text }}>
                         {player.name}
                       </p>
                       <p className="text-[10px]" style={{ color: theme.textSecondary }}>

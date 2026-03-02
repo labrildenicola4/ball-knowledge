@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html class="dark">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compact Odds Preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Cormorant Garamond', serif;
+    background: #0a0f0a;
+    color: #e8e4d9;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #e8e4d9;
+    margin-bottom: 16px;
+  }
+
+  .section-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    color: #8a8578;
+    margin-bottom: 8px;
+    margin-top: 32px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 12px 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    max-width: 420px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sport-badge {
+    background: #6b7f5e;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .broadcast {
+    font-size: 10px;
+    color: #8a8578;
+  }
+
+  .status-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(20px);
+    color: #8a8578;
+  }
+
+  .status-live {
+    background: rgba(220,38,38,0.3);
+    color: #fff;
+    animation: liveGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes liveGlow {
+    0%, 100% { box-shadow: 0 0 8px rgba(220,38,38,0.3); }
+    50% { box-shadow: 0 0 12px rgba(220,38,38,0.5); }
+  }
+
+  .teams-row {
+    display: flex;
+    align-items: center;
+  }
+
+  .team {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .team-right {
+    justify-content: flex-end;
+  }
+
+  .team-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .team-name {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .score-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(20px);
+    flex-shrink: 0;
+    text-align: center;
+  }
+
+  .venue {
+    font-size: 10px;
+    color: #8a8578;
+    margin-top: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* === COMPACT ODDS STYLES === */
+
+  /* Option A: Probability Bar */
+  .odds-bar-container {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .odds-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .odds-team {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .odds-pct {
+    font-weight: 600;
+  }
+
+  .odds-bar {
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    display: flex;
+    gap: 1px;
+  }
+
+  .odds-bar-home {
+    background: linear-gradient(90deg, #6b7f5e, #8fa67a);
+    border-radius: 2px 0 0 2px;
+    transition: width 0.5s ease;
+  }
+
+  .odds-bar-draw {
+    background: linear-gradient(90deg, #c4a24e, #d4b65e);
+    transition: width 0.5s ease;
+  }
+
+  .odds-bar-away {
+    background: linear-gradient(90deg, #a67a5e, #8a6248);
+    border-radius: 0 2px 2px 0;
+    transition: width 0.5s ease;
+  }
+
+  .odds-attr {
+    font-size: 8px;
+    color: #5a5548;
+    margin-top: 3px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Option B: Inline Pills */
+  .odds-pills {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .odds-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(10px);
+    color: #c4c0b5;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .odds-pill-fav {
+    background: rgba(107,127,94,0.25);
+    color: #8fa67a;
+    border: 1px solid rgba(107,127,94,0.2);
+  }
+
+  .odds-pill-label {
+    font-size: 9px;
+    color: #8a8578;
+  }
+
+  .odds-pill-draw {
+    background: rgba(196,162,78,0.15);
+    color: #c4a24e;
+    border: 1px solid rgba(196,162,78,0.15);
+  }
+
+  /* Option C: Subtle Text Only */
+  .odds-text {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .odds-text-team {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #8a8578;
+  }
+
+  .odds-text-pct {
+    color: #8fa67a;
+    font-weight: 600;
+  }
+
+  .odds-text-vs {
+    font-size: 8px;
+    color: #5a5548;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin: 24px 0 8px;
+  }
+</style>
+</head>
+<body>
+
+<h2>Compact Odds on Cards — Preview</h2>
+<p class="section-label">Option A: Probability Bar (Recommended)</p>
+
+<!-- NBA Card with Bar Odds -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-header-left">
+      <span class="sport-badge">NBA</span>
+      <span class="broadcast">ESPN</span>
+      <span class="broadcast">· Feb 19</span>
+    </div>
+    <span class="status-badge">7:00 PM</span>
+  </div>
+  <div class="teams-row">
+    <div class="team">
+      <div class="team-logo" style="background:#CE1141;">H</div>
+      <span class="team-name">Rockets</span>
+    </div>
+    <div class="score-box">vs</div>
+    <div class="team right team-right">
+      <span class="team-name">Hornets</span>
+      <div class="team-logo" style="background:#1D1160;">C</div>
+    </div>
+  </div>
+
+  <div class="odds-bar-container">
+    <div class="odds-labels">
+      <span class="odds-team" style="color:#8fa67a;">HOU <span class="odds-pct">62%</span></span>
+      <span class="odds-attr">Polymarket</span>
+      <span class="odds-team" style="color:#a67a5e;">CHA <span class="odds-pct">38%</span></span>
+    </div>
+    <div class="odds-bar">
+      <div class="odds-bar-home" style="width:62%;"></div>
+      <div class="odds-bar-away" style="width:38%;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Live NBA Card with Bar Odds -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-header-left">
+      <span class="sport-badge">NBA</span>
+      <span class="broadcast">TNT</span>
+    </div>
+    <span class="status-badge status-live">● Q3 4:22</span>
+  </div>
+  <div class="teams-row">
+    <div class="team">
+      <div class="team-logo" style="background:#552583;">L</div>
+      <span class="team-name">Lakers</span>
+    </div>
+    <div class="score-box">87 - 82</div>
+    <div class="team right team-right">
+      <span class="team-name">Celtics</span>
+      <div class="team-logo" style="background:#007A33;">B</div>
+    </div>
+  </div>
+
+  <div class="odds-bar-container">
+    <div class="odds-labels">
+      <span class="odds-team" style="color:#8fa67a;">LAL <span class="odds-pct">71%</span></span>
+      <span class="odds-attr">Polymarket</span>
+      <span class="odds-team" style="color:#a67a5e;">BOS <span class="odds-pct">29%</span></span>
+    </div>
+    <div class="odds-bar">
+      <div class="odds-bar-home" style="width:71%;"></div>
+      <div class="odds-bar-away" style="width:29%;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Soccer Card with 3-way Bar -->
+<p class="section-label">Soccer (3-way with Draw)</p>
+<div class="card">
+  <div class="card-header">
+    <div class="card-header-left">
+      <span class="sport-badge" style="background:#3d1560;">EPL</span>
+      <span class="broadcast">Matchday 26</span>
+    </div>
+    <span class="status-badge">3:00 PM</span>
+  </div>
+  <div class="teams-row">
+    <div class="team">
+      <div class="team-logo" style="background:#DA291C;">A</div>
+      <span class="team-name">Arsenal</span>
+    </div>
+    <div class="score-box">vs</div>
+    <div class="team right team-right">
+      <span class="team-name">Man City</span>
+      <div class="team-logo" style="background:#6CABDD;">M</div>
+    </div>
+  </div>
+
+  <div class="odds-bar-container">
+    <div class="odds-labels">
+      <span class="odds-team" style="color:#8fa67a;">ARS <span class="odds-pct">45%</span></span>
+      <span class="odds-team" style="color:#c4a24e; font-size:9px;">Draw <span class="odds-pct">26%</span></span>
+      <span class="odds-team" style="color:#a67a5e;">MCI <span class="odds-pct">29%</span></span>
+    </div>
+    <div class="odds-bar">
+      <div class="odds-bar-home" style="width:45%;"></div>
+      <div class="odds-bar-draw" style="width:26%;"></div>
+      <div class="odds-bar-away" style="width:29%;"></div>
+    </div>
+    <div class="odds-attr">Polymarket</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<p class="section-label">Option B: Pill Style</p>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-header-left">
+      <span class="sport-badge">NFL</span>
+      <span class="broadcast">FOX</span>
+    </div>
+    <span class="status-badge">4:25 PM</span>
+  </div>
+  <div class="teams-row">
+    <div class="team">
+      <div class="team-logo" style="background:#203731;">G</div>
+      <span class="team-name">Packers</span>
+    </div>
+    <div class="score-box">vs</div>
+    <div class="team right team-right">
+      <span class="team-name">Cowboys</span>
+      <div class="team-logo" style="background:#003594;">D</div>
+    </div>
+  </div>
+
+  <div class="odds-pills">
+    <span class="odds-pill odds-pill-fav">GB 58%</span>
+    <span style="font-size:8px;color:#5a5548;">·</span>
+    <span class="odds-pill">DAL 42%</span>
+    <span style="font-size:7px;color:#5a5548;margin-left:2px;">Polymarket</span>
+  </div>
+</div>
+
+<!-- Soccer pills with draw -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-header-left">
+      <span class="sport-badge" style="background:#3d1560;">EPL</span>
+    </div>
+    <span class="status-badge">12:30 PM</span>
+  </div>
+  <div class="teams-row">
+    <div class="team">
+      <div class="team-logo" style="background:#C8102E;">L</div>
+      <span class="team-name">Liverpool</span>
+    </div>
+    <div class="score-box">vs</div>
+    <div class="team right team-right">
+      <span class="team-name">Chelsea</span>
+      <div class="team-logo" style="background:#034694;">C</div>
+    </div>
+  </div>
+
+  <div class="odds-pills">
+    <span class="odds-pill odds-pill-fav">LIV 52%</span>
+    <span class="odds-pill odds-pill-draw">Draw 24%</span>
+    <span class="odds-pill">CHE 24%</span>
+  </div>
+</div>
+
+<hr class="divider">
+
+<p class="section-label">Option C: Subtle Text</p>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-header-left">
+      <span class="sport-badge">MLB</span>
+      <span class="broadcast">ESPN+</span>
+    </div>
+    <span class="status-badge">7:10 PM</span>
+  </div>
+  <div class="teams-row">
+    <div class="team">
+      <div class="team-logo" style="background:#002D72;">Y</div>
+      <span class="team-name">Yankees</span>
+    </div>
+    <div class="score-box">vs</div>
+    <div class="team right team-right">
+      <span class="team-name">Dodgers</span>
+      <div class="team-logo" style="background:#005A9C;">D</div>
+    </div>
+  </div>
+
+  <div class="odds-text">
+    <span class="odds-text-team">NYY <span class="odds-text-pct">44%</span></span>
+    <span class="odds-text-vs">Polymarket</span>
+    <span class="odds-text-team">LAD <span class="odds-text-pct" style="color:#c4a24e;">56%</span></span>
+  </div>
+</div>
+
+<hr class="divider">
+
+<p class="section-label">For comparison: Card WITHOUT odds</p>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-header-left">
+      <span class="sport-badge">NBA</span>
+      <span class="broadcast">League Pass</span>
+    </div>
+    <span class="status-badge">Final</span>
+  </div>
+  <div class="teams-row">
+    <div class="team">
+      <div class="team-logo" style="background:#E03A3E;">B</div>
+      <span class="team-name" style="color:#8a8578;">Bulls</span>
+    </div>
+    <div class="score-box">98 - 112</div>
+    <div class="team right team-right">
+      <span class="team-name">Heat</span>
+      <div class="team-logo" style="background:#98002E;">M</div>
+    </div>
+  </div>
+  <p class="venue" style="font-size:10px;color:#5a5548;margin-top:8px;">Kaseya Center, Miami, FL</p>
+</div>
+
+</body>
+</html>

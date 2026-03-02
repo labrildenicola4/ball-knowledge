@@ -211,7 +211,7 @@ export default function NBATeamPage() {
 
         <div className="flex items-center justify-center gap-2 mb-1">
           <div className="w-[26px]" />
-          <h1 className="text-xl font-bold" style={{ color: theme.text }}>
+          <h1 className="text-2xl sm:text-xl font-bold" style={{ color: theme.text }}>
             {team.displayName}
           </h1>
           <button onClick={toggleFavorite} className="p-1">
@@ -295,7 +295,7 @@ export default function NBATeamPage() {
         <section className="px-4 py-4">
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 size={14} style={{ color: theme.accent }} />
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
+            <h2 className="text-xs sm:text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.textSecondary }}>
               Team Stats
             </h2>
           </div>
@@ -368,7 +368,7 @@ export default function NBATeamPage() {
                   if (upcomingGames.length === 0) return null;
                   return (
                     <div className="mb-4">
-                      <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
+                      <h3 className="text-xs sm:text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
                         Upcoming ({upcomingGames.length})
                       </h3>
                       <div
@@ -394,7 +394,7 @@ export default function NBATeamPage() {
                               {game.opponent.logo && (
                                 <SafeImage src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain logo-glow" />
                               )}
-                              <span className="text-sm font-medium" style={{ color: theme.text }}>
+                              <span className="text-base sm:text-sm font-medium" style={{ color: theme.text }}>
                                 {game.opponent.shortDisplayName || game.opponent.name}
                               </span>
                             </div>
@@ -411,7 +411,7 @@ export default function NBATeamPage() {
                   if (completedGames.length === 0) return null;
                   return (
                     <div>
-                      <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
+                      <h3 className="text-xs sm:text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.textSecondary }}>
                         Completed ({completedGames.length})
                       </h3>
                       <div
@@ -437,7 +437,7 @@ export default function NBATeamPage() {
                               {game.opponent.logo && (
                                 <SafeImage src={game.opponent.logo} alt={game.opponent.name} className="h-5 w-5 object-contain logo-glow" />
                               )}
-                              <span className="text-sm font-medium" style={{ color: theme.text }}>
+                              <span className="text-base sm:text-sm font-medium" style={{ color: theme.text }}>
                                 {game.opponent.shortDisplayName || game.opponent.name}
                               </span>
                             </div>
@@ -477,7 +477,7 @@ export default function NBATeamPage() {
                 <div className="min-w-[720px]">
                   {/* Stats Header */}
                   <div
-                    className="flex items-center px-3 py-2 rounded-t-xl text-[8px] font-semibold uppercase"
+                    className="flex items-center px-3 py-2 rounded-t-xl text-[10px] sm:text-[8px] font-semibold uppercase"
                     style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
                   >
                     <span className="w-[140px] flex-shrink-0">Player</span>
@@ -518,7 +518,7 @@ export default function NBATeamPage() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] font-medium truncate" style={{ color: theme.text }}>
+                            <p className="text-xs sm:text-[11px] font-medium truncate" style={{ color: theme.text }}>
                               {player.name}
                             </p>
                             <p className="text-[9px]" style={{ color: theme.textSecondary }}>
@@ -615,7 +615,7 @@ export default function NBATeamPage() {
             >
               {/* Header */}
               <div
-                className="flex items-center px-4 py-2 text-[9px] font-semibold uppercase"
+                className="flex items-center px-4 py-2 text-[11px] sm:text-[9px] font-semibold uppercase"
                 style={{ backgroundColor: darkMode ? 'rgba(10, 18, 12, 0.3)' : theme.bgTertiary, color: theme.textSecondary }}
               >
                 <span className="w-6">#</span>
@@ -657,7 +657,7 @@ export default function NBATeamPage() {
                           className="h-5 w-5 object-contain logo-glow flex-shrink-0"
                         />
                         <span
-                          className="text-[12px] font-medium truncate"
+                          className="text-sm sm:text-[12px] font-medium truncate"
                           style={{ color: isCurrentTeam ? theme.accent : theme.text }}
                         >
                           {standingTeam.abbreviation}

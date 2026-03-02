@@ -119,7 +119,7 @@ export const NATIONS: Nation[] = [
     id: 'mexico',
     name: 'Mexico',
     flag: '🇲🇽',
-    domesticLeagues: [],  // Liga MX (future)
+    domesticLeagues: ['MX'],  // Liga MX
     internationalCompetitions: ['CLI'],
   },
   {
@@ -246,6 +246,7 @@ export const LEAGUE_TO_NATION: Record<string, string> = {
   'BSA': 'brazil',    // Brasileirão
   'PPL': 'portugal',  // Primeira Liga
   'DED': 'netherlands', // Eredivisie
+  'MX': 'mexico',      // Liga MX
 };
 
 // International competitions (CL, EL, ECL, CLI) need team-based lookup
@@ -655,6 +656,8 @@ export function getLeagueIdFromCode(code: string): string {
     'CIT': 'coppadeitalia',
     'DFB': 'dfbpokal',
     'CDF': 'coupdefrance',
+    'MX': 'ligamx',
+    'MLS': 'mls',
   };
   return mapping[code] || code.toLowerCase();
 }

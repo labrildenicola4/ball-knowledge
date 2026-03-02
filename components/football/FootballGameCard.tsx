@@ -22,7 +22,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
   return (
     <Link href={`/football/game/${game.id}`}>
       <div
-        className={`card-press cursor-pointer p-4 md:p-5 transition-theme ${darkMode ? 'glass-match-card' : 'card-hover rounded-xl'}`}
+        className={`card-press cursor-pointer p-3 md:p-5 transition-theme ${darkMode ? 'glass-match-card' : 'card-hover rounded-xl'}`}
         style={darkMode ? undefined : {
           backgroundColor: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
@@ -91,7 +91,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
                 Away {game.awayTeam.record && `(${game.awayTeam.record})`}
               </span>
               <span
-                className="text-[15px] font-medium truncate"
+                className="text-[15px] font-medium line-clamp-2"
                 style={{
                   color: awayWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: awayWon ? 600 : 500,
@@ -122,7 +122,7 @@ export function FootballGameCard({ game }: FootballGameCardProps) {
                 Home {game.homeTeam.record && `(${game.homeTeam.record})`}
               </span>
               <span
-                className="text-[15px] font-medium truncate text-right"
+                className="text-[15px] font-medium line-clamp-2 text-right"
                 style={{
                   color: homeWon ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: homeWon ? 600 : 500,

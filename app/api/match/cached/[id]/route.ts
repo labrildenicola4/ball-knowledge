@@ -77,6 +77,7 @@ export async function GET(
       h2h: { total: 0, homeWins: 0, draws: 0, awayWins: 0 },
       halfTimeScore: { home: null, away: null },
       stats: null,
+      events: [],
       cached: true,
       partial: true, // Indicates this is partial data
     });

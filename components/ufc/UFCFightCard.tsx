@@ -22,7 +22,7 @@ export const UFCFightCard = memo(function UFCFightCard({ fight, eventId }: UFCFi
 
   return (
     <Link href={`/ufc/fight/${eventId}/${fight.id}`}>
-      <div className="card-press cursor-pointer p-4 md:p-5 transition-theme glass-match-card">
+      <div className="card-press cursor-pointer p-3 md:p-5 transition-theme glass-match-card">
         {/* Header: weight class + status */}
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -57,7 +57,7 @@ export const UFCFightCard = memo(function UFCFightCard({ fight, eventId }: UFCFi
                   loading="lazy"
                 />
               )}
-              <span className="text-[15px] font-medium truncate cursor-pointer"
+              <span className="text-[15px] font-medium line-clamp-2 cursor-pointer"
                 style={{
                   color: isFinal && fight.fighter1.winner ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: isFinal && fight.fighter1.winner ? 600 : 500,
@@ -115,7 +115,7 @@ export const UFCFightCard = memo(function UFCFightCard({ fight, eventId }: UFCFi
                   />
                 </button>
               )}
-              <span className="text-[15px] font-medium truncate cursor-pointer"
+              <span className="text-[15px] font-medium line-clamp-2 cursor-pointer"
                 style={{
                   color: isFinal && fight.fighter2.winner ? theme.text : isFinal ? theme.textSecondary : theme.text,
                   fontWeight: isFinal && fight.fighter2.winner ? 600 : 500,
